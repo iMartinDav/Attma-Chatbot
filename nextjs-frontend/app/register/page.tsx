@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { register } from "@/components/actions/register-action";
 import { useFormState } from "react-dom";
 import { SubmitButton } from "@/components/ui/submitButton";
+import Link from "next/link";
 
 export default function Page() {
   const [state, dispatch] = useFormState(register, { message: "" });
@@ -42,11 +42,14 @@ export default function Page() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-          </CardContent>
-          <CardFooter>
             <SubmitButton />
             <div>{state?.message && <p>{state.message}</p>}</div>
-          </CardFooter>
+            <div className="mt-4 text-center text-sm">
+              <Link href="/login" className="underline">
+                Back to login
+              </Link>
+            </div>
+          </CardContent>
         </Card>
       </form>
     </div>
