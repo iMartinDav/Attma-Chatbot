@@ -1,0 +1,31 @@
+%%{init: {'theme':'forest'}}%%
+
+
+sequenceDiagram
+
+    Title: Detailed Sequence Diagram of .cluster_marker_genes() in /backend/analysis/tools.py
+
+    participant p1 as cluster_marker_genes()<br>:graph/tools.py/tools.py
+    participant p2 as <br>:orchestrator/call_r_function.py/call_r_function.py
+    participant p3 as <br>:orchestrator/r_setup.py/r_setup.py
+
+    p1 ->>+ p2: 1: call_r_function( "cluster_marker_genes",<br>seurat_object, features1,<br>logfc_threshold1,<br>only_pos1, return_thresh1 )
+    p2 ->>+ p3: 1.1: load_r_script_and_functions()
+    p3 -->>- p2: 1.1: Return loaded R functions
+    p2 -->>- p1: 1: Return processed R function result
+
+    p1 ->> p1: 2: Extract result_list from returned value
+    p1 ->> p1: 3: Update seurat_object with new data from result_list
+    p1 ->> p1: 4: Convert summary to Pandas DataFrame
+    p1 ->> p1: 5: Create output directory if it doesn't exist
+    p1 ->> p1: 6: Save complete summary to CSV
+
+    loop Process Each Unique Cluster in DataFrame
+        p1 ->> p1: 7: Filter DataFrame by current cluster
+        p1 ->> p1: 8: Identify top 10 genes by avg_log2FC
+        p1 ->> p1: 9: Save top 10 genes by avg_log2FC to CSV
+        p1 ->> p1: 10: Identify top 10 genes by lowest p_val
+        p1 ->> p1: 11: Save top 10 genes by p_val to CSV
+    end
+
+    p1 ->> p1: 12: Print success message indicating completion

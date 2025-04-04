@@ -11,6 +11,12 @@ dependencies = [
     "fastapi-users[sqlalchemy]>=13.0.0,<14",
     "pydantic-settings>=2.5.2,<3",
     "fastapi-mail>=1.4.1,<2",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.10.0",
+    "pathlib>=1.0.1",
+    "python-multipart>=0.0.7",
+    "uvicorn[standard]>=0.27.1,<0.28",
 ]
 
 [dependency-groups]

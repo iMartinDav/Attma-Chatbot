@@ -2,11 +2,17 @@ services:
   backend:
     build:
       context: fastapi_backend
+    container_name: fastapi-backend
+    restart: unless-stopped
     environment:
+      - DEV=true
       - OPENAPI_OUTPUT_FILE=./shared-data/openapi.json
       - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/mydatabase
       - TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5433/testdatabase
       - MAIL_SERVER=mailhog
+      - PYTHONPATH=/app
+      - SINGLE_CELL_DATA_DIR=/app/shared-data/single_cell_data
+      - LOG_LEVEL=INFO
     ports:
       - "8000:8000"
     networks:
@@ -16,9 +22,19 @@ services:
       - fastapi-venv:/app/.venv
       - ./local-shared-data:/app/shared-data
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
   db:
-    image: postgres:17
+    image: postgres:17-alpine
+    container_name: postgres-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -29,8 +45,15 @@ services:
       - my_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   db_test:
-    image: postgres:17
+    image: postgres:17-alpine
+    container_name: postgres-db-test
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -39,10 +62,16 @@ services:
       - "5433:5432"
     networks:
       - my_network
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   frontend:
     build:
       context: ./nextjs-frontend
+    container_name: nextjs-frontend
+    restart: unless-stopped
     user: node
     ports:
       - "3000:3000"
@@ -56,8 +85,12 @@ services:
       - ./nextjs-frontend:/app
       - nextjs-node-modules:/app/node_modules
       - ./local-shared-data:/app/shared-data
+    depends_on:
+      - backend
   mailhog:
     image: mailhog/mailhog
+    container_name: mail-server
+    restart: unless-stopped
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
@@ -66,9 +99,13 @@ services:
 
 volumes:
   postgres_data:
-  nextjs-node-modules:
+    name: postgres-data
   fastapi-venv:
+    name: fastapi-virtualenv
+  nextjs-node-modules:
+    name: nextjs-modules
 
 networks:
   my_network:
     driver: bridge
+    name: app-network
