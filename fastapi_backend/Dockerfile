@@ -1,33 +1,73 @@
-FROM python:3.12-bookworm
+FROM python:3.12-slim
 
-# Set the working directory
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    r-base \
+    libpcre2-dev \
+    liblzma-dev \
+    libbz2-dev \
+    zlib1g-dev \
+    libicu-dev \
+    libxml2-dev \
+    libblas-dev \
+    liblapack-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user
+RUN addgroup --system app && \
+    adduser --system --group app
+
+# Set working directory
 WORKDIR /app
 
-# The uv installer requires curl (and certificates) to download the release archive
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+# Copy dependency files
+COPY pyproject.toml ./
 
-# Download the latest uv installer
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
+# Install Python dependencies
+RUN pip install --no-cache-dir "fastapi[standard]>=0.115.0,<0.116" \
+    "uvicorn[standard]>=0.27.1,<0.28" \
+    "asyncpg>=0.29.0,<0.30" \
+    "fastapi-users[sqlalchemy]>=13.0.0,<14" \
+    "pydantic-settings>=2.5.2,<3" \
+    "fastapi-mail>=1.4.1,<2" \
+    "numpy>=1.24.0" \
+    "pandas>=2.0.0" \
+    "scipy>=1.10.0" \
+    "pathlib>=1.0.1" \
+    "python-multipart>=0.0.7" \
+    "scanpy>=1.9.0" \
+    "rpy2>=3.5.0" \
+    "celltypist>=1.5.0" \
+    "plotly>=5.14.0" \
+    "anndata>=0.10.0"
 
-# Run the uv installer then remove it
-RUN sh /uv-installer.sh && rm /uv-installer.sh
+# Copy application code
+COPY --chown=app:app . .
 
-# Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH"
+# Create necessary directories
+RUN mkdir -p /app/shared-data \
+    && mkdir -p /tmp/single_cell_data \
+    && chown -R app:app /app/shared-data \
+    && chown -R app:app /tmp/single_cell_data
 
-# Copy dependency files first to leverage Docker caching
-COPY pyproject.toml uv.lock ./
-
-# Install dependencies using uv
-RUN uv sync --frozen
-
-ENV PATH="/app/.venv/bin:$PATH"
-
-# Copy the rest of the application code
-COPY . .
+# Switch to non-root user
+USER app
 
 # Expose the application port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["./start.sh"]
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Set environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    SINGLE_CELL_DATA_DIR=/tmp/single_cell_data
+
+# Run the FastAPI application using the main entry point
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

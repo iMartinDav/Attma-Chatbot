@@ -59,6 +59,10 @@ Introducing the Next.js FastAPI Template: A cutting-edge foundation for modern f
 * [Contributing](#contributing)
 * [Share your project!](#share-your-project)
 * [Commercial Support](#commercial-support)
+* [BioFlow Module](#bioflow-module)
+  * [Features](#features)
+  * [API Endpoints](#api-endpoints)
+  * [Using BioFlow](#using-bioflow)
 
 ## About
 This template streamlines building APIs with [FastAPI](https://fastapi.tiangolo.com/) and dynamic frontends with [Next.js](https://nextjs.org/). It integrates the backend and frontend using [@hey-api/openapi-ts](https://github.com/hey-api/openapi-ts) to generate a type-safe client, with automated watchers to keep the OpenAPI schema and client updated, ensuring a smooth and synchronized development workflow.  
@@ -503,7 +507,7 @@ Check our [contributing guide](https://github.com/vintasoftware/nextjs-fastapi-t
 
 You can use our template to kick-start your project or streamline your efforts to secure funding. Starting with a strong foundation can make your product more resilient and allow you to focus on what matters most: delivering value to your customers.
 
-If our template has been part of your journey, we'd love to hear about it! Share your story with us, and we’ll help spread the word about your project through our social media channels, giving it a broader reach.
+If our template has been part of your journey, we'd love to hear about it! Share your story with us, and we'll help spread the word about your project through our social media channels, giving it a broader reach.
 
 Please email us at contact@vintasoftware.com telling us more about how our template helped you boost your project.
 
@@ -512,3 +516,59 @@ Please email us at contact@vintasoftware.com telling us more about how our templ
 [![alt text](https://avatars2.githubusercontent.com/u/5529080?s=80&v=4 "Vinta Logo")](https://www.vinta.com.br/)
 
 This project is maintained by [Vinta Software](https://www.vinta.com.br/) and is used in products of Vinta's clients. We are always looking for exciting work! If you need any commercial support, feel free to get in touch: contact@vinta.com.br
+
+## BioFlow Module
+
+The project includes a Python-based BioFlow module for bioinformatics data processing and workflow execution, particularly focused on single-cell RNA-seq analysis.
+
+### Features
+
+- Parse matrix file structures (sparse or full matrices)
+- Create subsets of large matrices efficiently
+- Handle compressed files (gzip, zip, tar.gz)
+- Support both local files and remote URLs
+- FastAPI integration with endpoints for web-based access
+- Nextflow integration for workflow-based data processing
+
+### API Endpoints
+
+BioFlow exposes several endpoints through the FastAPI backend:
+
+- `POST /bioflow/upload/`: Upload a matrix file
+- `POST /bioflow/analyze/`: Analyze a matrix file structure
+- `POST /bioflow/subset/`: Create a subset of a matrix
+- `GET /bioflow/task/{task_id}/`: Check the status of a processing task
+- `GET /bioflow/download/{task_id}/`: Download the result of a processing task
+- `GET /bioflow/workflows/`: List available workflows
+- `POST /bioflow/workflow/`: Run a workflow on a file
+- `GET /bioflow/workflow/{task_id}/`: Check the status of a workflow task
+- `GET /bioflow/workflow/{task_id}/result/{file_name}`: Download a specific workflow result file
+
+### Using BioFlow
+
+```python
+from fastapi_backend.bioflow.biodata import MatrixStructure, BioinformaticsProcessor, WorkflowRunner
+
+# Analyze a matrix file
+matrix = MatrixStructure("path/to/matrix.mtx.gz")
+print(matrix)
+
+# Create a subset with 1000 columns
+processor = BioinformaticsProcessor("path/to/matrix_dir")
+subset_path = processor.generate_matrix_subset(1000)
+print(f"Created subset at: {subset_path}")
+
+# Run a workflow
+runner = WorkflowRunner()
+workflows = runner.list_available_workflows()
+print(f"Available workflows: {workflows}")
+
+result = runner.run_workflow("normalize_matrix", {
+    "input": "path/to/matrix.mtx",
+    "method": "log"
+})
+print(f"Workflow status: {result['status']}")
+print(f"Output files: {result['files']}")
+```
+
+For more details, see the [BioFlow README](fastapi_backend/bioflow/README.md).

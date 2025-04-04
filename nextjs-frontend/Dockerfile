@@ -6,17 +6,20 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy package files and install dependencies
-COPY package*.json ./
+# Copy package files first to leverage Docker cache
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies as root (or myappuser, depending on your structure)
-RUN pnpm install
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-## Switch to the non-root user
-USER node
-
-# Copy the rest of your application code
+# Copy the rest of the application code
 COPY . .
+
+# Build the application
+RUN pnpm build
+
+# Switch to non-root user
+USER node
 
 EXPOSE 3000
 

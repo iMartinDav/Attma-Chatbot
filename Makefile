@@ -12,10 +12,13 @@ help:
 	@awk '/^[a-zA-Z_-]+:/{split($$1, target, ":"); print "  " target[1] "\t" substr($$0, index($$0,$$2))}' $(MAKEFILE_LIST)
 
 # Backend commands
-.PHONY: start-backend test-backend
+.PHONY: start-backend test-backend create-start-script
 
 start-backend: ## Start the backend server with FastAPI and hot reload
-	cd $(BACKEND_DIR) && ./start.sh
+	cd $(BACKEND_DIR) && uvicorn fastapi_backend.main:app --reload --host 0.0.0.0 --port 8000
+
+create-start-script: ## Create a startup script for the backend
+	echo '#!/bin/bash\n\necho "Starting Single-Cell Analysis API..."\n\nPORT=$${PORT:-8000}\nHOST=$${HOST:-0.0.0.0}\nLOG_LEVEL=$${LOG_LEVEL:-info}\n\nuvicorn fastapi_backend.main:app --host $$HOST --port $$PORT --reload --log-level $$LOG_LEVEL' > $(BACKEND_DIR)/start.sh && chmod +x $(BACKEND_DIR)/start.sh
 
 test-backend: ## Run backend tests using pytest
 	cd $(BACKEND_DIR) && uv run pytest
@@ -72,3 +75,12 @@ docker-test-backend: ## Run tests for the backend
 
 docker-test-frontend: ## Run tests for the frontend
 	$(DOCKER_COMPOSE) run --rm frontend pnpm run test
+
+# Custom commands for dataprep and bioflow
+.PHONY: dataprep-init bioflow-demo
+
+dataprep-init: ## Initialize dataprep environment
+	cd $(BACKEND_DIR) && python -m dataprep.cli init
+
+bioflow-demo: ## Run bioflow demo
+	cd $(BACKEND_DIR) && python bioflow_demo.py
