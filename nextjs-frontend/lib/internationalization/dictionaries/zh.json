@@ -1,0 +1,403 @@
+{
+  "meta": {
+    "title": "Attma - 人工智能生物信息学家",
+    "description": "借助人工智能驱动的分析技术革新您的生物学研究"
+  },
+  "common": {
+    "nav": {
+      "features": "功能特点",
+      "pricing": "定价方案",
+      "cases": "案例研究",
+      "blog": "资源中心",
+      "contact": "联系我们"
+    },
+    "cta": {
+      "start": "立即开始",
+      "console": "分析控制台",
+      "learn": "了解更多",
+      "viewPricing": "查看价格"
+    },
+    "footer": {
+      "companyInfo": "通过人工智能驱动的生物信息学分析技术革新生物研究。",
+      "stayUpdated": "保持更新",
+      "newsletterText": "订阅我们的通讯，获取最新动态和研究突破。",
+      "newsletterPlaceholder": "您的电子邮箱",
+      "newsletterDisclaimer": "订阅即表示您同意我们的隐私政策并同意接收更新。",
+      "rights": "保留所有权利",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "cookies": "Cookie政策",
+      "productTitle": "产品",
+      "companyTitle": "公司",
+      "aboutUs": "关于我们",
+      "careers": "职业机会",
+      "docs": "文档中心"
+    },
+    "languages": {
+      "en": "🇬🇧 English",
+      "es": "🇲🇽 Español",
+      "fr": "🇫🇷 Français",
+      "de": "🇩🇪 Deutsch",
+      "zh": "🇨🇳 中文",
+      "pt": "🇵🇹 Português"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "全球首个人工智能生物信息学家",
+      "subtitle": "利用前沿人工智能技术革新您的生物数据分析",
+      "ctaStart": "开始对话",
+      "ctaExplore": "探索功能",
+      "introducing": "隆重介绍 Attma"
+    },
+    "features": {
+      "title": "提升您的研究效率",
+      "subtitle": "前所未有的速度分析复杂生物数据",
+      "items": [
+        {
+          "id": "sequence-analysis",
+          "title": "DNA序列分析",
+          "description": "使用专为基因组数据设计的最先进人工智能算法分析DNA和RNA序列。"
+        },
+        {
+          "id": "pattern-recognition",
+          "title": "智能模式识别",
+          "description": "识别生物数据中的复杂模式，发现传统方法可能遗漏的隐藏关联。"
+        },
+        {
+          "id": "nl-interface",
+          "title": "自然语言交互界面",
+          "description": "使用日常语言提问，立即获得对您研究问题的准确回答。"
+        },
+        {
+          "id": "data-viz",
+          "title": "数据可视化",
+          "description": "从复杂的基因组和蛋白质组数据生成富有洞察力的可视化和报告。"
+        },
+        {
+          "id": "literature-analysis",
+          "title": "文献分析",
+          "description": "在几秒钟内扫描、总结并提取数千篇研究论文中的见解。"
+        },
+        {
+          "id": "security",
+          "title": "安全与隐私",
+          "description": "通过企业级安全措施保护您的研究数据私密性和安全性。"
+        }
+      ]
+    },
+    "cases": {
+      "title": "成功案例",
+      "subtitle": "了解领先研究人员如何利用Attma加速他们的发现。",
+      "viewAll": "查看所有案例研究",
+      "readCase": "阅读案例研究",
+      "items": [
+        {
+          "id": "rare-diseases",
+          "title": "罕见疾病的基因组分析",
+          "description": "斯坦福大学的研究人员如何使用Attma识别罕见疾病患者的新型基因变异，将分析时间从数周缩短至数小时。",
+          "tag": "基因组学"
+        },
+        {
+          "id": "drug-discovery",
+          "title": "药物研发加速",
+          "description": "BioPharm公司利用Attma分析蛋白质-配体相互作用，仅在2个月内就发现了3种有前途的药物候选物，而不是传统的数年时间。",
+          "tag": "制药"
+        },
+        {
+          "id": "covid-tracking",
+          "title": "COVID-19变异追踪",
+          "description": "公共卫生研究人员使用Attma监测SARS-CoV-2突变并从序列数据实时预测变体特性。",
+          "tag": "病毒学"
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "用户心声",
+      "subtitle": "全球研究人员信任Attma助力他们的工作",
+      "items": [
+        {
+          "id": "sarah-johnson",
+          "quote": "Attma彻底改变了我们的研究流程。过去需要数周的工作现在只需几分钟。",
+          "name": "Sarah Johnson博士",
+          "title": "基因组研究所首席研究员"
+        },
+        {
+          "id": "michael-chen",
+          "quote": "其模式识别能力无与伦比。我们发现了数据中的相关性，这些相关性通过人工方式是永远无法找到的。",
+          "name": "Michael Chen教授",
+          "title": "牛津大学计算生物学家"
+        },
+        {
+          "id": "emily-rodriguez",
+          "quote": "作为生物信息学经验有限的研究者，Attma的自然语言界面使复杂分析变得易于访问和直观理解。",
+          "name": "Emily Rodriguez博士",
+          "title": "BioTech实验室分子生物学家"
+        }
+      ]
+    },
+    "cta": {
+      "title": "准备好变革您的研究了吗？",
+      "subtitle": "加入数千名使用Attma加速发现的科学家",
+      "button": "免费开始",
+      "noCredit": "无需信用卡。立即从我们的免费计划开始。"
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "专家支持",
+        "description": "从我们的生物信息学专家团队获取个性化帮助"
+      },
+      "research": {
+        "title": "研究合作",
+        "description": "探索与我们研究团队合作的机会"
+      },
+      "response": {
+        "title": "快速响应",
+        "description": "我们通常在24小时内回复所有咨询"
+      },
+      "privacy": {
+        "title": "数据隐私",
+        "description": "您的研究数据和通信保持安全和保密"
+      }
+    },
+    "stats": {
+      "title": "全球研究人员信赖之选",
+      "subtitle": "我们的人工智能平台正在帮助科学家加速研究并更快取得突破。",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "99.9%",
+          "label": "准确率",
+          "description": "在序列比对和分析中"
+        },
+        {
+          "id": "speed",
+          "number": "10倍",
+          "label": "分析速度更快",
+          "description": "与传统方法相比"
+        },
+        {
+          "id": "papers",
+          "number": "5,000+",
+          "label": "研究论文",
+          "description": "已处理和参考"
+        },
+        {
+          "id": "users",
+          "number": "1,000+",
+          "label": "科学家",
+          "description": "每日使用Attma"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "title": "满足各类研究需求的价格方案",
+    "subtitle": "为您的生物信息学研究之旅选择合适的方案，从个人研究者到大型机构",
+    "flexiblePlans": "灵活方案",
+    "plans": {
+      "free": {
+        "title": "免费",
+        "price": "¥0",
+        "description": "适合初次接触人工智能生物信息学的个人研究者",
+        "button": "立即开始",
+        "features": [
+          "每月100次AI分析查询",
+          "基础序列分析",
+          "5GB数据存储",
+          "公共数据集访问",
+          "社区支持",
+          "标准可视化"
+        ]
+      },
+      "pro": {
+        "title": "专业版",
+        "price": "¥349",
+        "description": "适合需要高级分析和协作功能的研究团队",
+        "button": "开始免费试用",
+        "features": [
+          "每月2,500次AI分析查询",
+          "高级序列分析",
+          "100GB数据存储",
+          "团队协作(最多10人)",
+          "API访问权限",
+          "优先支持",
+          "高级可视化",
+          "基础合规功能"
+        ]
+      },
+      "enterprise": {
+        "title": "企业版",
+        "price": "定制",
+        "description": "为具有专业研究需求的机构量身定制的解决方案",
+        "button": "联系销售团队",
+        "features": [
+          "无限AI分析",
+          "自定义算法开发",
+          "无限存储空间",
+          "无限团队成员",
+          "专属支持",
+          "定制模型训练",
+          "高级合规性(HIPAA, GxP)",
+          "本地部署选项"
+        ]
+      }
+    },
+    "comparison": {
+      "title": "功能对比",
+      "caption": "所有方案的详细功能对比",
+      "allPlansInclude": "所有方案均包含我们的核心分析平台。",
+      "viewComparison": "查看完整功能对比",
+      "columns": {
+        "feature": "功能",
+        "free": "免费",
+        "pro": "专业版",
+        "enterprise": "企业版"
+      },
+      "features": [
+        {
+          "name": "AI分析查询",
+          "free": "每月100次",
+          "pro": "每月2,500次",
+          "enterprise": "无限",
+          "tooltip": ""
+        },
+        {
+          "name": "序列分析",
+          "free": "基础",
+          "pro": "高级",
+          "enterprise": "自定义算法",
+          "tooltip": ""
+        },
+        {
+          "name": "数据存储",
+          "free": "5GB",
+          "pro": "100GB",
+          "enterprise": "无限",
+          "tooltip": ""
+        },
+        {
+          "name": "研究协作",
+          "free": false,
+          "pro": "最多10名成员",
+          "enterprise": "无限",
+          "tooltip": ""
+        },
+        {
+          "name": "API访问",
+          "free": false,
+          "pro": true,
+          "enterprise": true,
+          "tooltip": "访问Attma的API以集成到您的研究工作流程"
+        },
+        {
+          "name": "优先支持",
+          "free": false,
+          "pro": "24-48小时",
+          "enterprise": "专属支持",
+          "tooltip": ""
+        },
+        {
+          "name": "自定义模型训练",
+          "free": false,
+          "pro": false,
+          "enterprise": true,
+          "tooltip": ""
+        },
+        {
+          "name": "合规功能",
+          "free": false,
+          "pro": "基础",
+          "enterprise": "高级(HIPAA, GxP)",
+          "tooltip": "针对敏感研究数据的安全和监管合规措施"
+        }
+      ]
+    },
+    "faq": {
+      "title": "常见问题",
+      "subtext": "查找关于我们价格方案的常见问题解答。",
+      "questions": {
+        "1": {
+          "question": "我可以随时更换方案吗？",
+          "answer": "是的，您可以随时升级或降级您的方案。升级时，新功能将立即可用。降级时，变更将在您下一个计费周期开始时生效。"
+        },
+        "2": {
+          "question": "您提供学术折扣吗？",
+          "answer": "是的，我们为学术机构、学生和非营利研究组织提供特别价格。请联系我们的销售团队了解更多信息。"
+        },
+        "3": {
+          "question": "您接受哪些付款方式？",
+          "answer": "我们接受所有主要信用卡(Visa、Mastercard、American Express)，以及针对年度企业订阅的发票付款。"
+        },
+        "4": {
+          "question": "专业版有免费试用吗？",
+          "answer": "是的，我们为专业版提供14天免费试用，让您无需提前提供付款信息即可完全访问所有专业版功能。"
+        },
+        "5": {
+          "question": "当我达到查询限制时会发生什么？",
+          "answer": "当您达到月度查询限制时，您将收到通知，并可选择升级到更高级别。您不会丢失任何现有数据或分析。"
+        },
+        "6": {
+          "question": "我的研究数据在Attma上有多安全？",
+          "answer": "我们非常重视数据安全。所有数据在传输和存储时均进行加密。企业版计划包括额外的安全功能和合规选项，如HIPAA和GxP。"
+        }
+      }
+    },
+    "cta": {
+      "customSolution": "需要定制解决方案？",
+      "description": "我们的团队可以创建针对您特定研究需求和机构需要优化的定制价格方案。",
+      "buttonText": "联系我们团队"
+    }
+  },
+  "contact": {
+    "title": "联系我们的团队",
+    "subtitle": "对Attma有疑问或想了解更多我们的人工智能平台如何加速您的生物信息学研究？我们随时为您提供帮助。",
+    "form": {
+      "firstName": "名",
+      "lastName": "姓",
+      "email": "电子邮箱地址",
+      "company": "组织/机构",
+      "researchArea": "研究领域",
+      "message": "留言",
+      "submit": "发送消息",
+      "policy": "提交此表单即表示您同意我们的隐私政策，并同意就您的询问与您联系。"
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "专家支持",
+        "description": "从我们的生物信息学专家团队获取个性化帮助"
+      },
+      "research": {
+        "title": "研究合作",
+        "description": "探索与我们研究团队合作的机会"
+      },
+      "response": {
+        "title": "快速响应",
+        "description": "我们通常在24小时内回复所有咨询"
+      },
+      "privacy": {
+        "title": "数据隐私",
+        "description": "您的研究数据和通信保持安全和保密"
+      }
+    },
+    "researchAreas": {
+      "genomics": "基因组学",
+      "proteomics": "蛋白质组学",
+      "drugDiscovery": "药物发现",
+      "medicalImaging": "医学影像",
+      "clinicalTrials": "临床试验",
+      "other": "其他"
+    },
+    "errors": {
+      "general": "发生意外错误。请稍后再试。",
+      "required": "此字段为必填项",
+      "invalidEmail": "请输入有效的电子邮箱地址",
+      "submission": "提交表单时出错。请重试。"
+    },
+    "success": {
+      "title": "感谢您与我们联系！",
+      "message": "我们已收到您的消息，将尽快回复您。我们的团队通常在工作日24小时内回复。",
+      "button": "返回首页"
+    }
+  }
+}

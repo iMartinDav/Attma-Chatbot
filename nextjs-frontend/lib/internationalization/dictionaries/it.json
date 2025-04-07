@@ -1,0 +1,404 @@
+{
+  "meta": {
+    "title": "Attma - Bioinformatico IA",
+    "description": "Rivoluziona la tua ricerca biologica con analisi potenziate dall'intelligenza artificiale"
+  },
+  "common": {
+    "nav": {
+      "features": "Funzionalità",
+      "pricing": "Prezzi",
+      "cases": "Casi di Studio",
+      "blog": "Risorse",
+      "contact": "Contatti"
+    },
+    "cta": {
+      "start": "Inizia Ora",
+      "console": "Console di Analisi",
+      "learn": "Scopri di Più",
+      "viewPricing": "Visualizza Prezzi"
+    },
+    "footer": {
+      "companyInfo": "Rivoluzionando la ricerca biologica con analisi bioinformatiche potenziate dall'IA.",
+      "stayUpdated": "Resta Aggiornato",
+      "newsletterText": "Iscriviti alla nostra newsletter per ricevere gli ultimi aggiornamenti e progressi nella ricerca.",
+      "newsletterPlaceholder": "La tua email",
+      "newsletterDisclaimer": "Iscrivendoti, accetti la nostra Informativa sulla Privacy e acconsenti a ricevere aggiornamenti.",
+      "rights": "Tutti i diritti riservati",
+      "privacy": "Informativa sulla Privacy",
+      "terms": "Termini di Servizio",
+      "cookies": "Politica dei Cookie",
+      "productTitle": "Prodotto",
+      "companyTitle": "Azienda",
+      "aboutUs": "Chi Siamo",
+      "careers": "Carriere",
+      "docs": "Documentazione"
+    },
+    "languages": {
+      "en": "🇬🇧 English",
+      "es": "🇲🇽 Español",
+      "fr": "🇫🇷 Français",
+      "de": "🇩🇪 Deutsch",
+      "zh": "🇨🇳 中文",
+      "pt": "🇵🇹 Português",
+      "it": "🇮🇹 Italiano"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Il Primo Bioinformatico IA al Mondo",
+      "subtitle": "Rivoluziona la tua analisi di dati biologici con l'IA all'avanguardia",
+      "ctaStart": "Inizia a Conversare",
+      "ctaExplore": "Esplora Funzionalità",
+      "introducing": "Presentiamo Attma"
+    },
+    "features": {
+      "title": "Potenzia la Tua Ricerca",
+      "subtitle": "Analizza dati biologici complessi più rapidamente che mai",
+      "items": [
+        {
+          "id": "sequence-analysis",
+          "title": "Analisi di Sequenze DNA",
+          "description": "Analizza sequenze di DNA e RNA con algoritmi IA all'avanguardia progettati specificamente per dati genomici."
+        },
+        {
+          "id": "pattern-recognition",
+          "title": "Riconoscimento Intelligente di Pattern",
+          "description": "Identifica modelli complessi nei dati biologici e scopri relazioni nascoste che i metodi tradizionali potrebbero non rilevare."
+        },
+        {
+          "id": "nl-interface",
+          "title": "Interfaccia in Linguaggio Naturale",
+          "description": "Poni domande in linguaggio naturale e ottieni risposte immediate e accurate alle tue domande di ricerca."
+        },
+        {
+          "id": "data-viz",
+          "title": "Visualizzazione Dati",
+          "description": "Genera visualizzazioni e report illuminanti dai tuoi complessi dati genomici e proteomici."
+        },
+        {
+          "id": "literature-analysis",
+          "title": "Analisi della Letteratura",
+          "description": "Scansiona, riassumi ed estrai informazioni da migliaia di articoli di ricerca in pochi secondi."
+        },
+        {
+          "id": "security",
+          "title": "Sicuro e Privato",
+          "description": "Mantieni i tuoi dati di ricerca privati e sicuri con misure di sicurezza di livello aziendale."
+        }
+      ]
+    },
+    "cases": {
+      "title": "Storie di Successo",
+      "subtitle": "Scopri come i ricercatori leader utilizzano Attma per accelerare le loro scoperte.",
+      "viewAll": "Visualizza tutti i casi di studio",
+      "readCase": "Leggi caso di studio",
+      "items": [
+        {
+          "id": "rare-diseases",
+          "title": "Analisi Genomica delle Malattie Rare",
+          "description": "Come i ricercatori di Stanford hanno utilizzato Attma per identificare nuove varianti genetiche in pazienti con malattie rare, riducendo il tempo di analisi da settimane a ore.",
+          "tag": "Genomica"
+        },
+        {
+          "id": "drug-discovery",
+          "title": "Accelerazione della Scoperta di Farmaci",
+          "description": "BioPharm Inc. ha sfruttato Attma per analizzare le interazioni proteina-ligando, portando a 3 promettenti candidati farmaci in soli 2 mesi anziché anni.",
+          "tag": "Farmaceutica"
+        },
+        {
+          "id": "covid-tracking",
+          "title": "Monitoraggio Varianti COVID-19",
+          "description": "I ricercatori di salute pubblica utilizzano Attma per monitorare le mutazioni di SARS-CoV-2 e prevedere le proprietà delle varianti dai dati di sequenza in tempo reale.",
+          "tag": "Virologia"
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "Cosa dicono i nostri utenti",
+      "subtitle": "Ricercatori di tutto il mondo si affidano a Attma per il loro lavoro",
+      "items": [
+        {
+          "id": "sarah-johnson",
+          "quote": "Attma ha completamente trasformato il nostro flusso di lavoro di ricerca. Ciò che prima richiedeva settimane ora avviene in minuti.",
+          "name": "Dott.ssa Sarah Johnson",
+          "title": "Ricercatrice Principale, Istituto di Genomica"
+        },
+        {
+          "id": "michael-chen",
+          "quote": "Le capacità di riconoscimento dei pattern sono impareggiabili. Abbiamo scoperto correlazioni nei nostri dati che non avremmo mai trovato manualmente.",
+          "name": "Prof. Michael Chen",
+          "title": "Biologo Computazionale, Università di Ox"
+        },
+        {
+          "id": "emily-rodriguez",
+          "quote": "Come persona con esperienza limitata in bioinformatica, l'interfaccia in linguaggio naturale di Attma rende le analisi complesse accessibili e intuitive.",
+          "name": "Dott.ssa Emily Rodriguez",
+          "title": "Biologa Molecolare, BioTech Labs"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Pronto a trasformare la tua ricerca?",
+      "subtitle": "Unisciti a migliaia di scienziati che accelerano le loro scoperte con Attma",
+      "button": "Inizia Gratuitamente",
+      "noCredit": "Nessuna carta di credito richiesta. Inizia oggi con il nostro piano gratuito."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Supporto Esperto",
+        "description": "Ricevi aiuto personalizzato dal nostro team di specialisti in bioinformatica"
+      },
+      "research": {
+        "title": "Collaborazione di Ricerca",
+        "description": "Esplora opportunità di partnership con il nostro team di ricerca"
+      },
+      "response": {
+        "title": "Risposta Rapida",
+        "description": "Rispondiamo generalmente a tutte le richieste entro 24 ore"
+      },
+      "privacy": {
+        "title": "Privacy dei Dati",
+        "description": "I tuoi dati di ricerca e le comunicazioni rimangono sicuri e confidenziali"
+      }
+    },
+    "stats": {
+      "title": "Fidato dai ricercatori di tutto il mondo",
+      "subtitle": "La nostra piattaforma basata sull'IA sta aiutando gli scienziati ad accelerare la loro ricerca e a ottenere risultati più rapidamente.",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "99,9%",
+          "label": "Tasso di precisione",
+          "description": "Nell'allineamento e analisi delle sequenze"
+        },
+        {
+          "id": "speed",
+          "number": "10x",
+          "label": "Analisi più veloce",
+          "description": "Rispetto ai metodi tradizionali"
+        },
+        {
+          "id": "papers",
+          "number": "5.000+",
+          "label": "Articoli di ricerca",
+          "description": "Elaborati e referenziati"
+        },
+        {
+          "id": "users",
+          "number": "1.000+",
+          "label": "Scienziati",
+          "description": "Che usano Attma quotidianamente"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "title": "Piani Tariffari per Ogni Esigenza di Ricerca",
+    "subtitle": "Scegli il piano giusto per il tuo percorso bioinformatico, dai ricercatori individuali alle grandi istituzioni",
+    "flexiblePlans": "Piani Flessibili",
+    "plans": {
+      "free": {
+        "title": "Gratuito",
+        "price": "€0",
+        "description": "Perfetto per ricercatori individuali che iniziano con la bioinformatica potenziata dall'IA",
+        "button": "Inizia Ora",
+        "features": [
+          "100 query di analisi IA al mese",
+          "Analisi di sequenza di base",
+          "5GB di archiviazione dati",
+          "Accesso a dataset pubblici",
+          "Supporto della community",
+          "Visualizzazioni standard"
+        ]
+      },
+      "pro": {
+        "title": "Pro",
+        "price": "€49",
+        "description": "Per team di ricerca che necessitano di analisi avanzate e funzionalità di collaborazione",
+        "button": "Inizia Prova Gratuita",
+        "features": [
+          "2.500 query di analisi IA al mese",
+          "Analisi di sequenza avanzata",
+          "100GB di archiviazione dati",
+          "Collaborazione in team (fino a 10)",
+          "Accesso API",
+          "Supporto prioritario",
+          "Visualizzazioni avanzate",
+          "Funzionalità di conformità di base"
+        ]
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "price": "Personalizzato",
+        "description": "Soluzioni su misura per istituzioni con requisiti di ricerca specializzati",
+        "button": "Contatta Vendite",
+        "features": [
+          "Analisi IA illimitata",
+          "Sviluppo di algoritmi personalizzati",
+          "Archiviazione illimitata",
+          "Membri del team illimitati",
+          "Supporto dedicato",
+          "Training di modelli personalizzati",
+          "Conformità avanzata (HIPAA, GxP)",
+          "Opzioni di implementazione on-premise"
+        ]
+      }
+    },
+    "comparison": {
+      "title": "Confronto Funzionalità",
+      "caption": "Confronto dettagliato delle funzionalità tra tutti i piani",
+      "allPlansInclude": "Tutti i piani includono la nostra piattaforma di analisi core.",
+      "viewComparison": "Visualizza confronto completo delle funzionalità",
+      "columns": {
+        "feature": "Funzionalità",
+        "free": "Gratuito",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      },
+      "features": [
+        {
+          "name": "Query di Analisi IA",
+          "free": "100 query/mese",
+          "pro": "2.500 query/mese",
+          "enterprise": "Illimitato",
+          "tooltip": ""
+        },
+        {
+          "name": "Analisi di Sequenza",
+          "free": "Base",
+          "pro": "Avanzata",
+          "enterprise": "Algoritmi Personalizzati",
+          "tooltip": ""
+        },
+        {
+          "name": "Archiviazione Dati",
+          "free": "5GB",
+          "pro": "100GB",
+          "enterprise": "Illimitato",
+          "tooltip": ""
+        },
+        {
+          "name": "Collaborazione di Ricerca",
+          "free": false,
+          "pro": "Fino a 10 membri",
+          "enterprise": "Illimitato",
+          "tooltip": ""
+        },
+        {
+          "name": "Accesso API",
+          "free": false,
+          "pro": true,
+          "enterprise": true,
+          "tooltip": "Accesso all'API di Attma per l'integrazione con i tuoi flussi di lavoro di ricerca"
+        },
+        {
+          "name": "Supporto Prioritario",
+          "free": false,
+          "pro": "24-48 ore",
+          "enterprise": "Supporto dedicato",
+          "tooltip": ""
+        },
+        {
+          "name": "Training di Modelli Personalizzati",
+          "free": false,
+          "pro": false,
+          "enterprise": true,
+          "tooltip": ""
+        },
+        {
+          "name": "Funzionalità di Conformità",
+          "free": false,
+          "pro": "Base",
+          "enterprise": "Avanzata (HIPAA, GxP)",
+          "tooltip": "Misure di sicurezza e conformità normativa per dati di ricerca sensibili"
+        }
+      ]
+    },
+    "faq": {
+      "title": "Domande Frequenti",
+      "subtext": "Trova risposte alle domande comuni sui nostri piani tariffari.",
+      "questions": {
+        "1": {
+          "question": "Posso cambiare piano in qualsiasi momento?",
+          "answer": "Sì, puoi passare a un piano superiore o inferiore in qualsiasi momento. Passando a un piano superiore, le nuove funzionalità saranno immediatamente disponibili. Passando a un piano inferiore, la modifica entrerà in vigore all'inizio del prossimo ciclo di fatturazione."
+        },
+        "2": {
+          "question": "Offrite sconti accademici?",
+          "answer": "Sì, offriamo tariffe speciali per istituzioni accademiche, studenti e organizzazioni di ricerca senza scopo di lucro. La preghiamo di contattare il nostro team commerciale per maggiori informazioni."
+        },
+        "3": {
+          "question": "Quali metodi di pagamento accettate?",
+          "answer": "Accettiamo tutte le principali carte di credito (Visa, Mastercard, American Express), nonché la fatturazione per abbonamenti enterprise annuali."
+        },
+        "4": {
+          "question": "È disponibile una prova gratuita per il piano Pro?",
+          "answer": "Sì, offriamo una prova gratuita di 14 giorni per il nostro piano Pro, che ti dà accesso completo a tutte le funzionalità Pro senza richiedere informazioni di pagamento in anticipo."
+        },
+        "5": {
+          "question": "Cosa succede quando raggiungo il mio limite di query?",
+          "answer": "Quando raggiungi il tuo limite mensile di query, verrai avvisato e avrai l'opzione di passare a un livello superiore. Non perderai nessuno dei tuoi dati o analisi esistenti."
+        },
+        "6": {
+          "question": "Quanto sono sicuri i miei dati di ricerca con Attma?",
+          "answer": "Prendiamo molto sul serio la sicurezza dei dati. Tutti i dati sono criptati sia in transito che a riposo. I piani Enterprise includono funzionalità di sicurezza aggiuntive e opzioni di conformità come HIPAA e GxP."
+        }
+      }
+    },
+    "cta": {
+      "customSolution": "Hai bisogno di una soluzione personalizzata?",
+      "description": "Il nostro team può creare un piano tariffario su misura ottimizzato per i tuoi specifici requisiti di ricerca e le esigenze della tua istituzione.",
+      "buttonText": "Contatta il Nostro Team"
+    }
+  },
+  "contact": {
+    "title": "Contatta il nostro team",
+    "subtitle": "Hai domande su Attma o desideri saperne di più su come la nostra piattaforma potenziata dall'IA può accelerare la tua ricerca bioinformatica? Siamo qui per aiutarti.",
+    "form": {
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Indirizzo Email",
+      "company": "Organizzazione/Istituzione",
+      "researchArea": "Area di Ricerca",
+      "message": "Messaggio",
+      "submit": "Invia Messaggio",
+      "policy": "Inviando questo modulo, accetti la nostra Informativa sulla Privacy e consenti di essere contattato riguardo alla tua richiesta."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Supporto Esperto",
+        "description": "Ricevi aiuto personalizzato dal nostro team di specialisti in bioinformatica"
+      },
+      "research": {
+        "title": "Collaborazione di Ricerca",
+        "description": "Esplora opportunità di partnership con il nostro team di ricerca"
+      },
+      "response": {
+        "title": "Risposta Rapida",
+        "description": "Rispondiamo generalmente a tutte le richieste entro 24 ore"
+      },
+      "privacy": {
+        "title": "Privacy dei Dati",
+        "description": "I tuoi dati di ricerca e le comunicazioni rimangono sicuri e confidenziali"
+      }
+    },
+    "researchAreas": {
+      "genomics": "Genomica",
+      "proteomics": "Proteomica",
+      "drugDiscovery": "Scoperta di Farmaci",
+      "medicalImaging": "Imaging Medico",
+      "clinicalTrials": "Studi Clinici",
+      "other": "Altro"
+    },
+    "errors": {
+      "general": "Si è verificato un errore imprevisto. Si prega di riprovare più tardi.",
+      "required": "Questo campo è obbligatorio",
+      "invalidEmail": "Si prega di inserire un indirizzo email valido",
+      "submission": "Si è verificato un errore durante l'invio del modulo. Si prega di riprovare."
+    },
+    "success": {
+      "title": "Grazie per averci contattato!",
+      "message": "Abbiamo ricevuto il tuo messaggio e ti risponderemo il prima possibile. Il nostro team solitamente risponde entro 24 ore nei giorni lavorativi.",
+      "button": "Ritorna alla Pagina Iniziale"
+    }
+  }
+}

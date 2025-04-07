@@ -1,0 +1,12 @@
+{
+  "sourceLanguage": "en",
+  "targetLanguages": ["es", "fr", "de", "zh", "pt", "it"],
+  "inputPath": "./lib/i18n/dictionaries/en.json",
+  "outputPath": "./lib/i18n/dictionaries/{lang}.json",
+  "preserveStructure": true,
+  "missingKeysBehavior": "preserve",
+  "translationOptions": {
+    "quality": "high",
+    "preserveFormatting": true
+  }
+}

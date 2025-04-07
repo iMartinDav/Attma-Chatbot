@@ -1,0 +1,403 @@
+{
+  "meta": {
+    "title": "Attma - KI-Bioinformatiker",
+    "description": "Revolutionieren Sie Ihre biologische Forschung mit KI-gestützter Analyse"
+  },
+  "common": {
+    "nav": {
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "cases": "Fallstudien",
+      "blog": "Ressourcen",
+      "contact": "Kontakt"
+    },
+    "cta": {
+      "start": "Jetzt starten",
+      "console": "Analyse-Konsole",
+      "learn": "Mehr erfahren",
+      "viewPricing": "Preise ansehen"
+    },
+    "footer": {
+      "companyInfo": "Wir revolutionieren die biologische Forschung mit KI-gestützter bioinformatischer Analyse.",
+      "stayUpdated": "Bleiben Sie informiert",
+      "newsletterText": "Abonnieren Sie unseren Newsletter für die neuesten Updates und Forschungsdurchbrüche.",
+      "newsletterPlaceholder": "Ihre E-Mail",
+      "newsletterDisclaimer": "Mit dem Abonnieren stimmen Sie unserer Datenschutzerklärung zu und willigen ein, Updates zu erhalten.",
+      "rights": "Alle Rechte vorbehalten",
+      "privacy": "Datenschutzerklärung",
+      "terms": "Nutzungsbedingungen",
+      "cookies": "Cookie-Richtlinie",
+      "productTitle": "Produkt",
+      "companyTitle": "Unternehmen",
+      "aboutUs": "Über uns",
+      "careers": "Karriere",
+      "docs": "Dokumentation"
+    },
+    "languages": {
+      "en": "🇬🇧 English",
+      "es": "🇲🇽 Español",
+      "fr": "🇫🇷 Français",
+      "de": "🇩🇪 Deutsch",
+      "zh": "🇨🇳 中文",
+      "pt": "🇵🇹 Português"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Der weltweit erste KI-Bioinformatiker",
+      "subtitle": "Revolutionieren Sie Ihre biologische Datenanalyse mit modernster KI",
+      "ctaStart": "Chat starten",
+      "ctaExplore": "Funktionen entdecken",
+      "introducing": "Wir präsentieren Attma"
+    },
+    "features": {
+      "title": "Beschleunigen Sie Ihre Forschung",
+      "subtitle": "Analysieren Sie komplexe biologische Daten schneller als je zuvor",
+      "items": [
+        {
+          "id": "sequence-analysis",
+          "title": "DNA-Sequenzanalyse",
+          "description": "Analysieren Sie DNA- und RNA-Sequenzen mit modernsten KI-Algorithmen, die speziell für genomische Daten entwickelt wurden."
+        },
+        {
+          "id": "pattern-recognition",
+          "title": "Intelligente Mustererkennung",
+          "description": "Identifizieren Sie komplexe Muster in biologischen Daten und decken Sie verborgene Zusammenhänge auf, die herkömmliche Methoden möglicherweise übersehen."
+        },
+        {
+          "id": "nl-interface",
+          "title": "Natürlichsprachliche Schnittstelle",
+          "description": "Stellen Sie Fragen in natürlicher Sprache und erhalten Sie sofortige, präzise Antworten auf Ihre Forschungsfragen."
+        },
+        {
+          "id": "data-viz",
+          "title": "Datenvisualisierung",
+          "description": "Generieren Sie aufschlussreiche Visualisierungen und Berichte aus Ihren komplexen genomischen und proteomischen Daten."
+        },
+        {
+          "id": "literature-analysis",
+          "title": "Literaturanalyse",
+          "description": "Scannen, zusammenfassen und extrahieren Sie Erkenntnisse aus tausenden von Forschungsarbeiten in Sekundenschnelle."
+        },
+        {
+          "id": "security",
+          "title": "Sicher & Privat",
+          "description": "Halten Sie Ihre Forschungsdaten mit unternehmensgerechten Sicherheitsmaßnahmen privat und geschützt."
+        }
+      ]
+    },
+    "cases": {
+      "title": "Erfolgsgeschichten",
+      "subtitle": "Entdecken Sie, wie führende Forscher Attma nutzen, um ihre Entdeckungen zu beschleunigen.",
+      "viewAll": "Alle Fallstudien anzeigen",
+      "readCase": "Fallstudie lesen",
+      "items": [
+        {
+          "id": "rare-diseases",
+          "title": "Genomische Analyse seltener Krankheiten",
+          "description": "Wie Forscher an der Stanford-Universität Attma nutzten, um neue genetische Varianten bei Patienten mit seltenen Krankheiten zu identifizieren und die Analysezeit von Wochen auf Stunden zu reduzieren.",
+          "tag": "Genomik"
+        },
+        {
+          "id": "drug-discovery",
+          "title": "Beschleunigte Arzneimittelentwicklung",
+          "description": "BioPharm Inc. nutzte Attma zur Analyse von Protein-Ligand-Interaktionen, was zu 3 vielversprechenden Medikamentenkandidaten in nur 2 Monaten statt Jahren führte.",
+          "tag": "Pharma"
+        },
+        {
+          "id": "covid-tracking",
+          "title": "COVID-19-Variantenverfolgung",
+          "description": "Forscher im öffentlichen Gesundheitswesen verwenden Attma, um SARS-CoV-2-Mutationen zu überwachen und Varianteneigenschaften aus Sequenzdaten in Echtzeit vorherzusagen.",
+          "tag": "Virologie"
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "Das sagen unsere Nutzer",
+      "subtitle": "Forscher weltweit vertrauen bei ihrer Arbeit auf Attma",
+      "items": [
+        {
+          "id": "sarah-johnson",
+          "quote": "Attma hat unseren Forschungsablauf komplett transformiert. Was früher Wochen dauerte, geschieht jetzt in Minuten.",
+          "name": "Dr. Sarah Johnson",
+          "title": "Leitende Forscherin, Genomics Institute"
+        },
+        {
+          "id": "michael-chen",
+          "quote": "Die Musterkennungsfähigkeiten sind unübertroffen. Wir haben Korrelationen in unseren Daten entdeckt, die wir manuell nie gefunden hätten.",
+          "name": "Prof. Michael Chen",
+          "title": "Computerbiologie, Oxford Universität"
+        },
+        {
+          "id": "emily-rodriguez",
+          "quote": "Als jemand mit begrenzter bioinformatischer Erfahrung macht Attmas natürlichsprachliche Schnittstelle komplexe Analysen zugänglich und intuitiv.",
+          "name": "Dr. Emily Rodriguez",
+          "title": "Molekularbiologin, BioTech Labs"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Bereit, Ihre Forschung zu transformieren?",
+      "subtitle": "Schließen Sie sich tausenden von Wissenschaftlern an, die ihre Entdeckungen mit Attma beschleunigen",
+      "button": "Kostenlos starten",
+      "noCredit": "Keine Kreditkarte erforderlich. Starten Sie noch heute mit unserem kostenlosen Plan."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Experten-Support",
+        "description": "Erhalten Sie personalisierte Hilfe von unserem Team bioinformatischer Spezialisten"
+      },
+      "research": {
+        "title": "Forschungskooperation",
+        "description": "Erkunden Sie Möglichkeiten zur Zusammenarbeit mit unserem Forschungsteam"
+      },
+      "response": {
+        "title": "Schnelle Reaktion",
+        "description": "Wir antworten in der Regel innerhalb von 24 Stunden auf alle Anfragen"
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "description": "Ihre Forschungsdaten und Kommunikation bleiben sicher und vertraulich"
+      }
+    },
+    "stats": {
+      "title": "Vertraut von Forschern weltweit",
+      "subtitle": "Unsere KI-gestützte Plattform hilft Wissenschaftlern, ihre Forschung zu beschleunigen und schneller Durchbrüche zu erzielen.",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "99,9%",
+          "label": "Genauigkeitsrate",
+          "description": "Bei Sequenzausrichtung und -analyse"
+        },
+        {
+          "id": "speed",
+          "number": "10x",
+          "label": "Schnellere Analyse",
+          "description": "Im Vergleich zu herkömmlichen Methoden"
+        },
+        {
+          "id": "papers",
+          "number": "5.000+",
+          "label": "Forschungsarbeiten",
+          "description": "Verarbeitet und referenziert"
+        },
+        {
+          "id": "users",
+          "number": "1.000+",
+          "label": "Wissenschaftler",
+          "description": "Nutzen Attma täglich"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "title": "Preispläne für jeden Forschungsbedarf",
+    "subtitle": "Wählen Sie den richtigen Plan für Ihre bioinformatische Reise, von einzelnen Forschern bis hin zu großen Institutionen",
+    "flexiblePlans": "Flexible Pläne",
+    "plans": {
+      "free": {
+        "title": "Kostenlos",
+        "price": "€0",
+        "description": "Perfekt für Einzelforscher, die mit KI-gestützter Bioinformatik beginnen",
+        "button": "Jetzt starten",
+        "features": [
+          "100 KI-Analyseabfragen / Monat",
+          "Grundlegende Sequenzanalyse",
+          "5 GB Datenspeicher",
+          "Zugriff auf öffentliche Datensätze",
+          "Community-Support",
+          "Standard-Visualisierungen"
+        ]
+      },
+      "pro": {
+        "title": "Pro",
+        "price": "€49",
+        "description": "Für Forschungsteams, die erweiterte Analyse- und Kollaborationsfunktionen benötigen",
+        "button": "Kostenlose Testversion starten",
+        "features": [
+          "2.500 KI-Analyseabfragen / Monat",
+          "Erweiterte Sequenzanalyse",
+          "100 GB Datenspeicher",
+          "Teamzusammenarbeit (bis zu 10)",
+          "API-Zugriff",
+          "Prioritäts-Support",
+          "Erweiterte Visualisierungen",
+          "Grundlegende Compliance-Funktionen"
+        ]
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "price": "Individuell",
+        "description": "Maßgeschneiderte Lösungen für Institutionen mit speziellen Forschungsanforderungen",
+        "button": "Vertrieb kontaktieren",
+        "features": [
+          "Unbegrenzte KI-Analyse",
+          "Benutzerdefinierte Algorithmusentwicklung",
+          "Unbegrenzter Speicherplatz",
+          "Unbegrenzte Teammitglieder",
+          "Dedizierter Support",
+          "Benutzerdefiniertes Modelltraining",
+          "Erweiterte Compliance (HIPAA, GxP)",
+          "On-Premise-Bereitstellungsoptionen"
+        ]
+      }
+    },
+    "comparison": {
+      "title": "Funktionsvergleich",
+      "caption": "Detaillierter Funktionsvergleich über alle Pläne hinweg",
+      "allPlansInclude": "Alle Pläne beinhalten unsere Kern-Analyseplattform.",
+      "viewComparison": "Vollständigen Funktionsvergleich ansehen",
+      "columns": {
+        "feature": "Funktion",
+        "free": "Kostenlos",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      },
+      "features": [
+        {
+          "name": "KI-Analyseabfragen",
+          "free": "100 Abfragen/Monat",
+          "pro": "2.500 Abfragen/Monat",
+          "enterprise": "Unbegrenzt",
+          "tooltip": ""
+        },
+        {
+          "name": "Sequenzanalyse",
+          "free": "Grundlegend",
+          "pro": "Erweitert",
+          "enterprise": "Benutzerdefinierte Algorithmen",
+          "tooltip": ""
+        },
+        {
+          "name": "Datenspeicher",
+          "free": "5GB",
+          "pro": "100GB",
+          "enterprise": "Unbegrenzt",
+          "tooltip": ""
+        },
+        {
+          "name": "Forschungszusammenarbeit",
+          "free": false,
+          "pro": "Bis zu 10 Mitglieder",
+          "enterprise": "Unbegrenzt",
+          "tooltip": ""
+        },
+        {
+          "name": "API-Zugriff",
+          "free": false,
+          "pro": true,
+          "enterprise": true,
+          "tooltip": "Zugriff auf die Attma-API zur Integration in Ihre Forschungsworkflows"
+        },
+        {
+          "name": "Prioritäts-Support",
+          "free": false,
+          "pro": "24-48 Stunden",
+          "enterprise": "Dedizierter Support",
+          "tooltip": ""
+        },
+        {
+          "name": "Benutzerdefiniertes Modelltraining",
+          "free": false,
+          "pro": false,
+          "enterprise": true,
+          "tooltip": ""
+        },
+        {
+          "name": "Compliance-Funktionen",
+          "free": false,
+          "pro": "Grundlegend",
+          "enterprise": "Erweitert (HIPAA, GxP)",
+          "tooltip": "Sicherheits- und regulatorische Compliance-Maßnahmen für sensible Forschungsdaten"
+        }
+      ]
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "subtext": "Finden Sie Antworten auf häufig gestellte Fragen zu unseren Preisplänen.",
+      "questions": {
+        "1": {
+          "question": "Kann ich jederzeit zwischen Plänen wechseln?",
+          "answer": "Ja, Sie können Ihren Plan jederzeit upgraden oder downgraden. Bei einem Upgrade sind die neuen Funktionen sofort verfügbar. Bei einem Downgrade wird die Änderung zu Beginn Ihres nächsten Abrechnungszyklus wirksam."
+        },
+        "2": {
+          "question": "Bieten Sie akademische Rabatte an?",
+          "answer": "Ja, wir bieten spezielle Preise für akademische Einrichtungen, Studenten und gemeinnützige Forschungsorganisationen. Bitte kontaktieren Sie unser Vertriebsteam für weitere Informationen."
+        },
+        "3": {
+          "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+          "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, American Express) sowie Rechnungsstellung für jährliche Enterprise-Abonnements."
+        },
+        "4": {
+          "question": "Gibt es eine kostenlose Testversion für den Pro-Plan?",
+          "answer": "Ja, wir bieten eine 14-tägige kostenlose Testversion für unseren Pro-Plan, die Ihnen vollen Zugriff auf alle Pro-Funktionen gibt, ohne im Voraus Zahlungsinformationen zu verlangen."
+        },
+        "5": {
+          "question": "Was passiert, wenn ich mein Abfragelimit erreiche?",
+          "answer": "Wenn Sie Ihr monatliches Abfragelimit erreichen, werden Sie benachrichtigt und haben die Möglichkeit, auf eine höhere Stufe upzugraden. Sie verlieren keine Ihrer bestehenden Daten oder Analysen."
+        },
+        "6": {
+          "question": "Wie sicher sind meine Forschungsdaten bei Attma?",
+          "answer": "Wir nehmen Datensicherheit äußerst ernst. Alle Daten werden sowohl während der Übertragung als auch im Ruhezustand verschlüsselt. Enterprise-Pläne beinhalten zusätzliche Sicherheitsfunktionen und Compliance-Optionen wie HIPAA und GxP."
+        }
+      }
+    },
+    "cta": {
+      "customSolution": "Benötigen Sie eine maßgeschneiderte Lösung?",
+      "description": "Unser Team kann einen maßgeschneiderten Preisplan erstellen, der auf Ihre spezifischen Forschungsanforderungen und institutionellen Bedürfnisse optimiert ist.",
+      "buttonText": "Unser Team kontaktieren"
+    }
+  },
+  "contact": {
+    "title": "Nehmen Sie Kontakt mit unserem Team auf",
+    "subtitle": "Haben Sie Fragen zu Attma oder möchten Sie mehr darüber erfahren, wie unsere KI-gestützte Plattform Ihre bioinformatische Forschung beschleunigen kann? Wir helfen Ihnen gerne weiter.",
+    "form": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail-Adresse",
+      "company": "Organisation/Institution",
+      "researchArea": "Forschungsbereich",
+      "message": "Nachricht",
+      "submit": "Nachricht senden",
+      "policy": "Durch das Absenden dieses Formulars stimmen Sie unserer Datenschutzerklärung zu und willigen ein, bezüglich Ihrer Anfrage kontaktiert zu werden."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Experten-Support",
+        "description": "Erhalten Sie personalisierte Hilfe von unserem Team bioinformatischer Spezialisten"
+      },
+      "research": {
+        "title": "Forschungskooperation",
+        "description": "Erkunden Sie Möglichkeiten zur Zusammenarbeit mit unserem Forschungsteam"
+      },
+      "response": {
+        "title": "Schnelle Reaktion",
+        "description": "Wir antworten in der Regel innerhalb von 24 Stunden auf alle Anfragen"
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "description": "Ihre Forschungsdaten und Kommunikation bleiben sicher und vertraulich"
+      }
+    },
+    "researchAreas": {
+      "genomics": "Genomik",
+      "proteomics": "Proteomik",
+      "drugDiscovery": "Arzneimittelentwicklung",
+      "medicalImaging": "Medizinische Bildgebung",
+      "clinicalTrials": "Klinische Studien",
+      "other": "Sonstiges"
+    },
+    "errors": {
+      "general": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+      "required": "Dieses Feld ist erforderlich",
+      "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "submission": "Bei der Übermittlung Ihres Formulars ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "success": {
+      "title": "Vielen Dank für Ihre Kontaktaufnahme!",
+      "message": "Wir haben Ihre Nachricht erhalten und werden uns so schnell wie möglich bei Ihnen melden. Unser Team antwortet in der Regel innerhalb von 24 Stunden an Werktagen.",
+      "button": "Zurück zur Startseite"
+    }
+  }
+}
