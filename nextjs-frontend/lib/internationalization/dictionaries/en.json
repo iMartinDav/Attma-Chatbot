@@ -1,0 +1,404 @@
+{
+  "meta": {
+    "title": "Attma - AI Bioinformatician",
+    "description": "Revolutionize your biological research with AI-powered analysis"
+  },
+  "common": {
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "cases": "Case Studies",
+      "blog": "Resources",
+      "contact": "Contact"
+    },
+    "cta": {
+      "start": "Get Started",
+      "console": "Analysis Console",
+      "learn": "Learn More",
+      "viewPricing": "View Pricing"
+    },
+    "footer": {
+      "companyInfo": "Revolutionizing biological research with AI-powered bioinformatic analysis.",
+      "stayUpdated": "Stay Updated",
+      "newsletterText": "Subscribe to our newsletter to receive the latest updates and research breakthroughs.",
+      "newsletterPlaceholder": "Your email",
+      "newsletterDisclaimer": "By subscribing, you agree to our Privacy Policy and consent to receive updates.",
+      "rights": "All rights reserved",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy",
+      "productTitle": "Product",
+      "companyTitle": "Company",
+      "aboutUs": "About Us",
+      "careers": "Careers",
+      "docs": "Documentation"
+    },
+    "languages": {
+      "en": "🇬🇧 English",
+      "es": "🇲🇽 Español",
+      "fr": "🇫🇷 Français",
+      "de": "🇩🇪 Deutsch",
+      "zh": "🇨🇳 中文",
+      "pt": "🇵🇹 Português",
+      "it": "🇮🇹 Italiano"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "The World's First AI Bioinformatician",
+      "subtitle": "Revolutionize your biological data analysis with cutting-edge AI",
+      "ctaStart": "Start Conversation",
+      "ctaExplore": "Explore Features",
+      "introducing": "Introducing Attma"
+    },
+    "features": {
+      "title": "Supercharge Your Research",
+      "subtitle": "Analyze complex biological data faster than ever before",
+      "items": [
+        {
+          "id": "sequence-analysis",
+          "title": "DNA Sequence Analysis",
+          "description": "Analyze DNA and RNA sequences with state-of-the-art AI algorithms designed specifically for genomic data."
+        },
+        {
+          "id": "pattern-recognition",
+          "title": "Smart Pattern Recognition",
+          "description": "Identify complex patterns in biological data and uncover hidden relationships that traditional methods might miss."
+        },
+        {
+          "id": "nl-interface",
+          "title": "Natural Language Interface",
+          "description": "Ask questions in plain English and get immediate, accurate answers to your research questions."
+        },
+        {
+          "id": "data-viz",
+          "title": "Data Visualization",
+          "description": "Generate insightful visualizations and reports from your complex genomic and proteomic data."
+        },
+        {
+          "id": "literature-analysis",
+          "title": "Literature Analysis",
+          "description": "Scan, summarize, and extract insights from thousands of research papers in seconds."
+        },
+        {
+          "id": "security",
+          "title": "Secure & Private",
+          "description": "Keep your research data private with enterprise-grade security measures."
+        }
+      ]
+    },
+    "cases": {
+      "title": "Success Stories",
+      "subtitle": "Discover how leading researchers are using Attma to accelerate their discoveries.",
+      "viewAll": "View all case studies",
+      "readCase": "Read case study",
+      "items": [
+        {
+          "id": "rare-diseases",
+          "title": "Genomic Analysis of Rare Diseases",
+          "description": "How researchers at Stanford used Attma to identify novel genetic variants in rare disease patients, reducing analysis time from weeks to hours.",
+          "tag": "Genomics"
+        },
+        {
+          "id": "drug-discovery",
+          "title": "Accelerated Drug Discovery",
+          "description": "BioPharm Inc. leveraged Attma to analyze protein-ligand interactions, resulting in 3 promising drug candidates in just 2 months instead of years.",
+          "tag": "Pharmaceutical"
+        },
+        {
+          "id": "covid-tracking",
+          "title": "COVID-19 Variant Tracking",
+          "description": "Public health researchers use Attma to monitor SARS-CoV-2 mutations and predict variant properties from sequence data in real-time.",
+          "tag": "Virology"
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "subtitle": "Researchers around the world trust Attma for their work",
+      "items": [
+        {
+          "id": "sarah-johnson",
+          "quote": "Attma has completely transformed our research workflow. What used to take weeks now happens in minutes.",
+          "name": "Dr. Sarah Johnson",
+          "title": "Principal Researcher, Genomics Institute"
+        },
+        {
+          "id": "michael-chen",
+          "quote": "The pattern recognition capabilities are unmatched. We've discovered correlations in our data that we never would have found manually.",
+          "name": "Prof. Michael Chen",
+          "title": "Computational Biologist, Oxford University"
+        },
+        {
+          "id": "emily-rodriguez",
+          "quote": "As someone with limited bioinformatics experience, Attma's natural language interface makes complex analyses accessible and intuitive.",
+          "name": "Dr. Emily Rodriguez",
+          "title": "Molecular Biologist, BioTech Labs"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to transform your research?",
+      "subtitle": "Join thousands of scientists accelerating discoveries with Attma",
+      "button": "Start for Free",
+      "noCredit": "No credit card required. Start today with our free plan."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Expert Support",
+        "description": "Get personalized help from our team of bioinformatics specialists"
+      },
+      "research": {
+        "title": "Research Collaboration",
+        "description": "Explore opportunities for partnerships with our research team"
+      },
+      "response": {
+        "title": "Fast Response",
+        "description": "We typically respond to all inquiries within 24 hours"
+      },
+      "privacy": {
+        "title": "Data Privacy",
+        "description": "Your research data and communications remain secure and confidential"
+      }
+    },
+    "stats": {
+      "title": "Trusted by researchers worldwide",
+      "subtitle": "Our AI-powered platform is helping scientists accelerate their research and make breakthroughs faster.",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "99.9%",
+          "label": "Accuracy rate",
+          "description": "In sequence alignment and analysis"
+        },
+        {
+          "id": "speed",
+          "number": "10x",
+          "label": "Faster analysis",
+          "description": "Compared to traditional methods"
+        },
+        {
+          "id": "papers",
+          "number": "5,000+",
+          "label": "Research papers",
+          "description": "Processed and referenced"
+        },
+        {
+          "id": "users",
+          "number": "1,000+",
+          "label": "Scientists",
+          "description": "Using Attma daily"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "title": "Pricing Plans for Every Research Need",
+    "subtitle": "Choose the right plan for your bioinformatics journey, from individual researchers to large institutions",
+    "flexiblePlans": "Flexible Plans",
+    "plans": {
+      "free": {
+        "title": "Free",
+        "price": "$0",
+        "description": "Perfect for individual researchers starting with AI-powered bioinformatics",
+        "button": "Get Started",
+        "features": [
+          "100 AI analysis queries / month",
+          "Basic sequence analysis",
+          "5GB data storage",
+          "Public dataset access",
+          "Community support",
+          "Standard visualizations"
+        ]
+      },
+      "pro": {
+        "title": "Pro",
+        "price": "$49",
+        "description": "For research teams that need advanced analysis and collaboration features",
+        "button": "Start Free Trial",
+        "features": [
+          "2,500 AI analysis queries / month",
+          "Advanced sequence analysis",
+          "100GB data storage",
+          "Team collaboration (up to 10)",
+          "API access",
+          "Priority support",
+          "Advanced visualizations",
+          "Basic compliance features"
+        ]
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "price": "Custom",
+        "description": "Tailored solutions for institutions with specialized research requirements",
+        "button": "Contact Sales",
+        "features": [
+          "Unlimited AI analysis",
+          "Custom algorithm development",
+          "Unlimited storage",
+          "Unlimited team members",
+          "Dedicated support",
+          "Custom model training",
+          "Advanced compliance (HIPAA, GxP)",
+          "On-premise deployment options"
+        ]
+      }
+    },
+    "comparison": {
+      "title": "Feature Comparison",
+      "caption": "Detailed feature comparison across all plans",
+      "allPlansInclude": "All plans include our core analysis platform.",
+      "viewComparison": "View full feature comparison",
+      "columns": {
+        "feature": "Feature",
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      },
+      "features": [
+        {
+          "name": "AI Analysis Queries",
+          "free": "100 queries/month",
+          "pro": "2,500 queries/month",
+          "enterprise": "Unlimited",
+          "tooltip": ""
+        },
+        {
+          "name": "Sequence Analysis",
+          "free": "Basic",
+          "pro": "Advanced",
+          "enterprise": "Custom Algorithms",
+          "tooltip": ""
+        },
+        {
+          "name": "Data Storage",
+          "free": "5GB",
+          "pro": "100GB",
+          "enterprise": "Unlimited",
+          "tooltip": ""
+        },
+        {
+          "name": "Research Collaboration",
+          "free": false,
+          "pro": "Up to 10 members",
+          "enterprise": "Unlimited",
+          "tooltip": ""
+        },
+        {
+          "name": "API Access",
+          "free": false,
+          "pro": true,
+          "enterprise": true,
+          "tooltip": "Access to Attma's API for integration with your research workflows"
+        },
+        {
+          "name": "Priority Support",
+          "free": false,
+          "pro": "24-48 hours",
+          "enterprise": "Dedicated support",
+          "tooltip": ""
+        },
+        {
+          "name": "Custom Model Training",
+          "free": false,
+          "pro": false,
+          "enterprise": true,
+          "tooltip": ""
+        },
+        {
+          "name": "Compliance Features",
+          "free": false,
+          "pro": "Basic",
+          "enterprise": "Advanced (HIPAA, GxP)",
+          "tooltip": "Security and regulatory compliance measures for sensitive research data"
+        }
+      ]
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtext": "Find answers to common questions about our pricing plans.",
+      "questions": {
+        "1": {
+          "question": "Can I switch plans at any time?",
+          "answer": "Yes, you can upgrade or downgrade your plan at any time. When upgrading, new features will be immediately available. When downgrading, the change will take effect at the start of your next billing cycle."
+        },
+        "2": {
+          "question": "Do you offer academic discounts?",
+          "answer": "Yes, we offer special pricing for academic institutions, students, and non-profit research organizations. Please contact our sales team for more information."
+        },
+        "3": {
+          "question": "What payment methods do you accept?",
+          "answer": "We accept all major credit cards (Visa, Mastercard, American Express), as well as invoicing for annual enterprise subscriptions."
+        },
+        "4": {
+          "question": "Is there a free trial for the Pro plan?",
+          "answer": "Yes, we offer a 14-day free trial of our Pro plan, giving you full access to all Pro features without requiring payment information upfront."
+        },
+        "5": {
+          "question": "What happens when I reach my query limit?",
+          "answer": "When you reach your monthly query limit, you will be notified and have the option to upgrade to a higher tier. You won't lose any of your existing data or analyses."
+        },
+        "6": {
+          "question": "How secure is my research data with Attma?",
+          "answer": "We take data security very seriously. All data is encrypted both in transit and at rest. Enterprise plans include additional security features and compliance options such as HIPAA and GxP."
+        }
+      }
+    },
+    "cta": {
+      "customSolution": "Need a custom solution?",
+      "description": "Our team can create a tailored pricing plan optimized for your specific research requirements and institutional needs.",
+      "buttonText": "Contact Our Team"
+    }
+  },
+  "contact": {
+    "title": "Get in touch with our team",
+    "subtitle": "Have questions about Attma or want to learn more about how our AI-powered platform can accelerate your bioinformatics research? We're here to help.",
+    "form": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "company": "Organization/Institution",
+      "researchArea": "Research Area",
+      "message": "Message",
+      "submit": "Send Message",
+      "policy": "By submitting this form, you agree to our Privacy Policy and consent to being contacted regarding your inquiry."
+    },
+    "benefits": {
+      "expertSupport": {
+        "title": "Expert Support",
+        "description": "Get personalized help from our team of bioinformatics specialists"
+      },
+      "research": {
+        "title": "Research Collaboration",
+        "description": "Explore opportunities for partnerships with our research team"
+      },
+      "response": {
+        "title": "Fast Response",
+        "description": "We typically respond to all inquiries within 24 hours"
+      },
+      "privacy": {
+        "title": "Data Privacy",
+        "description": "Your research data and communications remain secure and confidential"
+      }
+    },
+    "researchAreas": {
+      "genomics": "Genomics",
+      "proteomics": "Proteomics",
+      "drugDiscovery": "Drug Discovery",
+      "medicalImaging": "Medical Imaging",
+      "clinicalTrials": "Clinical Trials",
+      "other": "Other"
+    },
+    "errors": {
+      "general": "An unexpected error occurred. Please try again later.",
+      "required": "This field is required",
+      "invalidEmail": "Please enter a valid email address",
+      "submission": "An error occurred while submitting your form. Please try again."
+    },
+    "success": {
+      "title": "Thank you for contacting us!",
+      "message": "We've received your message and will get back to you as soon as possible. Our team typically responds within 24 hours during business days.",
+      "button": "Return to Home Page"
+    }
+  }
+}
