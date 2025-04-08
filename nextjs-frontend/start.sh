@@ -1,7 +1,13 @@
 #!/bin/bash
 
-pnpm run dev &
+# Exit on error
+set -e
 
-node watcher.js
+echo "Starting Attma Chatbot Frontend..."
 
+# Start Next.js development server
+echo "Starting Next.js development server..."
+pnpm run dev
+
+# Wait for the process to complete
 wait

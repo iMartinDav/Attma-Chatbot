@@ -18,6 +18,12 @@ COPY . .
 # Build the application
 RUN pnpm build
 
+# The node:20-bookworm image already has node user and group
+# No need to create them again
+
+# Set ownership of the app directory
+RUN chown -R node:node /app
+
 # Switch to non-root user
 USER node
 
