@@ -83,10 +83,8 @@ services:
       OPENAPI_OUTPUT_FILE: ./shared-data/openapi.json
     volumes:
       - ./nextjs-frontend:/app
-      - nextjs-node-modules:/app/node_modules
+      - ./nextjs-frontend/node_modules:/app/node_modules
       - ./local-shared-data:/app/shared-data
-    depends_on:
-      - backend
   mailhog:
     image: mailhog/mailhog
     container_name: mail-server

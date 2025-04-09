@@ -36,7 +36,9 @@ test-frontend: ## Run frontend tests using npm
 
 # Docker commands
 .PHONY: docker-backend-shell docker-frontend-shell docker-build docker-build-backend \
-        docker-build-frontend docker-start-backend docker-start-frontend docker-up-test-db \
+        docker-build-frontend docker-start-backend docker-start-frontend docker-up docker-up-detached \
+        docker-up-backend docker-up-frontend docker-down docker-up-test-db \
+        docker-logs-frontend docker-logs-backend docker-logs \
         docker-migrate-db docker-db-schema docker-test-backend docker-test-frontend
 
 
@@ -55,11 +57,29 @@ docker-build-backend: ## Build the backend container with no cache
 docker-build-frontend: ## Build the frontend container with no cache
 	$(DOCKER_COMPOSE) build frontend --no-cache
 
-docker-start-backend: ## Start the backend container
+docker-start-backend: ## Start the backend container in the foreground
+	-$(DOCKER_COMPOSE) stop backend
 	$(DOCKER_COMPOSE) up backend
 
-docker-start-frontend: ## Start the frontend container
+docker-start-frontend: ## Start the frontend container in the foreground and always show logs
+	-$(DOCKER_COMPOSE) stop frontend
 	$(DOCKER_COMPOSE) up frontend
+
+docker-up: ## Start all containers in the foreground
+	$(DOCKER_COMPOSE) up
+
+docker-up-detached: ## Start all containers in the background
+	$(DOCKER_COMPOSE) up -d
+
+docker-up-backend: ## Start the backend container and its dependencies in the background
+	$(DOCKER_COMPOSE) up -d db
+	$(DOCKER_COMPOSE) up -d backend
+
+docker-up-frontend: ## Start the frontend container in the background
+	$(DOCKER_COMPOSE) up -d frontend
+
+docker-down: ## Stop and remove all containers
+	$(DOCKER_COMPOSE) down
 
 docker-up-test-db: ## Start the test database container
 	$(DOCKER_COMPOSE) up db_test
@@ -75,6 +95,15 @@ docker-test-backend: ## Run tests for the backend
 
 docker-test-frontend: ## Run tests for the frontend
 	$(DOCKER_COMPOSE) run --rm frontend pnpm run test
+
+docker-logs-frontend: ## View logs of the frontend container
+	$(DOCKER_COMPOSE) logs -f frontend
+
+docker-logs-backend: ## View logs of the backend container
+	$(DOCKER_COMPOSE) logs -f backend
+
+docker-logs: ## View logs of all containers
+	$(DOCKER_COMPOSE) logs -f
 
 # Custom commands for dataprep and bioflow
 .PHONY: dataprep-init bioflow-demo
