@@ -23,6 +23,7 @@ from .database import get_user_db
 from .email import send_reset_password_email
 from .models import User
 from .schemas import UserCreate
+from .drizzle import sync_user_with_drizzle, get_user_by_email
 
 AUTH_URL_PATH = "auth"
 
@@ -33,6 +34,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")
+        await sync_user_with_drizzle(user)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
@@ -62,6 +64,41 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
         if errors:
             raise InvalidPasswordException(reason=errors)
+
+    async def reset_password(
+        self, token: str, password: str, request: Optional[Request] = None
+    ):
+        user_id = await verify_password_reset_token(token)
+        if user_id is None:
+            raise self.password_reset_exception
+        
+        user_uuid = uuid.UUID(user_id)
+        user = await self.get(user_uuid)
+        if user is None:
+            raise self.password_reset_exception
+        
+        updated_user = await self.update(
+            user_update={"password": password},
+            user=user,
+            safe=False,
+            request=request,
+        )
+        
+        await sync_user_with_drizzle(updated_user)
+        
+        return updated_user
+
+    async def on_after_verify(
+        self, user: User, request: Optional[Request] = None
+    ):
+        print(f"User {user.id} has verified their email.")
+        await sync_user_with_drizzle(user)
+
+    async def on_after_update(
+        self, user: User, update_dict: dict, request: Optional[Request] = None
+    ):
+        print(f"User {user.id} has been updated.")
+        await sync_user_with_drizzle(user)
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
