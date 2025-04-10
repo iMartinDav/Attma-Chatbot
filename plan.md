@@ -34,14 +34,14 @@ The goal is to unify these into a single database system using the frontend's Ne
   - Add error handling and retries
   - Commit: "feat: Add database connection layer to share data between FastAPI and Next.js"
 
-## Phase 3: Authentication Integration
-- [ ] Task 3.1: Update User Management
+## Phase 3: Authentication Integration ✅
+- [x] Task 3.1: Update User Management
   - Modify FastAPI Users to work with Drizzle schema
   - Update password hashing to match frontend
   - Integrate with frontend JWT strategy
   - Commit: "feat: update user management for Drizzle integration"
 
-- [ ] Task 3.2: Authentication Flow Updates
+- [x] Task 3.2: Authentication Flow Updates
   - Update login/register endpoints
   - Integrate password reset functionality
   - Update email verification system
