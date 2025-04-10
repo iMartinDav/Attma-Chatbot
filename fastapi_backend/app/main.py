@@ -12,6 +12,7 @@ from .users import auth_backend, fastapi_users, AUTH_URL_PATH
 from .utils import simple_generate_unique_route_id
 from .routes.bioflow import router as bioflow_router
 from .routes.drizzle import router as drizzle_router
+from .routes.auth import router as auth_extended_router
 from .config import settings
 from .middleware import DrizzleSyncMiddleware
 from .drizzle import close_db_pool
@@ -235,6 +236,9 @@ app.include_router(
     prefix="/users",
     tags=["users"],
 )
+
+# Include extended authentication routes
+app.include_router(auth_extended_router)
 
 # Include bioflow routes
 app.include_router(bioflow_router)
