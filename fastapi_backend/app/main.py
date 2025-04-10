@@ -10,9 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from .schemas import UserCreate, UserRead, UserUpdate
 from .users import auth_backend, fastapi_users, AUTH_URL_PATH
 from .utils import simple_generate_unique_route_id
-from .routes.items import router as items_router
 from .routes.bioflow import router as bioflow_router
+from .routes.drizzle import router as drizzle_router
 from .config import settings
+from .middleware import DrizzleSyncMiddleware
+from .drizzle import close_db_pool
 
 # Single cell analysis imports
 try:
@@ -107,6 +109,13 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down FastAPI application")
+    
+    # Close database connection pools
+    try:
+        logger.info("Closing Drizzle database connection pool")
+        await close_db_pool()
+    except Exception as e:
+        logger.warning(f"Error closing database pool: {e}")
 
 # Create FastAPI application
 app = FastAPI(
@@ -117,6 +126,9 @@ app = FastAPI(
     openapi_url=settings.OPENAPI_URL,
     lifespan=lifespan
 )
+
+# Add the DrizzleSyncMiddleware to synchronize user data
+app.add_middleware(DrizzleSyncMiddleware)
 
 # Middleware for CORS configuration
 app.add_middleware(
@@ -224,11 +236,11 @@ app.include_router(
     tags=["users"],
 )
 
-# Include items routes
-app.include_router(items_router, prefix="/items")
-
 # Include bioflow routes
 app.include_router(bioflow_router)
+
+# Include Drizzle database routes
+app.include_router(drizzle_router)
 
 # Health check endpoint
 @app.get("/health", tags=["system"])
