@@ -4,13 +4,93 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi_users.password import PasswordHelper
 import uuid
+import asyncio
+import os
+from asyncpg.pool import Pool
 
 from app.config import settings
 from app.models import User, Base
+from app.drizzle import (
+    close_db_pool,
+    connect_db_pool,
+    get_db_pool,
+    query,
+    execute
+)
 
 from app.database import get_user_db, get_async_session
 from app.main import app
 from app.users import get_jwt_strategy
+
+
+@pytest_asyncio.fixture(scope="session")
+async def drizzle_pool():
+    """Create a test database pool for Drizzle ORM."""
+    # Use a test-specific connection string if specified
+    db_url = settings.TEST_DATABASE_URL or settings.DATABASE_URL
+    
+    # Create a connection pool with minimal connections for testing
+    await connect_db_pool(db_url, min_size=1, max_size=2)
+    
+    yield get_db_pool()
+    
+    # Close all connections after tests
+    await close_db_pool()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def drizzle_transaction():
+    """Create an isolated transaction for each test using Drizzle."""
+    pool = get_db_pool()
+    connection = await pool.acquire()
+    transaction = connection.transaction()
+    await transaction.start()
+    
+    try:
+        yield connection
+    finally:
+        await transaction.rollback()
+        await pool.release(connection)
+
+
+@pytest_asyncio.fixture(scope="function")
+async def authenticated_drizzle_user(test_client, drizzle_transaction):
+    """Create an authenticated user using Drizzle database layer."""
+    user_id = uuid.uuid4()
+    email = "test_drizzle@example.com"
+    password = "TestPassword123#"
+    hashed_password = PasswordHelper().hash(password)
+    
+    # Create user directly with Drizzle
+    await execute(
+        """
+        INSERT INTO "user" (id, email, hashed_password, is_active, is_verified, is_superuser)
+        VALUES ($1, $2, $3, true, true, false)
+        """,
+        user_id, email, hashed_password,
+        connection=drizzle_transaction
+    )
+    
+    # Generate token using the strategy directly
+    user = User(
+        id=user_id,
+        email=email,
+        hashed_password=hashed_password,
+        is_active=True,
+        is_verified=True,
+        is_superuser=False
+    )
+    
+    strategy = get_jwt_strategy()
+    access_token = await strategy.write_token(user)
+    
+    # Return both the headers and the user data
+    return {
+        "headers": {"Authorization": f"Bearer {access_token}"},
+        "user_id": user_id,
+        "email": email,
+        "password": password,
+    }
 
 
 @pytest_asyncio.fixture(scope="function")

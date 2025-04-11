@@ -2,6 +2,8 @@ import { sendEmail } from '@/lib/email/services';
 import { auth } from '@/app/(auth)/auth';
 import { NotionMagicLinkEmail } from '@/emails/notion-magic-link';
 import { ResetPasswordEmail } from '@/emails/reset-password';
+// Import the type directly
+import type { ResetPasswordEmailProps } from '@/emails/reset-password';
 import { WelcomeEmail } from '@/emails/welcome';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
       to: string;
       subject: string;
       template: string;
-      templateData: any;
+      templateData: Record<string, unknown>;
     };
     try {
       body = await request.json();
@@ -72,9 +74,17 @@ export async function POST(request: Request) {
       case 'magic-link':
         emailComponent = NotionMagicLinkEmail(templateData);
         break;
-      case 'reset-password':
-        emailComponent = ResetPasswordEmail(templateData);
+      case 'reset-password': {
+        if (!templateData.resetLink || typeof templateData.resetLink !== 'string') {
+          return Response.json({ error: 'Invalid or missing resetLink' }, { status: 400 });
+        }
+        const resetPasswordData: ResetPasswordEmailProps = {
+          resetLink: templateData.resetLink,
+          username: typeof templateData.username === 'string' ? templateData.username : undefined
+        };
+        emailComponent = ResetPasswordEmail(resetPasswordData);
         break;
+      }
       case 'welcome':
         emailComponent = WelcomeEmail(templateData);
         break;
@@ -99,10 +109,11 @@ export async function POST(request: Request) {
     }
 
     return Response.json({ data }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email sending error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
     return Response.json(
-      { error: error.message || 'An unexpected error occurred' },
+      { error: errorMessage },
       { status: 500 },
     );
   }

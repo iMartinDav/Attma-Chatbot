@@ -118,3 +118,81 @@ async def test_sync_user(app: FastAPI, test_client: AsyncClient, authenticated_c
     assert response.status_code == 200
     assert "detail" in response.json()
     assert "user" in response.json()
+
+# Tests for the new authentication endpoints
+
+@pytest.mark.asyncio
+@patch("app.drizzle.execute", AsyncMock(return_value="OK"))
+@patch.object(UnifiedUserManager, "verify_email", AsyncMock(return_value="user123"))
+async def test_verify_email(app: FastAPI, test_client: AsyncClient):
+    """Test email verification."""
+    # Verify email with valid token
+    response = await test_client.post(
+        "/auth/extended/verify-email",
+        json={"token": "valid_verification_token"}
+    )
+    
+    assert response.status_code == 200
+    assert response.json()["detail"] == "Email successfully verified"
+    assert UnifiedUserManager.verify_email.called
+
+@pytest.mark.asyncio
+@patch.object(UnifiedUserManager, "verify_email", AsyncMock(side_effect=Exception("Invalid token")))
+async def test_verify_email_invalid_token(app: FastAPI, test_client: AsyncClient):
+    """Test email verification with invalid token."""
+    # Verify email with invalid token
+    response = await test_client.post(
+        "/auth/extended/verify-email",
+        json={"token": "invalid_token"}
+    )
+    
+    assert response.status_code == 400
+    assert "error" in response.json()["detail"].lower()
+
+@pytest.mark.asyncio
+@patch("app.drizzle.get_user_by_email", mock_get_user_by_email)
+@patch.object(UnifiedUserManager, "get_by_email", AsyncMock())
+@patch.object(UnifiedUserManager, "request_verify", AsyncMock(return_value="mock_token"))
+@patch.object(UnifiedUserManager, "on_after_request_verify", AsyncMock())
+async def test_request_verification_email(app: FastAPI, test_client: AsyncClient):
+    """Test requesting verification email."""
+    # Setup mock for the user
+    mock_user = User(
+        id=uuid.uuid4(),
+        email="unverified@example.com",
+        hashed_password="hashed_password",
+        is_active=True,
+        is_verified=False,
+        is_superuser=False
+    )
+    UnifiedUserManager.get_by_email.return_value = mock_user
+
+    # Request verification email
+    response = await test_client.post(
+        "/auth/extended/request-verify-email",
+        json={"email": "unverified@example.com"}
+    )
+    
+    assert response.status_code == 200
+    assert "detail" in response.json()
+    assert "verification email" in response.json()["detail"].lower()
+    assert UnifiedUserManager.request_verify.called
+    assert UnifiedUserManager.on_after_request_verify.called
+
+@pytest.mark.asyncio
+@patch("app.drizzle.query", AsyncMock(return_value=[{
+    "id": "session123", 
+    "userId": "user123", 
+    "expiresAt": "2099-01-01T00:00:00"
+}]))
+async def test_session_info(app: FastAPI, test_client: AsyncClient, authenticated_client: AsyncClient):
+    """Test retrieving session information."""
+    # Try to get session info without authentication should fail
+    response = await test_client.post("/auth/extended/session-info")
+    assert response.status_code in (401, 403)  # Either unauthorized or forbidden
+    
+    # Get session info with authentication should succeed
+    response = await authenticated_client.post("/auth/extended/session-info")
+    assert response.status_code == 200
+    assert "user" in response.json()
+    assert "session" in response.json()

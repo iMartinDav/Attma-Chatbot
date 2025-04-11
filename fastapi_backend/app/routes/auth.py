@@ -5,7 +5,7 @@ These routes extend the standard FastAPI Users authentication system with
 additional functionality for working with the Drizzle database.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request, Response
@@ -221,4 +221,118 @@ async def login_extended(
             "is_verified": user.is_verified,
             "is_superuser": user.is_superuser,
         }
+    }
+
+
+@router.post("/verify-email")
+async def verify_email(
+    token: str = Body(..., embed=True),
+    user_manager: UnifiedUserManager = Depends(get_user_manager),
+    request: Request = None,
+):
+    """
+    Verify a user's email using a verification token.
+    
+    Args:
+        token: Email verification token
+        user_manager: User manager dependency
+        request: Request object
+    """
+    try:
+        # Verify token using FastAPI Users manager
+        user_id = await user_manager.verify_email(token, request)
+        
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification token",
+            )
+        
+        # Also update verification status in Drizzle
+        try:
+            verification_time = datetime.utcnow()
+            sql = 'UPDATE "User" SET "emailVerified" = $2 WHERE "id" = $1'
+            await execute(sql, str(user_id), verification_time)
+        except Exception as e:
+            # Log error but don't fail verification if Drizzle update fails
+            print(f"Failed to update email verification status in Drizzle: {e}")
+        
+        return {"detail": "Email successfully verified"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error verifying email: {str(e)}",
+        )
+
+
+@router.post("/request-verify-email")
+async def request_verification_email(
+    email: EmailStr = Body(..., embed=True),
+    user_manager: UnifiedUserManager = Depends(get_user_manager),
+    request: Request = None,
+):
+    """
+    Request a new verification email.
+    
+    Args:
+        email: User email address
+        user_manager: User manager dependency
+        request: Request object
+    """
+    user = await user_manager.get_by_email(email)
+    
+    if user is None:
+        # Return 202 even if user doesn't exist to prevent email enumeration
+        return {"detail": "If the email is valid, a verification email has been sent."}
+    
+    if user.is_verified:
+        return {"detail": "Email already verified"}
+    
+    # Generate verification token
+    token = await user_manager.request_verify(user, request)
+    
+    # Send verification email
+    await user_manager.on_after_request_verify(user, token, request)
+    
+    return {"detail": "Verification email has been sent"}
+
+
+@router.post("/session-info")
+async def get_session_info(
+    user: User = Depends(current_active_user),
+):
+    """
+    Get current user session information.
+    
+    Args:
+        user: Current authenticated user
+    
+    Returns:
+        Dict: User session information
+    """
+    # Get session data from Drizzle if available
+    session_data = None
+    try:
+        sql = """
+        SELECT s.*
+        FROM "Session" s
+        WHERE s."userId" = $1 AND s."expiresAt" > $2
+        ORDER BY s."expiresAt" DESC
+        LIMIT 1
+        """
+        results = await query(sql, str(user.id), datetime.utcnow())
+        if results:
+            session_data = results[0]
+    except Exception as e:
+        print(f"Error retrieving session data: {e}")
+    
+    return {
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified,
+            "is_superuser": user.is_superuser,
+        },
+        "session": session_data
     }

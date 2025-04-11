@@ -8,7 +8,7 @@ import { WelcomeEmail } from '@/emails/welcome';
 type EmailError = {
   message: string;
   statusCode?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 // Add logging and rate tracking

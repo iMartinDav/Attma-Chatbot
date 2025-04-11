@@ -19,21 +19,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 3600
 
-    # Email
-    MAIL_USERNAME: str | None = None
-    MAIL_PASSWORD: str | None = None
-    MAIL_FROM: str | None = None
-    MAIL_SERVER: str | None = None
-    MAIL_PORT: int | None = None
-    MAIL_FROM_NAME: str = "FastAPI template"
-    MAIL_STARTTLS: bool = True
-    MAIL_SSL_TLS: bool = False
-    USE_CREDENTIALS: bool = True
-    VALIDATE_CERTS: bool = True
-    TEMPLATE_DIR: str = "email_templates"
-
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
+    
+    # Email Service
+    EMAIL_API_TOKEN: str = "dummy_token"  # Default value added to make it optional
+    EMAIL_API_ENDPOINT: str = "/api/email"
+    EMAIL_API_MAX_RETRIES: int = 3
+    EMAIL_API_RETRY_DELAY_MS: int = 500
 
     # CORS
     CORS_ORIGINS: Set[str]
