@@ -1,7 +1,7 @@
 import uuid
 import re
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Union, List
 
 from fastapi import Depends, Request, HTTPException
@@ -21,7 +21,7 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 
 from .config import settings
 from .database import get_user_db
-from .email import send_reset_password_email, verify_password_reset_token
+# Removed email import
 from .models import User
 from .schemas import UserCreate, UserUpdate, UserRead
 from .drizzle import sync_user_with_drizzle, get_user_by_email, query, execute
@@ -195,7 +195,38 @@ class UnifiedUserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         """Callback for after forgot password request."""
-        await send_reset_password_email(user, token)
+        # Email functionality removed as part of backend email service removal
+        # Frontend will handle sending password reset emails
+        logger.info(f"Password reset requested for user {user.id}. Token: {token}")
+        
+        # Store the token in Drizzle database
+        try:
+            # First delete any existing token for this user
+            await execute(
+                'DELETE FROM "PasswordReset" WHERE "userId" = $1',
+                str(user.id)
+            )
+            
+            # Create new token entry
+            import secrets
+            token_id = secrets.token_urlsafe(32)
+            expires_at = datetime.utcnow() + timedelta(hours=24)  # Token valid for 24 hours
+            
+            await execute(
+                """
+                INSERT INTO "PasswordReset" ("id", "userId", "token", "expiresAt", "createdAt")
+                VALUES ($1, $2, $3, $4, $5)
+                """,
+                token_id,
+                str(user.id),
+                token,
+                expires_at,
+                datetime.utcnow()
+            )
+            
+            logger.info(f"Password reset token stored for user {user.id}")
+        except Exception as e:
+            logger.error(f"Failed to store password reset token for user {user.id}: {e}")
 
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
@@ -251,8 +282,27 @@ class UnifiedUserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         Raises:
             HTTPException: If the token is invalid or expired
         """
-        user_id = await verify_password_reset_token(token)
-        if user_id is None:
+        # Verify password reset token function implementation (moved from email.py)
+        try:
+            # Check if token exists and is not expired
+            results = await query(
+                """
+                SELECT "userId" FROM "PasswordReset"
+                WHERE "token" = $1 AND "expiresAt" > $2
+                """,
+                token,
+                datetime.utcnow()
+            )
+            
+            if not results:
+                logger.warning(f"Invalid or expired password reset token: {token}")
+                raise self.password_reset_exception
+            
+            # Get user ID from valid token
+            user_id = results[0]["userId"]
+            logger.info(f"Valid password reset token for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error verifying password reset token: {e}")
             raise self.password_reset_exception
         
         user_uuid = uuid.UUID(user_id)

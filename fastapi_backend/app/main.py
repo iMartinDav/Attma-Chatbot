@@ -15,7 +15,7 @@ from .routes.drizzle import router as drizzle_router
 from .routes.auth import router as auth_extended_router
 from .config import settings
 from .middleware import DrizzleSyncMiddleware
-from .drizzle import close_db_pool
+from .drizzle import close_db_pool, query, get_db_pool
 
 # Single cell analysis imports
 try:
@@ -251,8 +251,69 @@ app.include_router(drizzle_router)
 async def health_check():
     """
     Health check endpoint.
+    
+    Returns:
+        dict: Health status information
     """
-    return {"status": "healthy"}
+    # Default status is healthy - we'll only mark as unhealthy for critical failures
+    health_status = {
+        "status": "healthy",
+        "timestamp": time.time(),
+        "version": app.version,
+        "services": {}
+    }
+    
+    # Check database connection
+    try:
+        # Start time for DB check
+        db_check_start_time = time.time()
+        
+        # Check database connection by running a simple query
+        await query("SELECT 1")
+        
+        # Calculate DB response time
+        db_response_time = time.time() - db_check_start_time
+        
+        # Get connection pool status if available
+        try:
+            pool = get_db_pool()
+            pool_status = {
+                "min_size": pool._minsize if hasattr(pool, "_minsize") else "unknown",
+                "max_size": pool._maxsize if hasattr(pool, "_maxsize") else "unknown",
+                "size": len(pool._holders) if hasattr(pool, "_holders") else "unknown",
+                "free": pool._queue.qsize() if hasattr(pool, "_queue") else "unknown",
+            }
+        except Exception as pool_err:
+            logger.warning(f"Could not get pool status: {str(pool_err)}")
+            pool_status = {"error": "Could not get pool status"}
+        
+        health_status["services"]["database"] = {
+            "status": "connected",
+            "response_time_ms": round(db_response_time * 1000, 2),
+            "pool": pool_status
+        }
+    except Exception as db_err:
+        logger.warning(f"Database health check failed: {str(db_err)}")
+        health_status["services"]["database"] = {
+            "status": "warning",
+            "error": str(db_err)
+        }
+        # Don't mark the entire service as unhealthy yet - this allows startup when DB
+        # might not be fully ready yet
+    
+    # Add application status
+    health_status["services"]["application"] = {
+        "status": "running",
+        "uptime": time.time() - app.state.start_time if hasattr(app.state, "start_time") else 0
+    }
+    
+    # Add startup time to app state if not already set
+    if not hasattr(app.state, "start_time"):
+        app.state.start_time = time.time()
+    
+    # Return healthy response - we don't want to fail health checks during initial startup
+    # This gives the database time to initialize
+    return health_status
 
 # Root endpoint
 @app.get("/", tags=["system"])

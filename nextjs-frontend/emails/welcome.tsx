@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 import {
   Body,
   Container,
@@ -25,7 +25,7 @@ const accentColor = '#8A67FF';
 const backgroundColor = '#f9f9fc';
 const textColor = '#303545';
 const secondaryTextColor = '#6B7280';
-const logoUrl = 'https://placehold.co/520x520/4EF9DB/FFFFFF.png?text=Genie';
+const logoUrl = 'https://placehold.co/520x520/4EF9DB/FFFFFF.png?text=Attma';
 const logoBase64 =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADXUlEQVR4nO2Yz08TQRTHN1q8Ad5M9GZI9OjRv8GLJ08m/gEkpAgkoBgwxgMXbh4oiAFjhIQfhcYfBZTwQ6IiJFAEtEhpLQW6P7rd7vaZ9y7dbXe6u7CwZSdM8uY0O29mvt33vn3vNYHAf/nXxePxBdM0V/BxuVlOMJ9Igi7guBEnGsiXGNj54yNnHCWQSBCwHOQqn3EJOBCcUZAveK4IWMGZIF9xTQKW0wTKgau/xcA/p+9t7HAJ/PglAV/vfFqA9DEJ7wilVP5TJdFs/O0SsJzVj+fq4ahe1mQw0NJSNbd0KDWHtVqcddL3cE5ex3OUJUAfiv9mzWrgpZm5VBJYIV90saEAhNME+6oIJXHqLdPXWi2BCvDDUoKsspdQ2ltpBTZ9kX6HvNUXGQCI3UV4Fdn1tiDkv3srwD4/POUFfqGxqa5PzT3CeVnALypeHAueF90EeCQ8lfwCN1/V9YRRTU9B37NRaUbxWNgUu4iIeBavrojo8zLlJQQ9dyKeL4TCdT09VVsQUqyTWFKWdnBKuwkACEMG+bKe0ZeUT47Tz4Qoc0h4MykZOJ+lXx3gLje77wmISiBHZy7tNPQsxNJmFdwhFQmChgAw7CLBN0n0f4fa3gdV8I/paSM5rxtDI0lcO6bpAIfVW+CIWy48A1mNUGhseUkFr84nOBsLHAwLsng3K3xD+UAFZ+o5p6UNgGtQAGsqno9X9IIrM1IMcMmTeSPgT/uzo70KuFPGx8ZVcN4eU5wxDa7TSYArV7sJvLp8q0YFj+lxIpmngWDYuGDsioV3BrvnDp8VG6j+y108d0IBT+YLbHtc0IL/TWgrAIlmtGyl3PcCkxNM/Z418cqmqoBv9V9YVMGroVAsxRUKClwJJbSpTgKiQNb2VkxHxuPEmQ2Bhx4OT9XDh8embHB14zp4csqAF1N4FnBnkeD/HF3XfgKJnz8UDBvYe+sXExnQX/9+f1IBt+CjsZwGfpDGcxrcWTGxZHzZCvFiv3LKcZbcoPqnFIuS9ubftZ41NH95cWNTBWfqOmtyxqrAHbAQ9AfH1c/JTpIykFPArZOI3H1RcFjZ67wX4C9j0Al+lCYaoOiQt7hPAJ4lv43dQQR5w1lBWQI2kZUEX1JAAF+eiGISN042aaFQGPXzXwdS/kkBIkGC/9LO8g8tmDfGJsMDKgAAAABJRU5ErkJggg==';
 
@@ -306,7 +306,7 @@ export const WelcomeEmail = ({
               <td align="center" style={{ padding: '25px 0 35px' }}>
                 <a
                   href={`${baseUrl}/chat`}
-                  target="_blank"
+                  target="_blank" rel="noreferrer"
                   className="button-hover"
                   style={styles.button}
                 >

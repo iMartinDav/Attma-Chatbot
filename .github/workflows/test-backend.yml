@@ -1,0 +1,67 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fastapi_backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'fastapi_backend/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      # Setup Postgres test database
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r fastapi_backend/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          ACCESS_SECRET_KEY: test_secret_key
+          RESET_PASSWORD_SECRET_KEY: test_reset_key
+          VERIFICATION_SECRET_KEY: test_verification_key
+          FRONTEND_URL: http://localhost:3000
+          CORS_ORIGINS: '["http://localhost:3000"]'
+        run: |
+          cd fastapi_backend
+          python -m pytest tests/ -v --cov=app --cov-report=xml
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./fastapi_backend/coverage.xml
+          flags: backend
+          name: fastapi-backend
+          fail_ci_if_error: false

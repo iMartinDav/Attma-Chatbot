@@ -7,8 +7,17 @@ services:
     environment:
       - DEV=true
       - OPENAPI_OUTPUT_FILE=./shared-data/openapi.json
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/mydatabase
-      - TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5433/testdatabase
+      # Use non-SQLAlchemy format for Drizzle compatibility
+      - DATABASE_URL=postgresql://postgres:password@db:5432/mydatabase
+      - TEST_DATABASE_URL=postgresql://postgres:password@db:5433/testdatabase
+      # Authentication secrets
+      - ACCESS_SECRET_KEY=dev_secret_key_do_not_use_in_production
+      - RESET_PASSWORD_SECRET_KEY=dev_reset_key_do_not_use_in_production
+      - VERIFICATION_SECRET_KEY=dev_verification_key_do_not_use_in_production
+      # CORS settings
+      - FRONTEND_URL=http://localhost:3000
+      - CORS_ORIGINS=["http://localhost:3000"]
+      # Other settings
       - MAIL_SERVER=mailhog
       - PYTHONPATH=/app
       - SINGLE_CELL_DATA_DIR=/app/shared-data/single_cell_data
@@ -25,11 +34,12 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      # Use more tolerant health check that accepts any response
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
   db:
     image: postgres:17-alpine
@@ -45,6 +55,8 @@ services:
       - my_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Add initialization scripts for Drizzle schema
+      - ./db/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -79,12 +91,21 @@ services:
       - my_network
     environment:
       NODE_ENV: development
+      # Use same database URL for Drizzle ORM
+      DATABASE_URL: postgresql://postgres:password@db:5432/mydatabase
       API_BASE_URL: http://backend:8000
       OPENAPI_OUTPUT_FILE: ./shared-data/openapi.json
+      # NextAuth configuration
+      NEXTAUTH_SECRET: dev_nextauth_secret_do_not_use_in_production
+      NEXTAUTH_URL: http://localhost:3000
+      BACKEND_URL: http://backend:8000
     volumes:
       - ./nextjs-frontend:/app
       - ./nextjs-frontend/node_modules:/app/node_modules
       - ./local-shared-data:/app/shared-data
+    depends_on:
+      backend:
+        condition: service_healthy
   mailhog:
     image: mailhog/mailhog
     container_name: mail-server

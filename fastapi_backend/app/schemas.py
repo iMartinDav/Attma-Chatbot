@@ -126,3 +126,91 @@ class MessageTable(BaseModel):
     createdAt: datetime = Field(..., description="When message was created")
     updatedAt: datetime = Field(..., description="When message was last updated")
     isDeleted: bool = Field(False, description="Whether message is deleted")
+
+
+from typing import Dict, List, Optional, Any, Union
+from datetime import datetime
+from uuid import UUID
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, ConfigDict
+
+# New schemas for Drizzle API
+class DrizzleUserBase(BaseModel):
+    """Base schema for a user in the Drizzle database."""
+    email: EmailStr
+    name: Optional[str] = None
+    image: Optional[str] = None
+
+class DrizzleUserCreate(DrizzleUserBase):
+    """Schema for creating a user in the Drizzle database."""
+    password: str
+
+
+class DrizzleUserUpdate(DrizzleUserBase):
+    """Schema for updating a user in the Drizzle database."""
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+
+
+class DrizzleUser(DrizzleUserBase):
+    """Schema for a user in the Drizzle database."""
+    id: str
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatBase(BaseModel):
+    """Base schema for a chat."""
+    title: str
+
+
+class ChatCreate(ChatBase):
+    """Schema for creating a chat."""
+    pass
+
+
+class ChatUpdate(BaseModel):
+    """Schema for updating a chat."""
+    title: Optional[str] = None
+
+
+class Chat(ChatBase):
+    """Schema for a chat."""
+    id: str
+    userId: str
+    createdAt: datetime
+    updatedAt: Optional[datetime] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MessageBase(BaseModel):
+    """Base schema for a message."""
+    content: str
+    role: str = Field(default="user")
+
+
+class MessageCreate(MessageBase):
+    """Schema for creating a message."""
+    chatId: str
+
+
+class Message(MessageBase):
+    """Schema for a message."""
+    id: str
+    chatId: str
+    createdAt: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatWithMessages(Chat):
+    """Schema for a chat with messages."""
+    messages: List[Message] = []
+
+
+class ApiResponse(BaseModel):
+    """Schema for a standardized API response."""
+    success: bool
+    data: Optional[Any] = None
+    error: Optional[str] = None
+    meta: Optional[Dict[str, Any]] = None
