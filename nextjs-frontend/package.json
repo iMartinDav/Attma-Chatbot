@@ -91,7 +91,7 @@
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
-    "pdfjs-dist": "^3.11.174",
+    "pdfjs-dist": "^4.2.67",
     "postgres": "^3.4.5",
     "prettier": "^3.5.3",
     "prosemirror-example-setup": "^1.2.3",
