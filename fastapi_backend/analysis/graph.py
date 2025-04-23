@@ -1,5 +1,5 @@
 import os
-from typing import List, TypedDict
+from typing import List, TypedDict, Optional, Union, Dict, Any, Tuple
 import sys
 import rpy2.robjects as ro  # type: ignore
 from dotenv import load_dotenv  # type: ignore
@@ -24,8 +24,11 @@ from backend import global_variables
 from langsmith import Client
 from backend.global_variables import ROOT_PATH
 
-
-
+# New imports for graph storage
+import io
+from datetime import datetime
+from langgraph.constants import CurveStyle
+from langgraph.graph.graph import MermaidDrawMethod
 
 client = Client()
 
@@ -247,14 +250,20 @@ def router(state):
     return "end"
 
 
-def create_graph():
+def create_graph(save_to_file: bool = True, output_file_path: Optional[str] = None) -> Union[None, bytes]:
     """
-    Create the state graph with the ToolNode
+    Create the state graph with the ToolNode and either save it to a file or return it as bytes
+    
+    Args:
+        save_to_file: If True, save to file path; if False, return bytes
+        output_file_path: Path to save the file (if save_to_file is True)
+        
+    Returns:
+        bytes if save_to_file is False, otherwise None
     """
     graph_builder = StateGraph(State)
     graph_builder.add_node("process_file_if_submitted_by_user", check_file_info)
     graph_builder.add_node("chatbot", llm_reasoning)
-    # graph_builder.add_node("finish", finish)
 
     graph_builder.add_node("execute_tool", tool_execution_node)
 
@@ -265,14 +274,83 @@ def create_graph():
         "chatbot",
         router,
         {"call_tool": "execute_tool", "end": END},
-        # {"call_tool": "execute_tool", "end": "finish"},
     )
-
-    # graph_builder.add_edge("finish", END)
 
     graph_builder.add_edge("execute_tool", "chatbot")
 
-    return graph_builder.compile()
+    graph = graph_builder.compile()
+    
+    # Get the graph visualization
+    if save_to_file:
+        # Default path if none provided
+        if output_file_path is None:
+            output_file_path = "../../analysis/graph.png"
+            
+        # Save to file as before
+        graph.get_graph().draw_mermaid_png(
+            curve_style=CurveStyle.LINEAR,
+            wrap_label_n_words=9,
+            output_file_path=output_file_path,
+            draw_method=MermaidDrawMethod.PYPPETEER,
+            background_color="white",
+            padding=10,
+        )
+        return None
+    else:
+        # Return as bytes
+        buffer = io.BytesIO()
+        graph.get_graph().draw_mermaid_png(
+            curve_style=CurveStyle.LINEAR,
+            wrap_label_n_words=9,
+            output_file=buffer,  # Use the buffer instead of a file path
+            draw_method=MermaidDrawMethod.PYPPETEER,
+            background_color="white",
+            padding=10,
+        )
+        buffer.seek(0)
+        return buffer.getvalue()
+
+
+async def create_and_store_graph(
+    title: str,
+    user_id: str,
+    workflow_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, str, Optional[str]]:
+    """
+    Create the graph visualization and store it in Vercel Blob Storage
+    
+    Args:
+        title: Title for the graph visualization
+        user_id: ID of the user who created the graph
+        workflow_id: Optional ID of the associated workflow
+        metadata: Optional additional metadata
+        
+    Returns:
+        Tuple of (success, message, blob_url if successful)
+    """
+    from backend.analysis.utility import store_graph_visualization
+    
+    # Create graph in memory
+    graph_bytes = create_graph(save_to_file=False)
+    
+    if not graph_bytes:
+        return (False, "Failed to generate graph visualization", None)
+    
+    # Store the graph using the utility function
+    success, message, result_data = await store_graph_visualization(
+        graph_data=graph_bytes,
+        title=title,
+        user_id=user_id,
+        workflow_id=workflow_id,
+        metadata=metadata
+    )
+    
+    if success and result_data:
+        blob_url = result_data.get("blob_url")
+        return (True, "Graph visualization stored successfully", blob_url)
+    
+    return (success, message, None)
 
 
 if __name__ == "__main__":
@@ -284,18 +362,8 @@ if __name__ == "__main__":
 
     initialize_environment()
 
-    graph = create_graph()
-
-    from langchain_core.runnables.graph import MermaidDrawMethod, CurveStyle
-
-    graph.get_graph().draw_mermaid_png(
-        curve_style=CurveStyle.LINEAR,
-        wrap_label_n_words=9,
-        output_file_path="../../analysis/graph.png",
-        draw_method=MermaidDrawMethod.PYPPETEER,
-        background_color="white",
-        padding=10,
-    )
+    # Create the graph and save to file (original behavior)
+    graph = create_graph(save_to_file=True)
 
     initial_state = {"messages": [HumanMessage(content="fammi un hvg plot")]}
 
