@@ -190,44 +190,71 @@ function PureMultimodalInput({
    * File upload handler for different file types
    * @returns A properly typed Attachment object or undefined if upload fails
    */
-  const uploadFile = async (file: File): Promise<Attachment | undefined> => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const uploadFile = useCallback(
+    async (file: File): Promise<Attachment | undefined> => {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    // Determine appropriate upload endpoint based on file type
-    let uploadUrl = '/api/files/upload';
-    if (file.type.startsWith('image/')) {
-      uploadUrl = '/api/files/upload/image';
-    } else if (file.type === 'application/pdf') {
-      uploadUrl = '/api/files/upload/pdf';
-    }
+      // Determine appropriate upload endpoint based on file type
+      let uploadUrl = '/api/files/upload';
 
-    try {
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-      });
+      // Check for bioinformatics file types
+      const bioinformaticsExtensions = [
+        '.fastq',
+        '.bam',
+        '.vcf',
+        '.mtx',
+        '.h5ad',
+        '.h5',
+        '.hdf5',
+      ];
+      const fileExtension = file.name
+        .substring(file.name.lastIndexOf('.'))
+        .toLowerCase();
+      const isZipFile =
+        file.type === 'application/zip' || file.name.endsWith('.zip');
+      const isBioinformaticsFile = bioinformaticsExtensions.some((ext) =>
+        file.name.toLowerCase().endsWith(ext),
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
-
-        return {
-          url,
-          name: pathname,
-          contentType: contentType,
-        };
+      // Handle specific file types
+      if (file.type.startsWith('image/')) {
+        uploadUrl = '/api/files/upload/image';
+      } else if (file.type === 'application/pdf') {
+        uploadUrl = '/api/files/upload/pdf';
+      } else if (isZipFile || isBioinformaticsFile) {
+        // Use specialized bioinformatics endpoint
+        uploadUrl = '/api/bioflow/upload';
       }
 
-      // Show error from server response
-      const { error } = await response.json();
-      toast.error(error);
-      return undefined;
-    } catch (error) {
-      toast.error('Failed to upload file, please try again!');
-      return undefined;
-    }
-  };
+      try {
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const { url, pathname, contentType } = data;
+
+          return {
+            url,
+            name: pathname,
+            contentType: contentType,
+          };
+        }
+
+        // Show error from server response
+        const { error } = await response.json();
+        toast.error(error);
+        return undefined;
+      } catch (error) {
+        toast.error('Failed to upload file, please try again!');
+        return undefined;
+      }
+    },
+    [],
+  );
 
   /**
    * Handles file selection from input
@@ -245,9 +272,11 @@ function PureMultimodalInput({
         const uploadedAttachments = await Promise.all(uploadPromises);
 
         // Filter out undefined values and ensure type safety
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment): attachment is Attachment => attachment !== undefined,
-        );
+        const successfullyUploadedAttachments: Array<Attachment> =
+          uploadedAttachments.filter(
+            (attachment: Attachment | undefined): attachment is Attachment =>
+              attachment !== undefined,
+          );
 
         // Add new attachments to existing ones
         setAttachments((currentAttachments) => [
@@ -260,7 +289,7 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile],
   );
 
   /**
@@ -279,9 +308,11 @@ function PureMultimodalInput({
         const uploadedAttachments = await Promise.all(uploadPromises);
 
         // Filter out undefined values and ensure type safety
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment): attachment is Attachment => attachment !== undefined,
-        );
+        const successfullyUploadedAttachments: Array<Attachment> =
+          uploadedAttachments.filter(
+            (attachment: Attachment | undefined): attachment is Attachment =>
+              attachment !== undefined,
+          );
 
         // Add new attachments to existing ones
         setAttachments((currentAttachments) => [
@@ -294,7 +325,7 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile],
   );
 
   /**
