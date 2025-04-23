@@ -11,6 +11,12 @@ from backend import global_variables
 from botocore.exceptions import ClientError
 import zipfile
 from io import BytesIO
+import requests
+from datetime import datetime
+import uuid
+from typing import Optional, Dict, Any, Union, Tuple
+import httpx
+import asyncio
 
 # AWS S3 Configuration
 s3_client = boto3.client(
@@ -19,6 +25,14 @@ s3_client = boto3.client(
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     region_name=os.environ.get("AWS_REGION", global_variables.AWS_REGION),
 )
+
+# Vercel Blob Storage configuration
+VERCEL_BLOB_STORE_ID = os.environ.get("VERCEL_BLOB_STORE_ID")
+VERCEL_API_TOKEN = os.environ.get("VERCEL_API_TOKEN")
+VERCEL_BLOB_API_URL = "https://blob.vercel-storage.com"
+
+# API URL for database operations
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:3000/api")
 
 def plot_violin_mitochondrial_genes(df, plotly=True):
     """
@@ -56,6 +70,224 @@ def plot_violin_mitochondrial_genes(df, plotly=True):
         )
         fig.update_xaxes(tickangle=45)
         fig.show()
+
+async def store_in_vercel_blob(
+    data: bytes, 
+    filename: str, 
+    content_type: str = "image/png"
+) -> Tuple[bool, str, Optional[str]]:
+    """
+    Store data in Vercel Blob Storage
+    
+    Args:
+        data: Bytes data to store
+        filename: Name of the file
+        content_type: MIME type of the content
+        
+    Returns:
+        Tuple of (success, message, url if successful)
+    """
+    if not VERCEL_BLOB_STORE_ID or not VERCEL_API_TOKEN:
+        return (False, "Vercel Blob Storage credentials not configured", None)
+    
+    # Generate a unique filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    filename_with_timestamp = f"{filename.split('.')[0]}_{timestamp}_{unique_id}.{filename.split('.')[-1]}"
+    
+    try:
+        headers = {
+            "Authorization": f"Bearer {VERCEL_API_TOKEN}",
+            "X-Store-ID": VERCEL_BLOB_STORE_ID,
+            "Content-Type": content_type
+        }
+        
+        async with httpx.AsyncClient() as client:
+            # Get upload URL
+            upload_response = await client.post(
+                f"{VERCEL_BLOB_API_URL}/upload",
+                headers=headers,
+                json={"contentType": content_type, "multipart": False}
+            )
+            
+            if upload_response.status_code != 200:
+                return (False, f"Failed to get upload URL: {upload_response.text}", None)
+            
+            upload_data = upload_response.json()
+            upload_url = upload_data.get("uploadUrl")
+            blob_url = upload_data.get("url")
+            
+            # Upload the data
+            put_response = await client.put(
+                upload_url,
+                headers={"Content-Type": content_type},
+                content=data
+            )
+            
+            if put_response.status_code not in (200, 201):
+                return (False, f"Failed to upload data: {put_response.text}", None)
+            
+            return (True, "Upload successful", blob_url)
+    except Exception as e:
+        return (False, f"Error uploading to Vercel Blob Storage: {str(e)}", None)
+
+async def record_graph_metadata(
+    blob_url: str,
+    title: str,
+    user_id: str,
+    workflow_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, str, Optional[str]]:
+    """
+    Record graph metadata in the database
+    
+    Args:
+        blob_url: URL to the stored blob
+        title: Title of the graph
+        user_id: ID of the user who created the graph
+        workflow_id: Optional ID of the associated workflow
+        metadata: Optional additional metadata
+        
+    Returns:
+        Tuple of (success, message, record_id if successful)
+    """
+    try:
+        from fastapi_backend.app.graph_storage import insert_analysis_result
+        
+        # Prepare the metadata
+        full_metadata = metadata or {}
+        full_metadata.update({
+            "title": title,
+            "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+        
+        # Insert the analysis result using our DAL
+        success, message, record_id = await insert_analysis_result(
+            user_id=user_id,
+            analysis_type="visualization",
+            result_type="graph",
+            storage_type="blob",
+            metadata=full_metadata,
+            result_location=blob_url,
+            large_result_blob_id=None  # We're storing the URL instead of the blob ID
+        )
+        
+        return success, message, record_id
+        
+    except Exception as e:
+        return (False, f"Error recording metadata: {str(e)}", None)
+
+async def store_graph_visualization(
+    graph_data: bytes,
+    title: str,
+    user_id: str,
+    workflow_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Store a graph visualization in Vercel Blob Storage and record metadata
+    
+    Args:
+        graph_data: The binary data of the graph visualization
+        title: Title of the graph
+        user_id: ID of the user who created the graph
+        workflow_id: Optional ID of the associated workflow
+        metadata: Optional additional metadata
+        
+    Returns:
+        Tuple of (success, message, data if successful)
+    """
+    # Generate a filename for the graph
+    filename = f"graph_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+    
+    # Store the graph in Vercel Blob Storage
+    success, message, blob_url = await store_in_vercel_blob(
+        data=graph_data,
+        filename=filename,
+        content_type="image/png"
+    )
+    
+    if not success:
+        return (False, message, None)
+    
+    # Record metadata in the database
+    success, message, record_id = await record_graph_metadata(
+        blob_url=blob_url,
+        title=title,
+        user_id=user_id,
+        workflow_id=workflow_id,
+        metadata=metadata
+    )
+    
+    if not success:
+        return (False, message, None)
+    
+    return (True, "Graph stored successfully", {
+        "id": record_id,
+        "url": blob_url,
+        "title": title
+    })
+
+async def store_plot_visualization(
+    plot_data: bytes,
+    title: str,
+    plot_type: str,
+    user_id: str,
+    analysis_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Store a visualization plot in Vercel Blob Storage and record metadata
+    
+    Args:
+        plot_data: The binary data of the plot
+        title: Title of the plot
+        plot_type: Type of the plot (e.g., 'umap', 'violin', etc.)
+        user_id: ID of the user who created the plot
+        analysis_id: Optional ID of the associated analysis
+        metadata: Optional additional metadata
+        
+    Returns:
+        Tuple of (success, message, data if successful)
+    """
+    # Generate a filename for the plot
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{plot_type}_{timestamp}.png"
+    
+    # Store the plot in Vercel Blob Storage
+    success, message, blob_url = await store_in_vercel_blob(
+        data=plot_data,
+        filename=filename,
+        content_type="image/png"
+    )
+    
+    if not success:
+        return (False, message, None)
+    
+    # Record metadata in the database
+    metadata = metadata or {}
+    metadata.update({
+        "plot_type": plot_type,
+        "created_at": timestamp
+    })
+    
+    success, message, record_id = await record_graph_metadata(
+        blob_url=blob_url,
+        title=title,
+        user_id=user_id,
+        workflow_id=analysis_id,
+        metadata=metadata
+    )
+    
+    if not success:
+        return (False, message, None)
+    
+    return (True, "Plot stored successfully", {
+        "id": record_id,
+        "url": blob_url,
+        "title": title,
+        "plot_type": plot_type
+    })
 
 def get_last_uploaded_file_info_from_s3():
     """Get information about the last uploaded file in S3"""
