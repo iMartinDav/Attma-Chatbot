@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
@@ -13,15 +13,17 @@ export const ChatGreeting = ({ user }: ChatGreetingProps) => {
   const { data: session } = useSession();
   const currentUser = user || session?.user;
   const userName = currentUser?.name || 'Friend';
+  const [greeting, setGreeting] = useState('Hello'); // Default greeting
 
-  const getGreeting = () => {
+  useEffect(() => {
+    // Only runs on the client after hydration
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'Good Morning';
-    if (hour >= 12 && hour < 17) return 'Good Afternoon';
-    if (hour >= 17 && hour < 22) return 'Good Evening';
-    if (hour >= 22 || hour < 5) return 'Good Night';
-    return 'Hello';
-  };
+    if (hour >= 5 && hour < 12) setGreeting('Good Morning');
+    else if (hour >= 12 && hour < 17) setGreeting('Good Afternoon');
+    else if (hour >= 17 && hour < 22) setGreeting('Good Evening');
+    else if (hour >= 22 || hour < 5) setGreeting('Good Night');
+    else setGreeting('Hello');
+  }, []); // Empty dependency array ensures it runs once on mount
 
   const greetingVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -41,10 +43,10 @@ export const ChatGreeting = ({ user }: ChatGreetingProps) => {
       animate="visible"
       whileHover="hover"
     >
-      <span>{getGreeting()},</span>
+      <span>{greeting},</span>
       <span className="inline-block">{userName}!</span>
       <span className="inline-flex items-center">
-        I&apos;m
+        I'm
         <motion.span
           className="Attma-text font-bold ml-1"
           whileHover={{ scale: 1.1, rotate: 2 }}

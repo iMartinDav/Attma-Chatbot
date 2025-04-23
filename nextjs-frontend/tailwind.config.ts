@@ -106,12 +106,15 @@ const config: Config = {
       // Enhanced dark mode shadows
       boxShadow: {
         'dark-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.35)',
-        'dark-md': '0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25)',
-        'dark-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px rgba(0, 0, 0, 0.25)',
+        'dark-md':
+          '0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25)',
+        'dark-lg':
+          '0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px rgba(0, 0, 0, 0.25)',
         'soft-sm': '0 2px 4px rgba(37, 198, 163, 0.06)',
         'soft-md': '0 4px 6px rgba(37, 198, 163, 0.1)',
         'soft-lg': '0 10px 15px rgba(37, 198, 163, 0.1)',
-        'glass': '0 0 0 1px rgba(37, 198, 163, 0.05), 0 4px 6px rgba(37, 198, 163, 0.1)',
+        glass:
+          '0 0 0 1px rgba(37, 198, 163, 0.05), 0 4px 6px rgba(37, 198, 163, 0.1)',
       },
       // Custom dark mode background utilities
       backgroundColor: {
@@ -156,7 +159,7 @@ const config: Config = {
         '.dark-glass': {
           'backdrop-filter': 'blur(16px) saturate(120%)',
           'background-color': 'hsl(240 17% 9% / 0.85)',
-          'border': '1px solid hsl(240 3.7% 15.9% / 0.3)',
+          border: '1px solid hsl(240 3.7% 15.9% / 0.3)',
         },
         '.dark-glass-hover': {
           'background-color': 'hsl(240 17% 12% / 0.9)',
@@ -166,17 +169,17 @@ const config: Config = {
         '.glass-light': {
           'backdrop-filter': 'blur(16px) saturate(180%)',
           'background-color': 'rgba(255, 255, 255, 0.8)',
-          'border': '1px solid rgba(37, 198, 163, 0.1)',
+          border: '1px solid rgba(37, 198, 163, 0.1)',
           'box-shadow': '0 4px 6px rgba(37, 198, 163, 0.05)',
         },
         '.glass-card': {
           'background-color': 'rgba(255, 255, 255, 0.9)',
-          'border': '1px solid rgba(37, 198, 163, 0.15)',
+          border: '1px solid rgba(37, 198, 163, 0.15)',
           'box-shadow': '0 4px 6px rgba(37, 198, 163, 0.07)',
         },
         // Scientific interaction states
         '.scientific-hover': {
-          'transition': 'all 0.2s ease',
+          transition: 'all 0.2s ease',
           '&:hover': {
             'background-color': 'rgba(37, 198, 163, 0.05)',
             'border-color': 'rgba(37, 198, 163, 0.3)',

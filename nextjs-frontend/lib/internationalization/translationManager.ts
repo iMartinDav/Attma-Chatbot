@@ -51,8 +51,9 @@ export class TranslationManager {
    * Add a new key to the English source dictionary
    */
   addSourceKey(keyPath: string[], value: string): void {
+    type DictionaryData = { [key: string]: string | DictionaryData };
     const filePath = path.join(this.dictPath, 'en.json');
-    let data: any = {};
+    let data: DictionaryData = {};
 
     try {
       if (fs.existsSync(filePath)) {
@@ -61,12 +62,28 @@ export class TranslationManager {
       }
 
       // Navigate to the correct nested property
-      let current = data;
+      let current: DictionaryData = data;
       for (let i = 0; i < keyPath.length - 1; i++) {
-        if (!current[keyPath[i]]) {
-          current[keyPath[i]] = {};
+        const key = keyPath[i];
+        const nextLevel = current[key];
+
+        if (nextLevel === undefined) {
+          // If the key doesn't exist, create a new object
+          current[key] = {};
+          current = current[key] as DictionaryData; // We just created it as an object
+        } else if (
+          typeof nextLevel === 'object' &&
+          nextLevel !== null &&
+          !Array.isArray(nextLevel)
+        ) {
+          // If it exists and is a non-null, non-array object, proceed
+          current = nextLevel as DictionaryData;
+        } else {
+          // If it exists but is not a traversable object (e.g., a string), throw an error
+          throw new Error(
+            `Invalid key path: "${keyPath.slice(0, i + 1).join('.')}" is not an object.`,
+          );
         }
-        current = current[keyPath[i]];
       }
 
       // Set the value at the final path element
