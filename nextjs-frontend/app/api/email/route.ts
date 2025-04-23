@@ -75,12 +75,21 @@ export async function POST(request: Request) {
         emailComponent = NotionMagicLinkEmail(templateData);
         break;
       case 'reset-password': {
-        if (!templateData.resetLink || typeof templateData.resetLink !== 'string') {
-          return Response.json({ error: 'Invalid or missing resetLink' }, { status: 400 });
+        if (
+          !templateData.resetLink ||
+          typeof templateData.resetLink !== 'string'
+        ) {
+          return Response.json(
+            { error: 'Invalid or missing resetLink' },
+            { status: 400 },
+          );
         }
         const resetPasswordData: ResetPasswordEmailProps = {
           resetLink: templateData.resetLink,
-          username: typeof templateData.username === 'string' ? templateData.username : undefined
+          username:
+            typeof templateData.username === 'string'
+              ? templateData.username
+              : undefined,
         };
         emailComponent = ResetPasswordEmail(resetPasswordData);
         break;
@@ -111,10 +120,8 @@ export async function POST(request: Request) {
     return Response.json({ data }, { status: 200 });
   } catch (error: unknown) {
     console.error('Email sending error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-    return Response.json(
-      { error: errorMessage },
-      { status: 500 },
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unexpected error occurred';
+    return Response.json({ error: errorMessage }, { status: 500 });
   }
 }

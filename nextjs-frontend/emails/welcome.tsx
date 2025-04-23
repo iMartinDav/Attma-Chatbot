@@ -306,7 +306,8 @@ export const WelcomeEmail = ({
               <td align="center" style={{ padding: '25px 0 35px' }}>
                 <a
                   href={`${baseUrl}/chat`}
-                  target="_blank" rel="noreferrer"
+                  target="_blank"
+                  rel="noreferrer"
                   className="button-hover"
                   style={styles.button}
                 >

@@ -1,5 +1,7 @@
 #!/usr/bin/env nextflow
 
+nextflow.enable.dsl=2
+
 // Parameters
 params.input = ""
 params.output_dir = "results"
@@ -8,10 +10,10 @@ process countNonZeroValues {
     publishDir params.output_dir, mode: 'copy'
     
     input:
-    path matrix_file from file(params.input)
+    path matrix_file
     
     output:
-    path "count_results.txt" into results
+    path "count_results.txt"
     
     script:
     """
@@ -59,5 +61,8 @@ process countNonZeroValues {
 }
 
 workflow {
-    countNonZeroValues()
-} 
+    input_ch = Channel.fromPath(params.input)
+    countNonZeroValues(input_ch)
+}
+
+// End of script

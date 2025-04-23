@@ -9,11 +9,11 @@ process normalizeMatrix {
     publishDir params.output_dir, mode: 'copy'
     
     input:
-    path matrix_file from file(params.input)
+    path matrix_file
     
     output:
-    path "normalized_matrix.tsv" into results
-    path "normalization_stats.txt" into stats
+    path "normalized_matrix.tsv"
+    path "normalization_stats.txt"
     
     script:
     """
@@ -25,7 +25,7 @@ process normalizeMatrix {
     import scipy.sparse as sp
     
     def read_matrix(file_path):
-        """Read a matrix file, handling different formats."""
+        '''Read a matrix file, handling different formats.'''
         is_gzipped = file_path.endswith('.gz')
         opener = gzip.open if is_gzipped else open
         mode = 'rt' if is_gzipped else 'r'
@@ -68,11 +68,11 @@ process normalizeMatrix {
                 return pd.read_csv(file_path, sep='\\t', index_col=0)
     
     def log_normalize(matrix):
-        """Apply log normalization: log2(x + 1)."""
+        '''Apply log normalization: log2(x + 1).'''
         return np.log2(matrix + 1)
     
     def tpm_normalize(matrix):
-        """Transcripts Per Million normalization."""
+        '''Transcripts Per Million normalization.'''
         # Scale factors: sum of each column
         scale_factors = matrix.sum(axis=0)
         # Normalize to counts per million
@@ -80,7 +80,7 @@ process normalizeMatrix {
         return normalized
     
     def zscore_normalize(matrix):
-        """Z-score normalization (mean=0, std=1 for each gene)."""
+        '''Z-score normalization (mean=0, std=1 for each gene).'''
         return (matrix - matrix.mean(axis=1, keepdims=True)) / matrix.std(axis=1, keepdims=True, ddof=1)
     
     # Read the matrix
@@ -130,5 +130,5 @@ process normalizeMatrix {
 }
 
 workflow {
-    normalizeMatrix()
+    normalizeMatrix(file(params.input))
 } 

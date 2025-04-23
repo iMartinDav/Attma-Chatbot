@@ -39,18 +39,15 @@ const fireworksModel = fireworks(
 
 export const myProvider = customProvider({
   languageModels: {
-    // Chat models
-    'chat-model-small': openai('gpt-4o-mini'),
-    'chat-model-large': openai('gpt-4o'),
+    'chat-model-small': openai('gpt-4.1-mini'),
+    'chat-model-large': openai('gpt-4.1'),
     'chat-model-reasoning': wrapLanguageModel({
-      model: fireworksModel,
+      model: openai('gpt-4.1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    // Utility models
-    'title-model': openai('gpt-4-turbo'),
-    'artifact-model': openai('gpt-4o-mini'),
-    // Search model - using the dedicated model for web search
-    'search-model': openai('gpt-4o-search-preview'),
+    'title-model': openai('gpt-4.1-mini'),
+    'artifact-model': openai('gpt-4.1'),
+    'search-model': openai('gpt-4.1-search'),
   },
   imageModels: {
     'small-model': openai.image('dall-e-2'),

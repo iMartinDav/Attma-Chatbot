@@ -466,7 +466,10 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <TextShimmer duration={7} className="flex flex-col gap-4 text-muted-foreground">
+          <TextShimmer
+            duration={7}
+            className="flex flex-col gap-4 text-muted-foreground"
+          >
             Thinking...
           </TextShimmer>
         </div>

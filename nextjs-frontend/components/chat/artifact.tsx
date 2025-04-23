@@ -31,6 +31,7 @@ import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
 import { pdfArtifact } from '@/artifacts/pdf/client'; // Import the PDF artifact
+import { BioflowUploadWrapper } from '../bioflow/bioflow-upload-wrapper';
 import equal from 'fast-deep-equal';
 
 export const artifactDefinitions = [
@@ -134,8 +135,12 @@ function PureArtifact({
   }, [documents, setArtifact]);
 
   useEffect(() => {
+    // SWR automatically revalidates when the key changes (which depends on artifact.status)
+    // Explicit mutation might be redundant unless needed for specific re-render scenarios.
+    // If issues arise, consider adding artifact.status back with an eslint-disable comment
+    // or making the dependency usage explicit within the effect body.
     mutateDocuments();
-  }, [artifact.status, mutateDocuments]);
+  }, [mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -338,21 +343,23 @@ function PureArtifact({
                 />
 
                 <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
-                  <MultimodalInput
-                    chatId={chatId}
-                    input={input}
-                    setInput={setInput}
-                    handleSubmit={handleSubmit}
-                    isLoading={isLoading}
-                    stop={stop}
-                    attachments={attachments}
-                    setAttachments={setAttachments}
-                    messages={messages}
-                    append={append}
-                    className="bg-background dark:bg-muted"
-                    setMessages={setMessages}
-                    isFullSize={isFullSize}
-                  />
+                  <BioflowUploadWrapper>
+                    <MultimodalInput
+                      chatId={chatId}
+                      input={input}
+                      setInput={setInput}
+                      handleSubmit={handleSubmit}
+                      isLoading={isLoading}
+                      stop={stop}
+                      attachments={attachments}
+                      setAttachments={setAttachments}
+                      messages={messages}
+                      append={append}
+                      className="bg-background dark:bg-muted"
+                      setMessages={setMessages}
+                      isFullSize={isFullSize}
+                    />
+                  </BioflowUploadWrapper>
                 </form>
               </div>
             </motion.div>

@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  test-db-connection:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_pLsfxG0gJI8q@ep-spring-scene-a2qod2lp-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+    command: python test_db_connection.py

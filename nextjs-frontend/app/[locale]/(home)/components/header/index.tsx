@@ -396,9 +396,7 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
 
             <div className="p-4 pt-2 pb-6">
               <Link href={`/${locale}/chat`} className="block w-full">
-                <Button 
-                  className="w-full font-medium bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-sm"
-                >
+                <Button className="w-full font-medium bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-sm">
                   {cta.console || 'Go to Console'}
                 </Button>
               </Link>
