@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, Tuple, List, Union
 import httpx
 
-from .blob_storage import upload_to_blob
+from .blob_storage import store_blob
 from .database import execute_db, query_db
 
 # Configure logging
@@ -22,6 +22,216 @@ logger = logging.getLogger(__name__)
 
 # API URL for database operations
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:3000/api")
+
+class GraphStorageService:
+    """
+    Service for storing and retrieving graph visualizations.
+    
+    This service handles the persistence of graph visualizations,
+    either as files on disk or in blob storage, depending on the
+    configured environment.
+    """
+    
+    def __init__(self):
+        """Initialize the graph storage service."""
+        # Determine storage location based on environment
+        self.storage_dir = os.environ.get(
+            "GRAPH_STORAGE_DIR", 
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), "shared-data", "graphs")
+        )
+        
+        # Ensure storage directory exists
+        os.makedirs(self.storage_dir, exist_ok=True)
+        
+        # Base URL for accessing stored graphs
+        self.base_url = os.environ.get(
+            "GRAPH_STORAGE_URL", 
+            "/api/graphs"  # Default relative path
+        )
+    
+    async def store_graph(
+        self, 
+        user_id: str, 
+        graph_type: str, 
+        title: str, 
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Store a graph visualization.
+        
+        Args:
+            user_id: ID of the user who created the graph
+            graph_type: Type of graph (e.g., umap, tsne, pca)
+            title: Title of the graph
+            content: Base64-encoded image data
+            metadata: Additional metadata to store with the graph
+            
+        Returns:
+            Dictionary containing storage information
+        """
+        try:
+            # Generate a unique ID for this graph
+            graph_id = str(uuid.uuid4())
+            
+            # Generate timestamp
+            timestamp = datetime.now().isoformat()
+            
+            # Define storage paths
+            storage_path = f"{self.storage_dir}/{graph_id}.png"
+            metadata_path = f"{self.storage_dir}/{graph_id}.json"
+            
+            # Create metadata object
+            graph_metadata = {
+                "id": graph_id,
+                "user_id": user_id,
+                "graph_type": graph_type,
+                "title": title,
+                "created_at": timestamp,
+                "metadata": metadata or {}
+            }
+            
+            # Save image data to file (if it's base64-encoded)
+            if content and content.startswith("data:image") or "," in content:
+                # Handle data URL format
+                if "," in content:
+                    content = content.split(",", 1)[1]
+                
+                # Decode base64 image and write to file
+                with open(storage_path, "wb") as f:
+                    f.write(base64.b64decode(content))
+            elif content:
+                # If it's already binary data or another format, just write directly
+                with open(storage_path, "wb") as f:
+                    f.write(content if isinstance(content, bytes) else content.encode("utf-8"))
+            
+            # Save metadata to JSON file
+            with open(metadata_path, "w") as f:
+                json.dump(graph_metadata, f, indent=2)
+            
+            # Generate URL for accessing the graph
+            url = f"{self.base_url}/{graph_id}"
+            
+            return {
+                "id": graph_id,
+                "url": url,
+                "metadata": graph_metadata
+            }
+        
+        except Exception as e:
+            # Log the error
+            print(f"Error storing graph: {str(e)}")
+            
+            # Return error information
+            return {
+                "error": str(e),
+                "status": "failed"
+            }
+    
+    async def get_graph(self, graph_id: str) -> Dict[str, Any]:
+        """
+        Retrieve a stored graph by ID.
+        
+        Args:
+            graph_id: ID of the graph to retrieve
+            
+        Returns:
+            Dictionary containing graph information
+        """
+        try:
+            # Define storage paths
+            storage_path = f"{self.storage_dir}/{graph_id}.png"
+            metadata_path = f"{self.storage_dir}/{graph_id}.json"
+            
+            # Check if files exist
+            if not os.path.exists(metadata_path):
+                return {"error": f"Graph {graph_id} not found", "status": "not_found"}
+            
+            # Load metadata from JSON file
+            with open(metadata_path, "r") as f:
+                metadata = json.load(f)
+            
+            # If image file exists, read it
+            image_data = None
+            if os.path.exists(storage_path):
+                with open(storage_path, "rb") as f:
+                    image_data = base64.b64encode(f.read()).decode("utf-8")
+            
+            # Generate URL for accessing the graph
+            url = f"{self.base_url}/{graph_id}"
+            
+            return {
+                "id": graph_id,
+                "url": url,
+                "metadata": metadata,
+                "image": image_data
+            }
+        
+        except Exception as e:
+            # Log the error
+            print(f"Error retrieving graph: {str(e)}")
+            
+            # Return error information
+            return {
+                "error": str(e),
+                "status": "failed"
+            }
+    
+    async def list_user_graphs(self, user_id: str, limit: int = 10, offset: int = 0) -> Dict[str, Any]:
+        """
+        List all graphs for a specific user.
+        
+        Args:
+            user_id: ID of the user
+            limit: Maximum number of graphs to return
+            offset: Offset for pagination
+            
+        Returns:
+            Dictionary containing list of graph information
+        """
+        try:
+            # List all JSON files in the storage directory
+            json_files = [f for f in os.listdir(self.storage_dir) if f.endswith(".json")]
+            
+            # Read each file and filter by user_id
+            user_graphs = []
+            for json_file in json_files:
+                with open(os.path.join(self.storage_dir, json_file), "r") as f:
+                    metadata = json.load(f)
+                    if metadata.get("user_id") == user_id:
+                        graph_id = metadata.get("id")
+                        url = f"{self.base_url}/{graph_id}"
+                        user_graphs.append({
+                            "id": graph_id,
+                            "url": url,
+                            "title": metadata.get("title"),
+                            "graph_type": metadata.get("graph_type"),
+                            "created_at": metadata.get("created_at")
+                        })
+            
+            # Sort by created_at in descending order
+            user_graphs.sort(key=lambda g: g.get("created_at", ""), reverse=True)
+            
+            # Apply limit and offset
+            paginated_graphs = user_graphs[offset:offset+limit]
+            
+            return {
+                "graphs": paginated_graphs,
+                "total": len(user_graphs),
+                "limit": limit,
+                "offset": offset
+            }
+        
+        except Exception as e:
+            # Log the error
+            print(f"Error listing user graphs: {str(e)}")
+            
+            # Return error information
+            return {
+                "error": str(e),
+                "status": "failed",
+                "graphs": []
+            }
 
 async def store_graph_visualization(
     graph_bytes: bytes,
@@ -52,12 +262,17 @@ async def store_graph_visualization(
     if not file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.svg', '.pdf')):
         file_name += '.png'  # Default to PNG if no extension
     
-    # Convert bytes to file-like object for blob upload
-    file_obj = io.BytesIO(graph_bytes)
-    file_obj.seek(0)
+    # Get content type based on file extension
+    content_type = f"image/{file_name.split('.')[-1]}"
     
     # Upload to Vercel Blob Storage
-    blob_info = await upload_to_blob(file_obj, file_name, content_type=f"image/{file_name.split('.')[-1]}")
+    blob_info = await store_blob(
+        content_bytes=graph_bytes,
+        content_type=content_type,
+        filename=file_name,
+        metadata=metadata
+    )
+    
     blob_url = blob_info["url"]
     blob_id = blob_info["blob_id"]
     

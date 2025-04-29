@@ -17,10 +17,10 @@ import json
 from fastapi import BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 
-from fastapi_backend.dataprep.biodata.processing_queue import (
+from dataprep.biodata.processing_queue import (
     ProcessingQueue, JobStatus, JobPriority
 )
-from fastapi_backend.app.graph_storage import (
+from app.graph_storage import (
     insert_analysis_result, get_analysis_result,
     update_analysis_result, list_analysis_results
 )
@@ -186,7 +186,7 @@ class BackgroundAnalysisService:
             
             # Check if this is a plot visualization
             if viz_type in ["umap", "tsne", "pca", "spatial", "heatmap", "violin", "scatter"]:
-                from fastapi_backend.services.single_cell_service import get_single_cell_service
+                from services.single_cell_service import get_single_cell_service
                 
                 # Get single cell service
                 sc_service = get_single_cell_service()
@@ -210,7 +210,7 @@ class BackgroundAnalysisService:
                 )
                 
                 # Store the plot in Vercel Blob Storage
-                from fastapi_backend.analysis.utility import store_plot_visualization
+                from analysis.utility import store_plot_visualization
                 
                 plot_bytes = plot_data["plot_bytes"]
                 

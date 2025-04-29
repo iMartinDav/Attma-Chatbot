@@ -246,6 +246,10 @@ app.include_router(bioflow_router)
 # Include Drizzle database routes
 app.include_router(drizzle_router)
 
+# Include bioflow visualization routes
+from api.routes.bioflow_visualization import router as bioflow_visualization_router
+app.include_router(bioflow_visualization_router)
+
 # Health check endpoint
 @app.get("/health", tags=["system"])
 async def health_check():

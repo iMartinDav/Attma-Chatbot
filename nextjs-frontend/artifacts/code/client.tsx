@@ -10,8 +10,8 @@ import {
 } from '@/components/icons';
 import { toast } from 'sonner';
 import { generateUUID } from '@/lib/utils';
-import {
-  Console,
+import { Console } from '@/components/chat/console';
+import type {
   ConsoleOutput,
   ConsoleOutputContent,
 } from '@/components/chat/console';
@@ -193,14 +193,20 @@ export const codeArtifact = new Artifact<'code', Metadata>({
               },
             ],
           }));
-        } catch (error: any) {
+        } catch (error: unknown) {
+          let errorMessage = 'An unknown error occurred';
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          } else if (typeof error === 'string') {
+            errorMessage = error;
+          }
           setMetadata((metadata) => ({
             ...metadata,
             outputs: [
               ...metadata.outputs.filter((output) => output.id !== runId),
               {
                 id: runId,
-                contents: [{ type: 'text', value: error.message }],
+                contents: [{ type: 'text', value: errorMessage }],
                 status: 'failed',
               },
             ],

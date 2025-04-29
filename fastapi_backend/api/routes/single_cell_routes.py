@@ -1,40 +1,37 @@
 from typing import Dict, List, Optional, Any, Union
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, File, UploadFile, Query, Path, status
-from fastapi.responses import JSONResponse, FileResponse
-import uuid
 import os
+import uuid
 import tempfile
 import shutil
-from pydantic import UUID4
-import asyncio
+import logging
+import io
+import json
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, BackgroundTasks, Query
+from fastapi.responses import StreamingResponse
 
-from fastapi_backend.models.single_cell_models import (
-    SingleCellDataLoadRequest,
+from models.single_cell_models import (
     SingleCellDataLoadResponse,
-    QualityControlRequest,
-    QualityControlResponse,
-    NormalizationRequest,
-    NormalizationResponse,
-    DimensionalityReductionRequest,
-    DimensionalityReductionResponse,
-    ClusteringRequest,
-    ClusteringResponse,
-    PlotRequest,
-    PlotResponse,
-    MarkerGenesRequest,
-    MarkerGenesResponse
+    SingleCellAnalysisConfig,
+    SingleCellProcessingStatus,
+    SingleCellProcessingResult,
+    SingleCellClusteringResult,
+    SingleCellPlotRequest,
+    SingleCellPlotResult,
+    SingleCellMarkerGenesResult,
+    SingleCellSummary,
+    SingleCellSubsetResponse
 )
-from fastapi_backend.models.base_models import BaseResponse, ErrorResponse, TaskResponse
-from fastapi_backend.services.single_cell_service import SingleCellService
-from fastapi_backend.utils.exceptions import (
+
+from models.base_models import BaseResponse, ErrorResponse, TaskResponse
+from services.single_cell_service import SingleCellService
+from utils.exceptions import (
     DataLoadingError, 
     InvalidDataFormatError, 
-    AnalysisError, 
     ResourceNotFoundError,
-    S3OperationError,
+    AnalysisError,
     PlottingError
 )
-from fastapi_backend.utils.logging import get_logger
+from utils.logging import get_logger
 
 # Configure logger
 logger = get_logger(__name__)
@@ -440,49 +437,85 @@ async def generate_plot(
     task_id = str(uuid.uuid4())
     
     async def run_plot():
-        if request.plot_type == 'embedding':
-            # Extract the basis from plot_type (e.g., 'umap', 'tsne', 'pca')
-            basis, *color = request.plot_type.split('_', 1)
-            color = color[0] if color else None
+        try:
+            from analysis.utility import store_plot_visualization
             
-            return service.plot_embedding(
-                request.adata_id,
-                basis=basis,
-                color=color,
-                figsize=(request.width / 100, request.height / 100),
-                save_path=request.save_path
-            )
-        elif request.plot_type == 'violin_mt':
-            return service.plot_violin_mitochondrial_genes(
-                request.adata_id,
-                figsize=(request.width / 100, request.height / 100),
-                save_path=request.save_path
-            )
-        elif request.plot_type == 'highly_variable_genes':
-            return service.plot_highly_variable_genes(
-                request.adata_id,
-                figsize=(request.width / 100, request.height / 100),
-                save_path=request.save_path
-            )
-        elif request.plot_type == 'pca_variance':
-            return service.plot_pca_variance(
-                request.adata_id,
-                figsize=(request.width / 100, request.height / 100),
-                save_path=request.save_path
-            )
-        elif request.plot_type.startswith('dotplot'):
-            # Extract genes from plot_type or use default
-            _, *genes = request.plot_type.split('_', 1)
-            genes = genes[0].split(',') if genes else []
+            adata_id = request.adata_id
+            plot_title = f"{request.plot_type} visualization"
             
-            return service.plot_dotplot(
-                request.adata_id,
-                genes=genes,
+            # Generate the plot and get binary data
+            plot_result = service.plot_embedding(
+                adata_id,
+                basis=request.plot_type.split('_')[0] if request.plot_type.startswith(('umap', 'tsne', 'pca')) else None,
+                color=request.color if hasattr(request, 'color') else None,
                 figsize=(request.width / 100, request.height / 100),
-                save_path=request.save_path
+                save_path=None  # We'll store directly to Blob Storage
+            ) if request.plot_type.startswith(('umap', 'tsne', 'pca')) else (
+                service.plot_violin_mitochondrial_genes(
+                    adata_id,
+                    figsize=(request.width / 100, request.height / 100),
+                    save_path=None
+                ) if request.plot_type == 'violin_mt' else (
+                    service.plot_highly_variable_genes(
+                        adata_id,
+                        figsize=(request.width / 100, request.height / 100),
+                        save_path=None
+                    ) if request.plot_type == 'highly_variable_genes' else (
+                        service.plot_pca_variance(
+                            adata_id,
+                            figsize=(request.width / 100, request.height / 100),
+                            save_path=None
+                        ) if request.plot_type == 'pca_variance' else (
+                            service.plot_dotplot(
+                                adata_id,
+                                genes=request.genes.split(',') if hasattr(request, 'genes') else [],
+                                figsize=(request.width / 100, request.height / 100),
+                                save_path=None
+                            )
+                        )
+                    )
+                )
             )
-        else:
-            raise ValueError(f"Unsupported plot type: {request.plot_type}")
+            
+            # Extract plot data from result
+            plot_data = plot_result.get('plot_data')
+            
+            if not plot_data:
+                return {"status": "error", "message": "Failed to generate plot"}
+            
+            # Get user_id, or use a default for testing purposes
+            user_id = request.user_id if hasattr(request, 'user_id') else "default_user"
+            
+            # Store plot in Vercel Blob Storage
+            success, message, result_data = await store_plot_visualization(
+                plot_data=plot_data,
+                title=plot_title,
+                plot_type=request.plot_type,
+                user_id=user_id,
+                analysis_id=adata_id,  # Use AnnData ID as analysis ID
+                metadata={
+                    "width": request.width,
+                    "height": request.height,
+                    "adata_id": adata_id,
+                    "color": request.color if hasattr(request, 'color') else None,
+                    "genes": request.genes if hasattr(request, 'genes') else None
+                }
+            )
+            
+            if not success:
+                return {"status": "error", "message": message}
+            
+            return {
+                "status": "completed",
+                "plot_id": result_data.get("id"),
+                "plot_url": result_data.get("url"),
+                "plot_type": request.plot_type,
+                "title": plot_title
+            }
+            
+        except Exception as e:
+            logger.exception(f"Error generating plot: {e}")
+            return {"status": "error", "message": str(e)}
     
     background_tasks.add_task(
         run_background_task,
@@ -586,4 +619,4 @@ async def clear_cache(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to clear cache: {str(e)}"
-        ) 
+        )

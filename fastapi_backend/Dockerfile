@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2-dev \
     libblas-dev \
     liblapack-dev \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -41,7 +42,11 @@ RUN pip install --no-cache-dir "fastapi[standard]>=0.115.0,<0.116" \
     "rpy2>=3.5.0" \
     "celltypist>=1.5.0" \
     "plotly>=5.14.0" \
-    "anndata>=0.10.0"
+    "anndata>=0.10.0" \
+    "psycopg2-binary>=2.9.5" \
+    "pytest-mock>=3.10.0" \
+    "pytest-asyncio>=0.21.0" \
+    "python-dotenv>=1.0.0"
 
 # Copy application code
 COPY --chown=app:app . .

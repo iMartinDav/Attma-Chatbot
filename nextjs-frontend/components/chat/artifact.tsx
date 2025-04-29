@@ -31,6 +31,7 @@ import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
 import { pdfArtifact } from '@/artifacts/pdf/client'; // Import the PDF artifact
+import { graphArtifact } from '@/artifacts/graph/client'; // Import the Graph artifact
 import { BioflowUploadWrapper } from '../bioflow/bioflow-upload-wrapper';
 import equal from 'fast-deep-equal';
 
@@ -40,6 +41,7 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
   pdfArtifact,
+  graphArtifact, // Add the graph artifact to the definitions
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 

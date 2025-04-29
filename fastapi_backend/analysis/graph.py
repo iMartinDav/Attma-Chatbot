@@ -481,3 +481,483 @@ if __name__ == "__main__":
         my_dict = list(s.values())[0]
 
         pp.pprint(my_dict)
+
+"""
+Graph visualization module for bioflow analysis.
+
+This module provides functionality for generating various types of
+visualizations for biological data, such as UMAP, t-SNE, PCA,
+and heatmaps.
+"""
+
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from typing import Dict, Any, Optional, Union, List
+import io
+import base64
+import json
+import logging
+import asyncio
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import umap
+from .utility import get_sample_data
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Define supported visualization types
+SUPPORTED_VIS_TYPES = ["umap", "tsne", "pca", "heatmap", "violin", "scatter"]
+
+async def generate_visualization(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Generate a visualization based on the provided request.
+    
+    Args:
+        request: A dictionary containing the visualization request details.
+            Required keys:
+                - visualization_type: Type of visualization to generate (e.g., "umap", "tsne")
+                - data_description: Description of the data to visualize
+            Optional keys:
+                - parameters: Visualization-specific parameters
+                - title: Title for the visualization
+                
+    Returns:
+        Dict[str, Any]: A dictionary containing:
+            - image: Base64-encoded PNG image
+            - metadata: Additional metadata about the visualization
+    """
+    # Extract request parameters
+    vis_type = request.get("visualization_type", "").lower()
+    parameters = request.get("parameters", {})
+    data_description = request.get("data_description", "")
+    title = request.get("title", f"{vis_type.upper()} Visualization")
+    
+    # Check if visualization type is supported
+    if vis_type not in SUPPORTED_VIS_TYPES:
+        raise ValueError(f"Unsupported visualization type: {vis_type}. "
+                         f"Supported types: {', '.join(SUPPORTED_VIS_TYPES)}")
+    
+    # Get data based on description (in a real application, this would query a database)
+    # Here we're using sample data for demonstration
+    data = await get_sample_data(data_description)
+    
+    # Generate the visualization
+    if vis_type == "umap":
+        return await generate_umap_visualization(data, parameters, title)
+    elif vis_type == "tsne":
+        return await generate_tsne_visualization(data, parameters, title)
+    elif vis_type == "pca":
+        return await generate_pca_visualization(data, parameters, title)
+    elif vis_type == "heatmap":
+        return await generate_heatmap_visualization(data, parameters, title)
+    elif vis_type == "violin":
+        return await generate_violin_visualization(data, parameters, title)
+    elif vis_type == "scatter":
+        return await generate_scatter_visualization(data, parameters, title)
+    else:
+        raise ValueError(f"Visualization type {vis_type} is supported but not implemented")
+
+async def generate_umap_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a UMAP visualization."""
+    # Extract parameters with defaults
+    n_neighbors = parameters.get("n_neighbors", 15)
+    min_dist = parameters.get("min_dist", 0.1)
+    n_components = parameters.get("n_components", 2)
+    metric = parameters.get("metric", "euclidean")
+    
+    # Create a figure
+    plt.figure(figsize=(10, 8))
+    
+    # Run UMAP
+    reducer = umap.UMAP(
+        n_neighbors=n_neighbors,
+        min_dist=min_dist,
+        n_components=n_components,
+        metric=metric,
+        random_state=42
+    )
+    
+    # Extract features (all numeric columns)
+    features = data.select_dtypes(include=[np.number])
+    
+    # Check if we have enough data
+    if len(features) < 5:
+        raise ValueError("Not enough data for UMAP visualization (need at least 5 samples)")
+    
+    # Transform the data
+    embedding = reducer.fit_transform(features)
+    
+    # Create a scatter plot
+    if n_components == 2:
+        plt.scatter(embedding[:, 0], embedding[:, 1], s=5, alpha=0.8)
+    elif n_components == 3:
+        ax = plt.figure().add_subplot(111, projection='3d')
+        ax.scatter(embedding[:, 0], embedding[:, 1], embedding[:, 2], s=5, alpha=0.8)
+    
+    # Add labels and title
+    plt.title(title)
+    plt.xlabel(f"UMAP Dimension 1")
+    plt.ylabel(f"UMAP Dimension 2")
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "n_neighbors": n_neighbors,
+            "min_dist": min_dist,
+            "n_components": n_components,
+            "metric": metric,
+            "data_stats": {
+                "n_samples": len(data),
+                "n_features": features.shape[1],
+            }
+        }
+    }
+
+async def generate_tsne_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a t-SNE visualization."""
+    # Extract parameters with defaults
+    perplexity = parameters.get("perplexity", 30.0)
+    n_components = parameters.get("n_components", 2)
+    learning_rate = parameters.get("learning_rate", 200.0)
+    
+    # Create a figure
+    plt.figure(figsize=(10, 8))
+    
+    # Extract features (all numeric columns)
+    features = data.select_dtypes(include=[np.number])
+    
+    # Check if we have enough data
+    if len(features) < 5:
+        raise ValueError("Not enough data for t-SNE visualization (need at least 5 samples)")
+    
+    # Run t-SNE
+    tsne = TSNE(
+        n_components=n_components,
+        perplexity=min(perplexity, len(features) - 1),
+        learning_rate=learning_rate,
+        random_state=42
+    )
+    
+    # Transform the data
+    embedding = tsne.fit_transform(features)
+    
+    # Create a scatter plot
+    plt.scatter(embedding[:, 0], embedding[:, 1], s=5, alpha=0.8)
+    
+    # Add labels and title
+    plt.title(title)
+    plt.xlabel(f"t-SNE Dimension 1")
+    plt.ylabel(f"t-SNE Dimension 2")
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "perplexity": perplexity,
+            "n_components": n_components,
+            "learning_rate": learning_rate,
+            "data_stats": {
+                "n_samples": len(data),
+                "n_features": features.shape[1],
+            }
+        }
+    }
+
+async def generate_pca_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a PCA visualization."""
+    # Extract parameters with defaults
+    n_components = parameters.get("n_components", 2)
+    
+    # Create a figure
+    plt.figure(figsize=(10, 8))
+    
+    # Extract features (all numeric columns)
+    features = data.select_dtypes(include=[np.number])
+    
+    # Check if we have enough data
+    if len(features) < 3:
+        raise ValueError("Not enough data for PCA visualization (need at least 3 samples)")
+    
+    # Run PCA
+    pca = PCA(n_components=min(n_components, features.shape[1]))
+    
+    # Transform the data
+    embedding = pca.fit_transform(features)
+    
+    # Calculate explained variance
+    explained_variance = pca.explained_variance_ratio_
+    explained_variance_cumsum = np.cumsum(explained_variance)
+    
+    # Create a scatter plot
+    if n_components == 2:
+        plt.scatter(embedding[:, 0], embedding[:, 1], s=5, alpha=0.8)
+        plt.xlabel(f"PC1 ({explained_variance[0]:.2%} variance)")
+        plt.ylabel(f"PC2 ({explained_variance[1]:.2%} variance)")
+    elif n_components == 3:
+        ax = plt.figure().add_subplot(111, projection='3d')
+        ax.scatter(embedding[:, 0], embedding[:, 1], embedding[:, 2], s=5, alpha=0.8)
+        ax.set_xlabel(f"PC1 ({explained_variance[0]:.2%})")
+        ax.set_ylabel(f"PC2 ({explained_variance[1]:.2%})")
+        ax.set_zlabel(f"PC3 ({explained_variance[2]:.2%})")
+    
+    # Add title
+    plt.title(title)
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "n_components": n_components,
+            "explained_variance": explained_variance.tolist(),
+            "explained_variance_cumsum": explained_variance_cumsum.tolist(),
+            "data_stats": {
+                "n_samples": len(data),
+                "n_features": features.shape[1],
+            }
+        }
+    }
+
+async def generate_heatmap_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a heatmap visualization."""
+    # Extract parameters with defaults
+    cmap = parameters.get("cmap", "viridis")
+    cluster_rows = parameters.get("cluster_rows", True)
+    cluster_cols = parameters.get("cluster_cols", True)
+    max_features = parameters.get("max_features", 100)
+    max_samples = parameters.get("max_samples", 100)
+    
+    # Create a figure
+    plt.figure(figsize=(12, 10))
+    
+    # Extract features (all numeric columns)
+    features = data.select_dtypes(include=[np.number])
+    
+    # Check if we have enough data
+    if len(features) < 2 or features.shape[1] < 2:
+        raise ValueError("Not enough data for heatmap visualization (need at least 2x2)")
+    
+    # Subsample if necessary
+    if features.shape[0] > max_samples:
+        features = features.sample(max_samples, random_state=42)
+    
+    if features.shape[1] > max_features:
+        features = features.sample(max_features, axis=1, random_state=42)
+    
+    # Create the heatmap
+    sns.heatmap(
+        features,
+        cmap=cmap,
+        xticklabels=True if features.shape[1] <= 30 else False,
+        yticklabels=True if features.shape[0] <= 30 else False,
+        cbar=True
+    )
+    
+    # Add title
+    plt.title(title)
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "cmap": cmap,
+            "data_stats": {
+                "n_samples": features.shape[0],
+                "n_features": features.shape[1],
+                "min_value": float(features.min().min()),
+                "max_value": float(features.max().max()),
+                "mean_value": float(features.mean().mean()),
+            }
+        }
+    }
+
+async def generate_violin_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a violin plot visualization."""
+    # Extract parameters with defaults
+    feature = parameters.get("feature")
+    group_by = parameters.get("group_by")
+    split = parameters.get("split", False)
+    
+    # Check if required parameters are provided
+    if not feature:
+        # Pick the first numeric column if not specified
+        numeric_cols = data.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) == 0:
+            raise ValueError("No numeric columns found for violin plot")
+        feature = numeric_cols[0]
+    
+    # Create a figure
+    plt.figure(figsize=(12, 8))
+    
+    # Create the violin plot
+    if group_by and group_by in data.columns:
+        sns.violinplot(
+            x=group_by,
+            y=feature,
+            data=data,
+            inner="box",
+            split=split
+        )
+    else:
+        sns.violinplot(
+            y=feature,
+            data=data,
+            inner="box"
+        )
+    
+    # Add title
+    plt.title(title)
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "feature": feature,
+            "group_by": group_by,
+            "data_stats": {
+                "n_samples": len(data),
+                "min_value": float(data[feature].min()),
+                "max_value": float(data[feature].max()),
+                "mean_value": float(data[feature].mean()),
+                "median_value": float(data[feature].median()),
+            }
+        }
+    }
+
+async def generate_scatter_visualization(
+    data: pd.DataFrame,
+    parameters: Dict[str, Any],
+    title: str
+) -> Dict[str, Any]:
+    """Generate a scatter plot visualization."""
+    # Extract parameters with defaults
+    x = parameters.get("x")
+    y = parameters.get("y")
+    hue = parameters.get("hue")
+    
+    # Check if required parameters are provided
+    if not x or not y:
+        # Pick the first two numeric columns if not specified
+        numeric_cols = data.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) < 2:
+            raise ValueError("Need at least two numeric columns for scatter plot")
+        x = numeric_cols[0]
+        y = numeric_cols[1]
+    
+    # Create a figure
+    plt.figure(figsize=(10, 8))
+    
+    # Create the scatter plot
+    if hue and hue in data.columns:
+        sns.scatterplot(
+            x=x,
+            y=y,
+            hue=hue,
+            data=data
+        )
+    else:
+        sns.scatterplot(
+            x=x,
+            y=y,
+            data=data
+        )
+    
+    # Add title
+    plt.title(title)
+    
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    
+    # Get the image as base64
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    
+    # Return the result
+    return {
+        "image": image_base64,
+        "metadata": {
+            "x": x,
+            "y": y,
+            "hue": hue,
+            "data_stats": {
+                "n_samples": len(data),
+                f"{x}_min": float(data[x].min()),
+                f"{x}_max": float(data[x].max()),
+                f"{y}_min": float(data[y].min()),
+                f"{y}_max": float(data[y].max()),
+                "correlation": float(data[x].corr(data[y])),
+            }
+        }
+    }
