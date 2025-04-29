@@ -19,8 +19,8 @@ matplotlib.use('Agg')  # Use non-interactive backend for server deployment
 
 from anndata import AnnData
 
-from fastapi_backend.utils.logging import get_logger
-from fastapi_backend.utils.exceptions import (
+from utils.logging import get_logger
+from utils.exceptions import (
     DataLoadingError, 
     InvalidDataFormatError, 
     AnalysisError, 
@@ -28,7 +28,7 @@ from fastapi_backend.utils.exceptions import (
     S3OperationError,
     PlottingError
 )
-from fastapi_backend.utils.cache import cached, cache
+from utils.cache import cached, cache
 
 # Configure logger for this module
 logger = get_logger(__name__)
@@ -42,6 +42,7 @@ class SingleCellService:
     
     def __init__(self, data_dir: str = "/tmp/fastapi_data", s3_bucket: Optional[str] = None):
         self.data_dir = data_dir
+        # Store s3_bucket for backward compatibility but prefer Vercel Blob Storage
         self.s3_bucket = s3_bucket
         self.cache_dir = os.path.join(data_dir, "cache")
         self.results_dir = os.path.join(data_dir, "results")
@@ -51,6 +52,8 @@ class SingleCellService:
         self._results = {}
         self._plots = {}
         self._summaries = {}
+        # Initialize adata_dict for storing AnnData objects
+        self.adata_dict = {}
         
     def _setup_directories(self):
         """Create necessary directories if they don't exist."""
@@ -2017,4 +2020,4 @@ class SingleCellService:
                          title="Gene Expression Dot Plot")
         
         self._add_to_cache(call_signature, plot)
-        return plot 
+        return plot

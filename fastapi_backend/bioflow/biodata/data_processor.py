@@ -60,6 +60,7 @@ class BioinformaticsProcessor:
             source_path: Path to a directory, archive, or file
                 (can be a local path or URL)
         """
+        self.file_path = Path(source_path) if isinstance(source_path, str) else source_path
         self.original_url = source_path
         self.matrix_structure = None
         self.data_dir = None
@@ -224,10 +225,13 @@ class BioinformaticsProcessor:
             target_dir.mkdir(parents=True, exist_ok=True)
             
             # Create subset based on data type
-            if self.matrix_structure.data_type == DATATYPE_MATRIX:
-                subset_structure = self._create_full_matrix_subset(num_columns, target_dir)
-            elif self.matrix_structure.data_type == DATATYPE_SPARSE_MATRIX:
-                subset_structure = self._create_sparse_matrix_subset(num_columns, target_dir)
+            if self.matrix_structure.data_type == DATATYPE_MATRIX or self.matrix_structure.data_type == "numeric":
+                # For sparse matrices with "numeric" data type
+                if self.matrix_structure.has_header_row is False and self.matrix_structure.has_header_column is False:
+                    subset_structure = self._create_sparse_matrix_subset(num_columns, target_dir)
+                else:
+                    # For regular matrices or CSV files
+                    subset_structure = self._create_full_matrix_subset(num_columns, target_dir)
             else:
                 raise DataProcessingError(f"Unsupported data type: {self.matrix_structure.data_type}")
             
@@ -516,4 +520,38 @@ class BioinformaticsProcessor:
                     writer.write(f"{barcode}\n")
         
         except Exception as e:
-            logger.error(f"Error creating barcodes subset: {str(e)}") 
+            logger.error(f"Error creating barcodes subset: {str(e)}")
+    
+    def _load_matrix(self):
+        """
+        Load the matrix data into memory.
+        
+        This method loads a matrix from a file into a suitable in-memory format:
+        - Dense matrices are loaded as pandas DataFrames
+        - Sparse matrices are loaded as sparse matrices
+        
+        Returns:
+            The loaded matrix data
+            
+        Raises:
+            DataProcessingError: If the matrix cannot be loaded
+        """
+        try:
+            if not self.matrix_structure:
+                raise DataProcessingError("Matrix structure not initialized")
+                
+            file_path = self.matrix_structure.data_path
+            
+            if self.matrix_structure.data_type == "sparse_matrix" or self.matrix_structure.data_type == "numeric":
+                # Load sparse matrix (will be converted as needed based on format)
+                return pd.read_csv(file_path, sep=self.matrix_structure.delimiter)
+            else:
+                # Load dense matrix
+                if self.matrix_structure.has_header_row and self.matrix_structure.has_header_column:
+                    return pd.read_csv(file_path, sep=self.matrix_structure.delimiter, index_col=0)
+                elif self.matrix_structure.has_header_row:
+                    return pd.read_csv(file_path, sep=self.matrix_structure.delimiter)
+                else:
+                    return pd.read_csv(file_path, sep=self.matrix_structure.delimiter, header=None)
+        except Exception as e:
+            raise DataProcessingError(f"Failed to load matrix: {str(e)}")

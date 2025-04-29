@@ -3,11 +3,12 @@ import { imageDocumentHandler } from '@/artifacts/image/server';
 import { sheetDocumentHandler } from '@/artifacts/sheet/server';
 import { textDocumentHandler } from '@/artifacts/text/server';
 import { pdfDocumentHandler } from '@/artifacts/pdf/server';
-import { ArtifactKind } from '@/components/chat/artifact';
-import { DataStreamWriter } from 'ai';
-import { Document } from '../db/schema';
+import { graphDocumentHandler } from '@/artifacts/graph/server';
+import type { ArtifactKind } from '@/components/chat/artifact';
+import type { DataStreamWriter } from 'ai';
+import type { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
-import { Session } from 'next-auth';
+import type { Session } from 'next-auth';
 
 export interface SaveDocumentProps {
   id: string;
@@ -96,6 +97,14 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   imageDocumentHandler,
   sheetDocumentHandler,
   pdfDocumentHandler,
+  graphDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet', 'pdf'] as const;
+export const artifactKinds = [
+  'text',
+  'code',
+  'image',
+  'sheet',
+  'pdf',
+  'graph',
+] as const;

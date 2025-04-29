@@ -2,8 +2,9 @@
 
 import { useChat } from 'ai/react';
 import { useEffect, useRef } from 'react';
-import { artifactDefinitions, ArtifactKind } from './artifact';
-import { Suggestion } from '@/lib/db/schema';
+import { artifactDefinitions } from './artifact';
+import type { ArtifactKind } from './artifact';
+import type { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 
 export type DataStreamDelta = {
@@ -13,6 +14,7 @@ export type DataStreamDelta = {
     | 'sheet-delta'
     | 'image-delta'
     | 'pdf-delta'
+    | 'graph-delta'
     | 'title'
     | 'id'
     | 'suggestion'
@@ -33,7 +35,7 @@ export function DataStreamHandler({ id }: { id: string }) {
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
-    (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
+    for (const delta of newDeltas as DataStreamDelta[]) {
       const artifactDefinition = artifactDefinitions.find(
         (artifactDefinition) => artifactDefinition.kind === artifact.kind,
       );
@@ -90,7 +92,7 @@ export function DataStreamHandler({ id }: { id: string }) {
             return draftArtifact;
         }
       });
-    });
+    }
   }, [dataStream, setArtifact, setMetadata, artifact]);
 
   return null;

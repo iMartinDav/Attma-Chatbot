@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { parse, unparse } from 'papaparse';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
@@ -228,13 +228,13 @@ const PureSpreadsheetEditor = ({
               onSave={() => handleCellEdit(rowKey, colKey)}
             />
           ) : (
-            <div
-              role="button"
-              tabIndex={isSystemMode ? -1 : 0}
+            <button
+              type="button"
               aria-label={`Cell ${String.fromCharCode(65 + Number(colKey))}-${rowKey + 1}, value: ${cellValue || 'empty'}`}
               aria-disabled={isSystemMode}
+              disabled={isSystemMode}
               className={cn(
-                'min-w-[100px] min-h-[32px] p-2 truncate',
+                'min-w-[100px] min-h-[32px] p-2 truncate text-left bg-transparent border-none',
                 isSystemMode
                   ? 'cursor-not-allowed bg-muted/50 text-muted-foreground'
                   : 'cursor-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring',
@@ -254,7 +254,7 @@ const PureSpreadsheetEditor = ({
               }}
             >
               {cellValue}
-            </div>
+            </button>
           );
         },
       });
@@ -560,6 +560,7 @@ const PageSizeSelector = ({
 );
 
 // Sort button component
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const SortButton = ({ column }: { column: any }) => (
   <Button
     variant="ghost"

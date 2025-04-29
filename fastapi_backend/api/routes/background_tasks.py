@@ -13,11 +13,11 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, s
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from fastapi_backend.services.background_processing_service import (
+from services.background_processing_service import (
     get_background_service, run_in_background, BackgroundAnalysisService
 )
-from fastapi_backend.app.users import current_active_user
-from fastapi_backend.app.models import User
+from app.users import current_active_user
+from app.models import User
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -252,7 +252,7 @@ async def list_tasks(
     # Convert status string to proper enum value if provided
     status_filter = None
     if status:
-        from fastapi_backend.dataprep.biodata.processing_queue import JobStatus
+        from dataprep.biodata.processing_queue import JobStatus
         try:
             status_filter = JobStatus(status)
         except ValueError:

@@ -1,7 +1,7 @@
 import { myProvider } from '@/lib/ai/models';
 import { createDocumentHandler } from '@/lib/artifacts/server';
-import { streamText } from 'ai';
-import { jsPDF } from 'jspdf';
+import { type StreamData, streamText } from 'ai';
+import { jsPDF, type TextOptionsLight } from 'jspdf';
 import { z } from 'zod';
 
 // Enhanced typings with more precise formats
@@ -194,7 +194,7 @@ class APADocumentRenderer {
     this.doc = doc;
     this.title = title;
     this.runningHead =
-      title.length > 50 ? title.substring(0, 47) + '...' : title;
+      title.length > 50 ? `${title.substring(0, 47)}...` : title;
     this.pageWidth = doc.internal.pageSize.getWidth();
     this.pageHeight = doc.internal.pageSize.getHeight();
     this.contentWidth =
@@ -214,7 +214,7 @@ class APADocumentRenderer {
   private applyTextStyle(styleKey: keyof typeof apaStyle.fonts): void {
     const style = apaStyle.fonts[styleKey];
     this.doc.setFontSize(style.size);
-    this.doc.setFont('times', style.style as any); // APA uses Times New Roman
+    this.doc.setFont('times', style.style); // APA uses Times New Roman
   }
 
   // Apply color
@@ -249,7 +249,7 @@ class APADocumentRenderer {
 
     // Page number in upper right
     this.doc.text(
-      `1`,
+      '1',
       this.pageWidth - apaStyle.margins.right,
       apaStyle.margins.top - 10,
       { align: 'right' },
@@ -306,12 +306,12 @@ class APADocumentRenderer {
     text: string,
     x: number,
     y: number,
-    options: any = {},
+    options: TextOptionsLight = {},
   ): { height: number } {
     try {
       const lines = this.doc.splitTextToSize(
         text,
-        this.contentWidth - (options.indent || 0),
+        this.contentWidth, // Use full content width for splitting
       );
       this.doc.text(lines, x, y, options);
       return {
@@ -341,7 +341,7 @@ class APADocumentRenderer {
   }
 
   // Render a heading
-  public renderHeading(content: string, level: number = 1): void {
+  public renderHeading(content: string, level = 1): void {
     // Space before heading (not for first heading on page)
     if (this.yPosition > apaStyle.margins.top + 5) {
       this.yPosition += apaStyle.spacing.headingBefore;
@@ -358,7 +358,7 @@ class APADocumentRenderer {
     this.applyColor('heading');
 
     // In APA, level 1 headings are centered
-    const options = level === 1 ? { align: 'center' } : {};
+    const options: TextOptionsLight = level === 1 ? { align: 'center' } : {};
     const result = this.renderText(
       content,
       level === 1 ? this.pageWidth / 2 : apaStyle.margins.left,
@@ -503,18 +503,18 @@ class APADocumentRenderer {
     // Analyze content length in each column
     const contentLengths: number[] = Array(columnCount).fill(0);
 
-    // Calculate content length
-    headers.forEach((header, i) => {
+    // Calculate content length using for...of
+    for (const [i, header] of headers.entries()) {
       contentLengths[i] = Math.max(contentLengths[i], header.length);
-    });
+    }
 
-    rows.forEach((row) => {
-      row.forEach((cell, i) => {
+    for (const row of rows) {
+      for (const [i, cell] of row.entries()) {
         if (i < contentLengths.length) {
           contentLengths[i] = Math.max(contentLengths[i], cell.length);
         }
-      });
-    });
+      }
+    }
 
     // Calculate proportional widths
     const totalContentLength = contentLengths.reduce(
@@ -598,9 +598,10 @@ async function generatePDFContent(
   let fullContent = '';
   try {
     // Select the appropriate template based on document type and replace the title placeholder
-    const templateWithTableSupport =
-      documentTemplates[docType].replace(/\[TITLE_PLACEHOLDER\]/g, title) +
-      `\n\nIf you need to include tabular data, use the following format:
+    const templateWithTableSupport = `${documentTemplates[docType].replace(
+      /\[TITLE_PLACEHOLDER\]/g,
+      title,
+    )}\n\nIf you need to include tabular data, use the following format:
     TABLE: [Table Caption]
     HEADER: Column1 | Column2 | Column3
     ROW: Value1 | Value2 | Value3
@@ -662,7 +663,7 @@ async function generatePDFContent(
       };
     } else if (inTable && line.startsWith('HEADER:')) {
       // Table headers
-      if (currentTable && currentTable.tableData) {
+      if (currentTable?.tableData) {
         const headerContent = line.replace('HEADER:', '').trim();
         currentTable.tableData.headers = headerContent
           .split('|')
@@ -670,7 +671,7 @@ async function generatePDFContent(
       }
     } else if (inTable && line.startsWith('ROW:')) {
       // Table row
-      if (currentTable && currentTable.tableData) {
+      if (currentTable?.tableData) {
         const rowContent = line.replace('ROW:', '').trim();
         const rowCells = rowContent.split('|').map((cell) => cell.trim());
         currentTable.tableData.rows.push(rowCells);
@@ -744,7 +745,8 @@ const pdfInputSchema = z.object({
 // Unified PDF generation function with APA formatting
 async function generateAndStreamPdf(
   input: { title: string; docType?: BioinformaticsDocType },
-  dataStream: any,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  dataStream: any, // Assuming dataStream has a writeData method from the handler
 ): Promise<string> {
   try {
     // Validate input
@@ -790,8 +792,10 @@ async function generateAndStreamPdf(
 }
 
 // Error handler
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const handlePdfError = (error: unknown, dataStream: any): string => {
-  console.error('PDF generation failed:', error);
+  // Assuming dataStream has a writeData method
+  console.error(`PDF generation failed: ${error}`);
 
   const errorDoc = new jsPDF();
   errorDoc

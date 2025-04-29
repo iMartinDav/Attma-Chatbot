@@ -18,6 +18,149 @@ from typing import Optional, Dict, Any, Union, Tuple
 import httpx
 import asyncio
 
+"""
+Utility functions for analysis modules.
+
+This module provides helper functions used across different analysis components.
+"""
+
+import pandas as pd
+import numpy as np
+import logging
+import asyncio
+from typing import Dict, Any, Optional, List, Union
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+async def get_sample_data(data_description: str) -> pd.DataFrame:
+    """
+    Generate or retrieve sample data based on the provided description.
+    
+    Args:
+        data_description: String describing the data needed. May contain
+                          information about the data type, size, etc.
+                          
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing the requested data
+    """
+    # Parse the data description to determine what kind of data to generate
+    # In a real application, this would query a database or read files
+    
+    # For demonstration purposes, we'll generate some synthetic data
+    if "random" in data_description.lower() or not data_description:
+        # Generate random data with 100 rows and 20 features
+        n_samples = 100
+        n_features = 20
+        
+        if "large" in data_description.lower():
+            n_samples = 1000
+            n_features = 50
+        elif "small" in data_description.lower():
+            n_samples = 30
+            n_features = 10
+            
+        # Check for specific data patterns
+        if "clusters" in data_description.lower():
+            # Generate data with cluster structure
+            n_clusters = 3
+            cluster_std = 1.0
+            
+            if "tight" in data_description.lower():
+                cluster_std = 0.5
+            elif "loose" in data_description.lower():
+                cluster_std = 2.0
+                
+            # Create clusters
+            cluster_centers = np.random.randn(n_clusters, n_features) * 5
+            
+            # Assign each sample to a cluster
+            clusters = np.random.randint(0, n_clusters, size=n_samples)
+            
+            # Generate data around cluster centers
+            data = np.zeros((n_samples, n_features))
+            for i in range(n_samples):
+                data[i] = cluster_centers[clusters[i]] + np.random.randn(n_features) * cluster_std
+                
+            # Create DataFrame
+            df = pd.DataFrame(data, columns=[f"feature_{i}" for i in range(n_features)])
+            df["cluster"] = clusters
+            
+        elif "correlated" in data_description.lower():
+            # Generate correlated data
+            cov = np.random.rand(n_features, n_features)
+            cov = np.dot(cov, cov.transpose())  # Make positive semi-definite
+            data = np.random.multivariate_normal(np.zeros(n_features), cov, size=n_samples)
+            df = pd.DataFrame(data, columns=[f"feature_{i}" for i in range(n_features)])
+            
+        else:
+            # Standard random data
+            data = np.random.randn(n_samples, n_features)
+            df = pd.DataFrame(data, columns=[f"feature_{i}" for i in range(n_features)])
+            
+        # Add some categorical columns if needed
+        if "categorical" in data_description.lower():
+            df["category_A"] = np.random.choice(["Type1", "Type2", "Type3"], size=n_samples)
+            df["category_B"] = np.random.choice(["GroupA", "GroupB"], size=n_samples)
+            
+        # Add some time series data if needed
+        if "time" in data_description.lower():
+            timestamps = pd.date_range(start="2023-01-01", periods=n_samples, freq="D")
+            df["timestamp"] = timestamps
+            df["time_value"] = np.cumsum(np.random.randn(n_samples)) + 100
+            
+        return df
+        
+    elif "iris" in data_description.lower():
+        # Use the classic Iris dataset
+        try:
+            from sklearn.datasets import load_iris
+            iris = load_iris()
+            df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+            df["species"] = [iris.target_names[i] for i in iris.target]
+            return df
+        except ImportError:
+            # Fall back to random data if sklearn is not available
+            logger.warning("sklearn not available, generating random data instead of Iris dataset")
+            return await get_sample_data("random")
+            
+    elif "gene" in data_description.lower() or "expression" in data_description.lower():
+        # Generate a gene expression matrix
+        n_genes = 200
+        n_samples = 50
+        
+        if "large" in data_description.lower():
+            n_genes = 1000
+            n_samples = 100
+            
+        # Generate expression values (log2 transformed)
+        expr_data = np.random.randn(n_samples, n_genes) * 2 + 8  # centered around 8 with sd 2
+        
+        # Create sample groups
+        sample_groups = np.random.choice(["Control", "Treatment"], size=n_samples)
+        
+        # Make some genes differentially expressed between groups
+        n_diff_genes = int(n_genes * 0.1)  # 10% of genes are differential
+        diff_gene_idx = np.random.choice(n_genes, size=n_diff_genes, replace=False)
+        
+        for idx in diff_gene_idx:
+            treatment_idx = sample_groups == "Treatment"
+            expr_data[treatment_idx, idx] += 2  # Treatment samples have higher expression
+        
+        # Create DataFrame
+        genes = [f"Gene_{i}" for i in range(n_genes)]
+        samples = [f"Sample_{i}" for i in range(n_samples)]
+        
+        df = pd.DataFrame(expr_data, index=samples, columns=genes)
+        df["group"] = sample_groups
+        
+        return df
+        
+    else:
+        # Default to random data
+        logger.info(f"Data description '{data_description}' not recognized, generating random data")
+        return await get_sample_data("random")
+
 # AWS S3 Configuration
 s3_client = boto3.client(
     "s3",

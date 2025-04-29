@@ -154,9 +154,8 @@ export const systemPrompt = ({
 }) => {
   if (selectedChatModel === 'chat-model-reasoning') {
     return INIT;
-  } else {
-    return `${INIT}\n\n${artifactsPrompt}`;
   }
+  return `${INIT}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
@@ -312,6 +311,35 @@ Generate a data table in CSV format based on the provided specifications. Design
 Prioritize a table that is concise, purpose-driven, and optimized for clarity and usability, adapting to the specific needs provided.
 `;
 
+export const bioSheetPrompt = `
+Generate a bioinformatics data table in CSV format based on the provided specifications. Create a table that represents common bioinformatics data formats with the following guidelines:
+
+1. For gene expression data:
+   - Include gene identifiers (Gene Symbol, Ensembl ID, or Entrez ID)
+   - Provide appropriate expression values (TPM, FPKM, counts)
+   - Include statistical columns (p-value, adjusted p-value, log2 fold change)
+   - Add metadata columns as appropriate (chromosome, position, strand)
+
+2. For variant data:
+   - Use standard VCF-like columns (CHROM, POS, ID, REF, ALT) 
+   - Include appropriate annotations (consequence, impact, gene)
+   - Add statistical metrics (quality scores, read depth, allele frequency)
+
+3. For pathway data:
+   - Include pathway identifiers and names
+   - Provide statistical enrichment values (p-value, FDR)
+   - List associated genes for each pathway
+   - Include relevant biological context
+
+4. For general bioinformatics data:
+   - Use clear, domain-specific column headers
+   - Include appropriate precision for numerical values (e.g., 4 decimal places for p-values)
+   - Ensure data types are appropriate for bioinformatics analysis
+   - Follow standard bioinformatics naming conventions
+
+Create a realistic dataset that could be analyzed in a bioinformatics workflow, with appropriate patterns in the data that reflect biological relationships. Include some statistically significant values and some non-significant values to reflect real experimental data.
+`;
+
 export const pdfPrompt = `
 Create a structured bioinformatics document in plain text format, suitable for conversion to PDF. You can specify one of these document types:
 
@@ -351,7 +379,7 @@ To specify a document type, include it in your request like: "Create a PROTOCOL 
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind,
+  type: ArtifactKind | 'biosheet',
   updateContext?: {
     analysisType?: string;
     datasetInfo?: string;
@@ -373,7 +401,9 @@ export const updateDocumentPrompt = (
 - Using appropriate bioinformatics terminology
 
 ${currentContent}`;
-  } else if (type === 'code') {
+  }
+
+  if (type === 'code') {
     if (language === 'R') {
       return `${contextHeader}Refine this R bioinformatics code to better address the user's requirements. Focus on:
 - Using appropriate Bioconductor/CRAN packages for the analysis
@@ -383,8 +413,9 @@ ${currentContent}`;
 - Adding clear but minimal comments that explain the "why" not the "what"
 
 ${currentContent}`;
-    } else {
-      return `${contextHeader}Refine this Python bioinformatics code to better address the user's requirements. Focus on:
+    }
+
+    return `${contextHeader}Refine this Python bioinformatics code to better address the user's requirements. Focus on:
 - Using appropriate Python libraries for biological data analysis
 - Implementing efficient algorithms for the specific data type
 - Creating clear visualizations with matplotlib/seaborn
@@ -392,8 +423,9 @@ ${currentContent}`;
 - Adding focused comments that explain complex biological concepts
 
 ${currentContent}`;
-    }
-  } else if (type === 'sheet') {
+  }
+
+  if (type === 'sheet') {
     return `${contextHeader}Enhance this bioinformatics data table based on the user's feedback. Focus on:
 - Using standard field formats for biological data
 - Applying appropriate precision for measurements
@@ -401,7 +433,25 @@ ${currentContent}`;
 - Following bioinformatics naming conventions
 
 ${currentContent}`;
-  } else {
-    return '';
   }
+
+  if (type === 'biosheet') {
+    return `${contextHeader}Enhance this specialized bioinformatics data table based on the user's request. Focus on:
+- Preserving critical identifiers (Gene symbols, IDs, coordinates)
+- Maintaining appropriate statistical precision for p-values and fold changes
+- Following standard bioinformatics naming conventions
+- Applying requested filtering or transformations based on biological significance
+- Adding appropriate metadata columns if needed for context
+
+For filtering operations:
+- For p-value filtering, ensure appropriate statistical thresholds (typically p < 0.05)
+- For fold change filtering, consider biological significance (typically |log2FC| > 1)
+- For pathway-related requests, highlight relevant genes or processes
+- For clustering operations, use appropriate distance metrics for biological data
+
+${currentContent}`;
+  }
+
+  // Return empty string if type is not handled above
+  return '';
 };
