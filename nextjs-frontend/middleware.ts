@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
+import { auth } from '@/app/(auth)/auth';
 import { defaultLocale, locales } from './lib/internationalization/config';
 
 // List of paths that don't need i18n handling
@@ -50,15 +51,6 @@ function getLocaleFromRequest(request: NextRequest): string {
   }
 }
 
-// Check if the user is authenticated based on cookies
-function isAuthenticated(request: NextRequest): boolean {
-  // Check for session token in cookies
-  const sessionToken = request.cookies.get('next-auth.session-token')?.value || 
-                        request.cookies.get('__Secure-next-auth.session-token')?.value;
-  
-  return !!sessionToken;
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -69,7 +61,8 @@ export async function middleware(request: NextRequest) {
 
   if (isNonLocalizedAppRoute) {
     // Perform auth check for these routes
-    if (!isAuthenticated(request)) {
+    const session = await auth();
+    if (!session) {
       // Redirect to login page
       const url = new URL('/login', request.url);
       url.searchParams.set('callbackUrl', pathname);
@@ -146,7 +139,8 @@ export async function middleware(request: NextRequest) {
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     // For API routes that need auth, check auth
     if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
-      if (!isAuthenticated(request)) {
+      const session = await auth();
+      if (!session) {
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(loginUrl);
