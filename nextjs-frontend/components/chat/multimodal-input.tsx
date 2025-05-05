@@ -24,6 +24,7 @@ import { Textarea } from '../ui/textarea';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
 import { MessageSearch, type SearchMessage } from './message-search';
+import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
 
 type Message = SearchMessage;
 
@@ -75,6 +76,8 @@ function PureMultimodalInput({
     'input',
     '',
   );
+  const [bioflowTaskId, setBioflowTaskId] = useState<string | null>(null);
+  const bioflowStatus = useBioflowTaskStatus(bioflowTaskId ?? undefined);
 
   /**
    * Adjusts textarea height based on content
@@ -207,51 +210,228 @@ function PureMultimodalInput({
         '.h5ad',
         '.h5',
         '.hdf5',
+        '.dgz',   // Added .dgz explicitly
       ];
+      
+      // Additional supported formats for bioflow
+      const documentExtensions = [
+        '.csv',
+        '.tsv',
+      ];
+      
       const fileExtension = file.name
         .substring(file.name.lastIndexOf('.'))
         .toLowerCase();
+        
+      // File type detection
       const isZipFile =
         file.type === 'application/zip' || file.name.endsWith('.zip');
+      const isGzipFile = 
+        file.type === 'application/gzip' || 
+        file.name.endsWith('.gz') || 
+        file.name.endsWith('.tgz');
+      const isTarFile = file.name.endsWith('.tar');
       const isBioinformaticsFile = bioinformaticsExtensions.some((ext) =>
         file.name.toLowerCase().endsWith(ext),
       );
+      const isDocumentFile = documentExtensions.some((ext) =>
+        file.name.toLowerCase().endsWith(ext),
+      );
+      const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      
+      // Enhanced text file detection - more thorough checking
+      const isTextFile = 
+        file.type === 'text/plain' || 
+        file.name.toLowerCase().endsWith('.txt') ||
+        file.type === 'text/markdown' ||
+        file.name.toLowerCase().endsWith('.md') ||
+        file.type === 'text/csv' ||
+        file.name.toLowerCase().endsWith('.text');
+      
+      // File size in megabytes
+      const fileSizeMB = file.size / (1024 * 1024);
+      const isLargeFile = fileSizeMB > 5;
 
       // Handle specific file types
       if (file.type.startsWith('image/')) {
         uploadUrl = '/api/files/upload/image';
-      } else if (file.type === 'application/pdf') {
+      } else if (isPdfFile && fileSizeMB <= 10) {
         uploadUrl = '/api/files/upload/pdf';
-      } else if (isZipFile || isBioinformaticsFile) {
-        // Use specialized bioinformatics endpoint
-        uploadUrl = '/api/bioflow/upload';
-      }
-
-      try {
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const { url, pathname, contentType } = data;
-
-          return {
-            url,
-            name: pathname,
-            contentType: contentType,
-          };
+      } else if (isTextFile && fileSizeMB <= 25) {
+        uploadUrl = '/api/files/upload/text';
+        console.log('Uploading text file to dedicated text endpoint:', file.name);
+      } else if (isZipFile || isGzipFile || isTarFile || isBioinformaticsFile || 
+                (isPdfFile && fileSizeMB > 10) || // Large PDFs go to bioflow
+                (isTextFile && fileSizeMB > 25) || // Large text files go to bioflow
+                isDocumentFile || isLargeFile) {
+        uploadUrl = '/api/files/upload/bioflow/upload';
+        
+        // Check file size limits for bioflow uploads - warn if possibly too large
+        if (fileSizeMB > 200) {
+          toast.warning(`Very large file (${fileSizeMB.toFixed(1)}MB). The server might reject it.`);
+        } else if (isLargeFile) {
+          toast.info(`Large file detected (${fileSizeMB.toFixed(1)}MB). Processing may take longer.`);
         }
-
-        // Show error from server response
-        const { error } = await response.json();
-        toast.error(error);
-        return undefined;
-      } catch (error) {
-        toast.error('Failed to upload file, please try again!');
-        return undefined;
+        
+        // Add descriptive file type information to help users understand processing
+        if (isPdfFile) {
+          toast.info('Processing PDF through the bioflow pipeline');
+        } else if (isTextFile) {
+          toast.info('Processing text file through the bioflow pipeline');
+        } else if (file.name.toLowerCase().endsWith('.dgz')) {
+          toast.info('Processing Cell Ranger Loupe file (.dgz)');
+        }
+        
+        // Add metadata to formData to help the backend process the file correctly
+        formData.append('fileType', fileExtension);
+        formData.append('isCompressed', String(isZipFile || isGzipFile || isTarFile));
+        formData.append('needsProcessing', 'true');
+        formData.append('fileSizeMB', fileSizeMB.toString());
       }
+
+      // Track analytics for uploads
+      try {
+        // Optional: Add analytics tracking here
+        console.debug(`Upload initiated: ${file.name} (${fileSizeMB.toFixed(2)}MB) to ${uploadUrl}`);
+      } catch (analyticsError) {
+        // Non-critical error, just log it
+        console.warn('Failed to track upload analytics:', analyticsError);
+      }
+
+      // Implement upload with retry logic
+      const MAX_RETRIES = 2;
+      let retries = 0;
+      
+      while (retries <= MAX_RETRIES) {
+        try {
+          // Set appropriate timeout based on file size
+          const timeoutMs = isLargeFile ? 
+            Math.min(300000, Math.max(120000, fileSizeMB * 2000)) : // 2 seconds per MB, min 2min, max 5min
+            30000; // 30 seconds for small files
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+          
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal,
+            credentials: 'include' // Include auth credentials
+          });
+          
+          // Clear the timeout since the request completed
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const data = await response.json();
+            
+            // If this is a bioflow upload, capture the task_id for polling
+            if (uploadUrl.includes('bioflow') && data.backendTask?.task_id) {
+              setBioflowTaskId(data.backendTask.task_id);
+              
+              // Log successful bioflow job submission
+              console.debug(`Bioflow task created: ${data.backendTask.task_id}`);
+            }
+
+            // Show appropriate success message
+            toast.success(`File "${file.name}" uploaded successfully`);
+
+            return {
+              url: data.url,
+              name: data.pathname || file.name,
+              contentType: data.contentType || file.type,
+            };
+          }
+
+          // Handle specific error cases with user-friendly messages
+          if (response.status === 413) {
+            toast.error(`File is too large (${fileSizeMB.toFixed(1)}MB). Maximum allowed size is 200MB.`);
+            return undefined;
+          }
+          
+          if (response.status === 401) {
+            toast.error('Session expired. Please refresh the page and try again.');
+            return undefined;
+          }
+          
+          if (response.status === 500) {
+            // Extract detailed error information
+            try {
+              const errorData = await response.json();
+              const errorMessage = errorData.detail || errorData.error || 'Unknown server error';
+              console.error('Server error details:', errorData);
+              
+              // If we have retries left, try again
+              if (retries < MAX_RETRIES) {
+                retries++;
+                toast.info(`Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`);
+                // Exponential backoff: 1s, 2s, 4s...
+                await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** (retries - 1))));
+                continue;
+              }
+              
+              toast.error(`Server error: ${errorMessage}`);
+            } catch (jsonError) {
+              toast.error(`Server error processing ${file.name}. The file might be corrupted or in an unsupported format.`);
+            }
+            return undefined;
+          }
+          
+          // Handle other error cases
+          try {
+            const errorData = await response.json();
+            toast.error(errorData.detail || errorData.error || `Failed to upload file (${response.status})`);
+          } catch (jsonError) {
+            toast.error(`Error (${response.status}): Failed to upload file`);
+          }
+          
+          // Don't retry on client errors (4xx)
+          if (response.status >= 400 && response.status < 500) {
+            return undefined;
+          }
+          
+          // For other errors, retry if we haven't exceeded MAX_RETRIES
+          if (retries < MAX_RETRIES) {
+            retries++;
+            toast.info(`Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`);
+            // Exponential backoff: 1s, 2s, 4s...
+            await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** (retries - 1))));
+            continue;
+          }
+          
+          return undefined;
+        } catch (error) {
+          // Clear any timeout if it exists
+          
+          // Handle specific abort errors
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'name' in error &&
+            (error as { name?: unknown }).name === 'AbortError'
+          ) {
+            toast.error(`Upload timed out for "${file.name}" (${fileSizeMB.toFixed(1)}MB). Try a smaller file or check your connection.`);
+            return undefined;
+          } 
+          
+          // For network errors, retry if possible
+          if (retries < MAX_RETRIES) {
+            retries++;
+            toast.info(`Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`);
+            // Exponential backoff: 1s, 2s, 4s...
+            await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** (retries - 1))));
+            continue;
+          }
+          
+          console.error('Upload error:', error);
+          toast.error(`Failed to upload ${file.name}. Please check your connection and try again.`);
+          return undefined;
+        }
+      }
+      
+      // If we've exhausted all retries
+      console.error(`Upload failed after ${MAX_RETRIES} retries:`, file.name);
+      return undefined;
     },
     [],
   );
@@ -443,6 +623,15 @@ function PureMultimodalInput({
         onChange={handleFileChange}
         tabIndex={-1}
       />
+
+      {/* Bioflow status panel - only show if a bioflow task is active */}
+      {bioflowTaskId && (
+        <div className="mt-2">
+          {bioflowStatus.isLoading && <div>Processing file...</div>}
+          {bioflowStatus.status === 'completed' && <div>Analysis complete! {/* Add result link if available */}</div>}
+          {bioflowStatus.status === 'failed' && <div>Error: {bioflowStatus.error}</div>}
+        </div>
+      )}
     </div>
   );
 }

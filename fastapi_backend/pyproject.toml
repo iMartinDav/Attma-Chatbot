@@ -1,5 +1,5 @@
 [project]
-name = "attma backend chatbot"
+name = "attma-backend-chatbot"
 version = "0.0.2"
 description = "FastAPI backend for nextjs-fastapi project"
 authors = [{ name = "Anderson Resende", email = "anderson@vinta.com.br" }]
@@ -25,6 +25,7 @@ dependencies = [
     "uvicorn[standard]>=0.27.1,<0.28",
     "python-dotenv>=1.0.1,<2",
     "alembic>=1.14.0,<2",
+    "aiohttp",
 ]
 
 [project.optional-dependencies]
@@ -52,16 +53,6 @@ test = [
 [project.scripts]
 run-api = "app.main:start"
 run-tests = "commands.run_tests:main"
-
-[tool.uv]
-# Enable uv to manage this project
-editable = true
-# Make pip install -e . with uv work correctly
-editable-mode = "development"
-
-# Preserve the full requirements.txt functionality when using uv
-[tool.uv.seed]
-include-dev = true
 
 [tool.ruff]
 line-length = 100

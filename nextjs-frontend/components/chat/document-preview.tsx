@@ -26,8 +26,8 @@ import { SpreadsheetEditor } from './sheet-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
-  result?: any;
-  args?: any;
+  result?: Partial<Document>;
+  args?: { title: string; kind: ArtifactKind };
 }
 
 export function DocumentPreview({
@@ -65,7 +65,13 @@ export function DocumentPreview({
       return (
         <DocumentToolResult
           type="create"
-          result={{ id: result.id, title: result.title, kind: result.kind }}
+          result={{
+            id: result.id ?? '',
+            title: result.title ?? '',
+            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(result.kind as string)
+              ? (result.kind as ArtifactKind)
+              : 'text'
+          }}
           isReadonly={isReadonly}
         />
       );
@@ -83,7 +89,13 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
+    const validKinds: ArtifactKind[] = ['text', 'code', 'image', 'sheet', 'pdf', 'graph'];
+    const kind = result && validKinds.includes(result.kind as ArtifactKind)
+      ? (result.kind as ArtifactKind)
+      : validKinds.includes(args?.kind as ArtifactKind)
+        ? (args?.kind as ArtifactKind)
+        : 'text';
+    return <LoadingSkeleton artifactKind={kind} />;
   }
 
   const document: Document | null = previewDocument
@@ -91,7 +103,9 @@ export function DocumentPreview({
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: artifact.kind,
+          kind: ['text', 'code', 'image', 'sheet', 'pdf'].includes(artifact.kind as string)
+            ? (artifact.kind as 'text' | 'code' | 'image' | 'sheet' | 'pdf')
+            : 'text',
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
@@ -103,14 +117,26 @@ export function DocumentPreview({
 
   return (
     <div className="relative w-full cursor-pointer">
-      <HitboxLayer
-        hitboxRef={hitboxRef}
-        result={result}
-        setArtifact={setArtifact}
-      />
+      {result?.id && result?.title && result?.kind ? (
+        <HitboxLayer
+          hitboxRef={hitboxRef}
+          result={{
+            id: result.id ?? '',
+            title: result.title ?? '',
+            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(result.kind as string)
+              ? (result.kind as ArtifactKind)
+              : 'text'
+          }}
+          setArtifact={setArtifact}
+        />
+      ) : null}
       <DocumentHeader
         title={document.title}
-        kind={document.kind}
+        kind={
+          ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(document.kind)
+            ? (document.kind as ArtifactKind)
+            : 'text'
+        }
         isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -149,7 +175,7 @@ const PureHitboxLayer = ({
   setArtifact,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
-  result: any;
+  result: { id: string; title: string; kind: ArtifactKind };
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
   ) => void;
@@ -180,7 +206,8 @@ const PureHitboxLayer = ({
   );
 
   return (
-    <div
+    // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+<div
       className="size-full absolute top-0 left-0 rounded-xl z-10"
       ref={hitboxRef}
       onClick={handleClick}

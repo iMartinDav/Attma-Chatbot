@@ -1,10 +1,13 @@
 import os
 import logging
 import time
+import traceback
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status, Depends
+from fastapi import FastAPI, Request, status, Depends, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from dotenv import load_dotenv
 
 # User management imports
 from .schemas import UserCreate, UserRead, UserUpdate
@@ -32,8 +35,17 @@ except ImportError:
         # For now just continue, we'll log errors later
         pass
 
+# Load environment variables from .env file
+load_dotenv()
+
+# --- Startup check for required environment variables ---
+REQUIRED_ENV_VARS = ["BLOB_STORE_ID", "VERCEL_BLOB_TOKEN"]
+missing_vars = [var for var in REQUIRED_ENV_VARS if not os.environ.get(var)]
+if missing_vars:
+    raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}. Please set them in your .env file or environment.")
+
 # Configure logging
-log_level = os.getenv("LOG_LEVEL", "INFO")
+log_level = os.getenv("LOG_LEVEL", "DEBUG")  # Changed to DEBUG for more verbose logs
 log_file = os.getenv("LOG_FILE", None)
 
 # Initialize logging if available
@@ -54,6 +66,11 @@ except NameError:
     )
     logger = logging.getLogger(__name__)
 
+# Make sure bioflow module's logger is set to DEBUG
+for module_name in ["bioflow", "dataprep", "app.routes.bioflow"]:
+    module_logger = logging.getLogger(module_name)
+    module_logger.setLevel(logging.DEBUG)
+    
 # Lifespan event handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,6 +84,25 @@ async def lifespan(app: FastAPI):
     data_dir = os.getenv("SINGLE_CELL_DATA_DIR", "/tmp/single_cell_data")
     os.makedirs(data_dir, exist_ok=True)
     logger.info(f"Ensuring data directory exists: {data_dir}")
+    
+    # Check temp directory
+    temp_dir = os.getenv("TEMP_DIR", "/tmp")
+    if not os.path.exists(temp_dir):
+        try:
+            os.makedirs(temp_dir, exist_ok=True)
+            logger.info(f"Created temp directory: {temp_dir}")
+        except Exception as e:
+            logger.error(f"Failed to create temp directory: {e}")
+    else:
+        # Check if it's writable
+        try:
+            test_file = os.path.join(temp_dir, "write_test")
+            with open(test_file, "w") as f:
+                f.write("test")
+            os.remove(test_file)
+            logger.info(f"Temp directory {temp_dir} is writable")
+        except Exception as e:
+            logger.error(f"Temp directory {temp_dir} is not writable: {e}")
     
     # Initialize dataprep if it's being used
     try:
@@ -128,16 +164,43 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Set FastAPI upload limit globally by modifying the max request size
+# This uses a subclass of UploadFile to increase the allowed upload size
+from fastapi import UploadFile as _OriginalUploadFile
+from starlette.datastructures import UploadFile as _StarletteUploadFile
+from tempfile import SpooledTemporaryFile
+
+# Configure file upload size limits
+# FastAPI/Starlette uses 1MB limit by default, we need to increase this
+FILE_UPLOAD_MAX_SIZE = int(os.getenv("FILE_UPLOAD_MAX_SIZE_MB", 300)) * 1024 * 1024  # Default to 300MB
+
+# Patch SpooledTemporaryFile max_size
+# This ensures large files are written to disk instead of keeping in memory
+SpooledTemporaryFile._default_max_size = 1024 * 1024  # Use 1MB as threshold between memory/disk
+
+# Create a patched UploadFile that increases the spooled file size threshold
+class PatchedUploadFile(_StarletteUploadFile):
+    @classmethod
+    def __init__(cls, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+    spool_max_size = FILE_UPLOAD_MAX_SIZE
+
+# Apply the patch by replacing the original class
+import starlette.datastructures
+starlette.datastructures.UploadFile = PatchedUploadFile
+
 # Add the DrizzleSyncMiddleware to synchronize user data
 app.add_middleware(DrizzleSyncMiddleware)
 
-# Middleware for CORS configuration
+# Middleware for CORS configuration - make sure all frontend domains are included
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition", "X-Process-Time"]
 )
 
 # Add request logging middleware
@@ -152,8 +215,24 @@ async def log_requests(request: Request, call_next):
     forwarded_for = request.headers.get("X-Forwarded-For")
     client_ip = forwarded_for.split(",")[0] if forwarded_for else request.client.host
     
-    # Log request
-    logger.info(f"Request: {request.method} {request.url.path} from {client_ip}")
+    # Log request with additional headers for debugging
+    request_body = None
+    content_type = request.headers.get("Content-Type", "")
+    
+    # More detailed logging for bioflow endpoints to help diagnose issues
+    is_bioflow_endpoint = "/bioflow/" in request.url.path
+    log_level = logging.DEBUG if is_bioflow_endpoint else logging.INFO
+    
+    # Log request details
+    logger.log(
+        log_level, 
+        f"Request: {request.method} {request.url.path} from {client_ip} | "
+        f"Content-Type: {content_type}"
+    )
+    
+    # Additional debugging for file uploads
+    if is_bioflow_endpoint and "multipart/form-data" in content_type:
+        logger.debug(f"Processing bioflow file upload | Headers: {dict(request.headers)}")
     
     try:
         # Process request
@@ -162,30 +241,58 @@ async def log_requests(request: Request, call_next):
         # Calculate processing time
         process_time = time.time() - start_time
         
-        # Log response
-        logger.info(
-            f"Response: {request.method} {request.url.path} - "
-            f"Status: {response.status_code} - "
-            f"Process time: {process_time:.4f}s"
-        )
+        # Log response with more details for bioflow endpoints
+        if is_bioflow_endpoint:
+            logger.debug(
+                f"Bioflow Response: {request.method} {request.url.path} - "
+                f"Status: {response.status_code} - "
+                f"Process time: {process_time:.4f}s"
+            )
+        else:
+            logger.info(
+                f"Response: {request.method} {request.url.path} - "
+                f"Status: {response.status_code} - "
+                f"Process time: {process_time:.4f}s"
+            )
         
         # Add processing time header
         response.headers["X-Process-Time"] = str(process_time)
         
         return response
     except Exception as e:
-        # Log error
-        logger.exception(f"Error processing request: {request.method} {request.url.path}")
+        # Log error with full traceback
+        logger.exception(
+            f"Error processing request: {request.method} {request.url.path}\n"
+            f"Error: {str(e)}\n"
+            f"Traceback: {traceback.format_exc()}"
+        )
         
         # Calculate processing time
         process_time = time.time() - start_time
         
-        # Return error response
+        # Return detailed error response
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": "Internal server error", "detail": str(e)},
+            content={
+                "error": "Internal server error", 
+                "detail": str(e),
+                "path": request.url.path,
+                "method": request.method
+            },
             headers={"X-Process-Time": str(process_time)}
         )
+
+# Exception handler for validation errors (improves error messages)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Exception handler for validation errors.
+    """
+    logger.warning(f"Validation error: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": exc.body},
+    )
 
 # Exception handler for AppBaseException if available
 try:
@@ -202,6 +309,22 @@ try:
 except NameError:
     # AppBaseException might not be available
     pass
+
+# Generic exception handler to catch all unhandled exceptions
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """
+    Generic exception handler for all unhandled exceptions.
+    """
+    logger.exception(f"Unhandled exception: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "Internal server error",
+            "detail": str(exc),
+            "path": request.url.path
+        }
+    )
 
 # Include single-cell routes if available
 try:
@@ -247,8 +370,12 @@ app.include_router(bioflow_router)
 app.include_router(drizzle_router)
 
 # Include bioflow visualization routes
-from api.routes.bioflow_visualization import router as bioflow_visualization_router
-app.include_router(bioflow_visualization_router)
+try:
+    from api.routes.bioflow_visualization import router as bioflow_visualization_router
+    app.include_router(bioflow_visualization_router)
+    logger.info("Bioflow visualization routes included")
+except ImportError:
+    logger.warning("Bioflow visualization routes not available")
 
 # Health check endpoint
 @app.get("/health", tags=["system"])
@@ -264,8 +391,28 @@ async def health_check():
         "status": "healthy",
         "timestamp": time.time(),
         "version": app.version,
-        "services": {}
+        "services": {},
+        "environment": {
+            "python_path": os.getenv("PYTHONPATH", "Not set"),
+            "temp_dir": os.getenv("TEMP_DIR", "/tmp"),
+            "log_level": log_level,
+        }
     }
+    
+    # Add file system check
+    try:
+        temp_dir = os.getenv("TEMP_DIR", "/tmp")
+        health_status["services"]["filesystem"] = {
+            "status": "ok" if os.access(temp_dir, os.W_OK) else "error",
+            "temp_dir": temp_dir,
+            "temp_dir_free_space_mb": os.statvfs(temp_dir).f_bavail * os.statvfs(temp_dir).f_frsize / 1024 / 1024
+        }
+    except Exception as fs_err:
+        logger.warning(f"File system health check failed: {str(fs_err)}")
+        health_status["services"]["filesystem"] = {
+            "status": "warning",
+            "error": str(fs_err)
+        }
     
     # Check database connection
     try:
@@ -280,7 +427,7 @@ async def health_check():
         
         # Get connection pool status if available
         try:
-            pool = get_db_pool()
+            pool = await get_db_pool()
             pool_status = {
                 "min_size": pool._minsize if hasattr(pool, "_minsize") else "unknown",
                 "max_size": pool._maxsize if hasattr(pool, "_maxsize") else "unknown",
@@ -330,5 +477,35 @@ async def root():
         "version": "0.1.0",
         "description": "API for analyzing single-cell RNA-seq data with user management",
         "docs_url": "/docs",
-        "redoc_url": "/redoc"
+        "redoc_url": "/redoc",
+        "environment": os.getenv("ENVIRONMENT", "development")
     }
+
+# Test file upload endpoint - helpful for debugging file upload issues
+@app.post("/test-upload/", tags=["system"])
+async def test_upload(file: UploadFile = File(...)):
+    """
+    Test endpoint for file uploads.
+    Useful for debugging file upload issues.
+    """
+    try:
+        # Read a small chunk to verify file existence
+        content = await file.read(1024)
+        file_size = len(content)
+        
+        # Seek back to beginning
+        await file.seek(0)
+        
+        # Get basic file info
+        content_type = file.content_type or "application/octet-stream"
+        filename = file.filename
+        
+        return {
+            "filename": filename,
+            "content_type": content_type,
+            "file_size_preview": file_size,
+            "status": "success"
+        }
+    except Exception as e:
+        logger.exception(f"Test upload failed: {str(e)}")
+        raise
