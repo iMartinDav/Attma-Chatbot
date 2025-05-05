@@ -24,8 +24,7 @@ import type { ArtifactKind } from '@/components/chat/artifact';
 
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
-// Export the db object so it can be imported in other files
-export const db = drizzle(client);
+const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -217,11 +216,10 @@ export async function saveDocument({
   userId: string;
 }) {
   try {
-    // Only include 'id' if your schema allows it, otherwise remove it
     return await db.insert(document).values({
-      // id, // Uncomment if your schema allows manual id insertion
+      id,
       title,
-      kind: kind as 'text' | 'code' | 'image' | 'sheet' | 'pdf' | 'graph', // Cast to allowed types
+      kind,
       content,
       userId,
       createdAt: new Date(),

@@ -17,13 +17,12 @@ logger = logging.getLogger(__name__)
 
 # Vercel Blob Storage API endpoint
 VERCEL_BLOB_API_URL = "https://blob.vercel-storage.com"
-BLOB_STORE_ID = os.getenv("BLOB_STORE_ID", "")
-VERCEL_BLOB_TOKEN = os.getenv("VERCEL_BLOB_TOKEN", "")
+BLOB_READ_WRITE_TOKEN = os.getenv("BLOB_READ_WRITE_TOKEN", "")
 
 # Check if the required environment variables are set
-if not BLOB_STORE_ID or not VERCEL_BLOB_TOKEN:
+if not BLOB_READ_WRITE_TOKEN:
     logger.warning(
-        "BLOB_STORE_ID or VERCEL_BLOB_TOKEN not set. Vercel Blob Storage operations will fail."
+        "BLOB_READ_WRITE_TOKEN not set. Vercel Blob Storage operations will fail."
     )
 
 class BlobStorageError(Exception):
@@ -48,7 +47,7 @@ async def store_blob(
     Returns:
         Dict with the blob information including URL and ID
     """
-    if not BLOB_STORE_ID or not VERCEL_BLOB_TOKEN:
+    if not BLOB_READ_WRITE_TOKEN:
         raise BlobStorageError("Blob storage credentials are not configured")
     
     # Generate a filename if not provided
@@ -58,8 +57,7 @@ async def store_blob(
     
     # Prepare headers
     headers = {
-        "Authorization": f"Bearer {VERCEL_BLOB_TOKEN}",
-        "X-Vercel-Blob-Store-ID": BLOB_STORE_ID,
+        "Authorization": f"Bearer {BLOB_READ_WRITE_TOKEN}",
         "Content-Type": content_type,
     }
     
@@ -106,7 +104,7 @@ async def delete_blob(blob_url: str) -> bool:
     Returns:
         bool: True if deletion was successful, False otherwise
     """
-    if not BLOB_STORE_ID or not VERCEL_BLOB_TOKEN:
+    if not BLOB_READ_WRITE_TOKEN:
         raise BlobStorageError("Blob storage credentials are not configured")
     
     # Extract filename from URL
@@ -114,8 +112,7 @@ async def delete_blob(blob_url: str) -> bool:
     
     # Prepare headers
     headers = {
-        "Authorization": f"Bearer {VERCEL_BLOB_TOKEN}",
-        "X-Vercel-Blob-Store-ID": BLOB_STORE_ID
+        "Authorization": f"Bearer {BLOB_READ_WRITE_TOKEN}"
     }
     
     try:

@@ -141,7 +141,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
       const session = await auth();
       if (!session) {
-        const loginUrl = new URL(`/login`, request.url);
+        const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(loginUrl);
       }

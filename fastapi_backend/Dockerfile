@@ -46,7 +46,8 @@ RUN pip install --no-cache-dir "fastapi[standard]>=0.115.0,<0.116" \
     "psycopg2-binary>=2.9.5" \
     "pytest-mock>=3.10.0" \
     "pytest-asyncio>=0.21.0" \
-    "python-dotenv>=1.0.0"
+    "python-dotenv>=1.0.0" \
+    "aiohttp"
 
 # Copy application code
 COPY --chown=app:app . .

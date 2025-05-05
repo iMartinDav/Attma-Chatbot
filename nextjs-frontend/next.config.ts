@@ -2,6 +2,9 @@
 const nextConfig = {
   experimental: {
     ppr: false,
+    serverActions: {
+      bodySizeLimit: '300mb', // Add this for Server Actions
+    },
   },
   images: {
     remotePatterns: [
@@ -21,6 +24,13 @@ const nextConfig = {
         pathname: '/avatar/**',
       },
     ],
+  },
+  // Increase bodyParser limit for API routes to handle large files
+  api: {
+    bodyParser: {
+      sizeLimit: '300mb',
+    },
+    responseLimit: false,
   },
 };
 

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let filename = 'document.pdf';
+  const filename = 'document.pdf';
   try {
     const formData = await request.formData();
     const file = formData.get('file') as Blob;

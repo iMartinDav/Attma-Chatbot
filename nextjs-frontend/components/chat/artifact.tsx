@@ -32,7 +32,6 @@ import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
 import { pdfArtifact } from '@/artifacts/pdf/client'; // Import the PDF artifact
 import { graphArtifact } from '@/artifacts/graph/client'; // Import the Graph artifact
-import { BioflowUploadWrapper } from '../bioflow/bioflow-upload-wrapper';
 import equal from 'fast-deep-equal';
 
 export const artifactDefinitions = [
@@ -345,23 +344,21 @@ function PureArtifact({
                 />
 
                 <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
-                  <BioflowUploadWrapper>
-                    <MultimodalInput
-                      chatId={chatId}
-                      input={input}
-                      setInput={setInput}
-                      handleSubmit={handleSubmit}
-                      isLoading={isLoading}
-                      stop={stop}
-                      attachments={attachments}
-                      setAttachments={setAttachments}
-                      messages={messages}
-                      append={append}
-                      className="bg-background dark:bg-muted"
-                      setMessages={setMessages}
-                      isFullSize={isFullSize}
-                    />
-                  </BioflowUploadWrapper>
+                  <MultimodalInput
+                    chatId={chatId}
+                    input={input}
+                    setInput={setInput}
+                    handleSubmit={handleSubmit}
+                    isLoading={isLoading}
+                    stop={stop}
+                    attachments={attachments}
+                    setAttachments={setAttachments}
+                    messages={messages}
+                    append={append}
+                    className="bg-background dark:bg-muted"
+                    setMessages={setMessages}
+                    isFullSize={isFullSize}
+                  />
                 </form>
               </div>
             </motion.div>
