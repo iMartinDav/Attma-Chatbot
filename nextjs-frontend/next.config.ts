@@ -5,6 +5,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '300mb', // Add this for Server Actions
     },
+    // Add large response support if needed
+    largePageDataBytes: 300 * 1024 * 1024, // Equivalent to 300MB
   },
   images: {
     remotePatterns: [
@@ -24,13 +26,6 @@ const nextConfig = {
         pathname: '/avatar/**',
       },
     ],
-  },
-  // Increase bodyParser limit for API routes to handle large files
-  api: {
-    bodyParser: {
-      sizeLimit: '300mb',
-    },
-    responseLimit: false,
   },
 };
 

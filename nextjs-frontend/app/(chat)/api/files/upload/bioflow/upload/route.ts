@@ -55,11 +55,13 @@ export async function POST(request: NextRequest) {
 
   try {
     // 1. Check rate limit (per IP/session)
+    // Extract IP address from headers or fallback to 'anonymous'
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const identifier = forwardedFor?.split(',')[0]?.trim() || 'anonymous';
     try {
-      const identifier = request.ip || 'anonymous';
       await uploadLimiter.check(10, identifier);
     } catch (error) {
-      console.warn(`[${requestId}] Rate limit exceeded for IP: ${request.ip}`);
+      console.warn(`[${requestId}] Rate limit exceeded for IP: ${identifier}`);
       return NextResponse.json(
         { error: 'Too many uploads. Please wait before trying again.' },
         { status: 429 }
@@ -117,7 +119,7 @@ export async function POST(request: NextRequest) {
       fileType: formData.get('fileType') as string || '',
       isCompressed: formData.get('isCompressed') === 'true',
       needsProcessing: formData.get('needsProcessing') === 'true',
-      fileSizeMB: parseFloat((formData.get('fileSizeMB') as string) || '0'),
+      fileSizeMB: Number.parseFloat((formData.get('fileSizeMB') as string) || '0'),
       uploadedBy: userId
     };
 
@@ -125,18 +127,13 @@ export async function POST(request: NextRequest) {
     console.log(`[${requestId}] Processing upload: ${filename} (${fileSize / 1024 / 1024}MB) of type ${contentType}`);
 
     // 6. Upload to Blob storage with proper error handling
-    let blobResult;
+    let blobResult: { url: string; [key: string]: unknown };
     try {
       blobResult = await uploadToBlob({
         file,
         filename: `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`, // Sanitize filename
         contentType,
-        access: 'public',
-        metadata: {
-          userId,
-          originalFilename: filename,
-          uploadTime: new Date().toISOString()
-        }
+        access: 'public'
       });
       
       console.log(`[${requestId}] File uploaded to blob storage: ${blobResult.url}`);
@@ -149,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Trigger backend processing with proper retry logic and timeout
-    let backendTask = null;
+    let backendTask: { error: string; details: string; status?: string; queued?: boolean; task_id?: string } | null = null;
     
     // Use environment-aware backend URL selection
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 
@@ -234,7 +231,7 @@ export async function POST(request: NextRequest) {
           await saveDocument({
             id: crypto.randomUUID(),
             title: `pending_processing_${filename}`,
-            kind: 'pending',
+            kind: 'text',
             content: JSON.stringify({
               blobUrl: blobResult.url,
               filename,
@@ -270,15 +267,7 @@ export async function POST(request: NextRequest) {
         title: filename,
         kind,
         content: blobResult.url,
-        userId,
-        metadata: JSON.stringify({
-          originalFilename: filename,
-          contentType,
-          fileSize,
-          uploadTime: new Date().toISOString(),
-          backendTaskId: backendTask?.task_id || null,
-          processingStatus: backendTask?.status || 'unknown'
-        })
+        userId
       });
       
       console.log(`[${requestId}] Document saved with ID: ${docId}`);
