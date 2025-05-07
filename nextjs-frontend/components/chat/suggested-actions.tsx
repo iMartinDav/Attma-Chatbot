@@ -5,15 +5,15 @@ import { Button } from '../ui/button';
 import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { memo } from 'react';
 import {
-  ChartLine,
   ChartScatter,
   Dna,
   Virus,
   Atom,
   Brain,
   Gauge,
-  Microscope,
 } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
+import type { IconWeight } from '@phosphor-icons/react';
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -23,8 +23,18 @@ interface SuggestedActionsProps {
   ) => Promise<string | null | undefined>;
 }
 
+interface SuggestedAction {
+  title: string;
+  label: string;
+  action: string;
+  icon: Icon;
+  gradientFrom: string;
+  gradientTo: string;
+  iconWeight: IconWeight;
+}
+
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
-  const suggestedActions = [
+  const suggestedActions: SuggestedAction[] = [
     {
       title: 'Mitochondrial Analysis',
       label: 'Distribution of MT Genes',
@@ -123,7 +133,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
                 >
                   <action.icon
                     className="size-4 text-white"
-                    height={action.iconWeight}
+                    weight={action.iconWeight}
+                    size={16}
                   />
                 </div>
                 <span className="font-semibold text-primary">
