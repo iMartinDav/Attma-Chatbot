@@ -1,9 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Github, Linkedin, Send } from 'lucide-react';
 import type { Locale } from '@/lib/internationalization/config';
+import { ATTMA_COLOR_CLASS, ATTMA_BOLD_CLASS } from './header';
 
 // X icon component for modern Twitter/X branding
 const XIcon = () => (
@@ -20,9 +22,6 @@ const XIcon = () => (
     />
   </svg>
 );
-
-// Define consistent branding color
-const GENIE_PINK = '#25C6A3';
 
 interface FooterProps {
   locale: Locale;
@@ -93,11 +92,18 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
           <div className="lg:col-span-4 space-y-6">
             <Link
               href={`/${locale}`}
-              className="flex items-center gap-2.5 transition-transform hover:scale-105"
+              className="flex items-center gap-0.5 transition-transform hover:scale-105"
               aria-label="Attma home page"
             >
-              <span className="font-bold text-2xl tracking-tight">
-                <span style={{ color: GENIE_PINK }}>Attma</span>
+              <Image
+                src="/images/attma-logo.webp"
+                alt="Attma Logo"
+                width={40}
+                height={40}
+                className="h-10 w-auto object-contain"
+              />
+              <span className="font-bold text-xl tracking-tight">
+                <span className="text-[#80f1e5]">Attma</span>
                 <span className="ml-0.5 text-foreground/80 font-normal text-sm align-text-top">
                   beta
                 </span>
@@ -283,7 +289,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
         {/* Copyright bar with elegant separator dots */}
         <div className="mt-16 pt-6 border-t border-border/10 flex flex-col md:flex-row justify-between items-center text-muted-foreground/60 text-xs gap-4">
           <p>
-            &copy; {currentYear} Attma AI. {rights}
+            &copy; {currentYear} Attma {rights}
           </p>
           <div className="flex items-center gap-4">
             <Link

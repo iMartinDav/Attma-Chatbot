@@ -2,6 +2,7 @@
 
 import { memo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   MoonIcon,
@@ -30,7 +31,8 @@ import {
 import type { Locale } from '@/lib/internationalization/config';
 import { LanguageSwitcher } from './language-switcher';
 
-export const GENIE_PINK = '#25C6A3';
+export const ATTMA_COLOR_CLASS = "text-[#80f1e5]";
+export const ATTMA_BOLD_CLASS = "text-ultra-bold";
 
 // ------ Types ------
 export interface NavItem {
@@ -416,11 +418,19 @@ const Logo = memo(({ locale }: { locale: Locale }) => {
     <div className="flex items-center gap-2">
       <Link
         href={`/${locale}`}
-        className="flex items-center gap-2.5 transition-transform hover:scale-105"
+        className="flex items-center gap-0.5 transition-transform hover:scale-105"
         aria-label="Attma home page"
       >
+        <Image
+          src="/images/attma-logo.webp"
+          alt="Attma Logo"
+          width={40}
+          height={40}
+          className="h-10 w-auto object-contain"
+          priority
+        />
         <span className="font-bold text-xl tracking-tight">
-          <span style={{ color: GENIE_PINK }}>Attma</span>
+          <span className={`${ATTMA_COLOR_CLASS} ${ATTMA_BOLD_CLASS}`}>Attma</span>
           <span className="ml-0.5 text-foreground/80 font-normal text-sm align-text-top">
             beta
           </span>
@@ -466,7 +476,7 @@ const NavLink = memo(
               className="bg-background border border-border"
               style={
                 {
-                  '--tooltip-arrow-color': GENIE_PINK,
+                  '--tooltip-arrow-color': ATTMA_COLOR_CLASS,
                   '--tooltip-background-color': 'var(--background)',
                 } as React.CSSProperties
               }
@@ -494,7 +504,7 @@ const NavLink = memo(
         className={cn(
           'rounded-md px-3 py-2 text-sm font-medium transition-all',
           isActiveLink(item.href, item.isSection)
-            ? `text-foreground after:block after:h-0.5 after:bg-[${GENIE_PINK}] after:mt-0.5`
+            ? `text-foreground after:block after:h-0.5 after:bg-[#3DEACD] after:mt-0.5`
             : 'text-muted-foreground hover:text-foreground',
         )}
       >
@@ -541,7 +551,7 @@ const MobileNavLink = memo(
               className="bg-background border border-border z-50"
               style={
                 {
-                  '--tooltip-arrow-color': GENIE_PINK,
+                  '--tooltip-arrow-color': ATTMA_COLOR_CLASS,
                   '--tooltip-background-color': 'var(--background)',
                 } as React.CSSProperties
               }
@@ -565,7 +575,7 @@ const MobileNavLink = memo(
         className={cn(
           'block rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
           isActiveLink(item.href, item.isSection)
-            ? `text-foreground border-l-2 border-[${GENIE_PINK}] bg-accent/30 pl-[10px]`
+            ? `text-foreground border-l-2 border-[#3DEACD] bg-accent/30 pl-[10px]`
             : 'text-muted-foreground hover:text-foreground hover:bg-accent/20',
         )}
         onClick={onClose}

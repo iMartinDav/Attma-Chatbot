@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    /* Ultra-bold text effect for Attma logo */
+    .text-ultra-bold {
+        text-shadow: 0 0 1px currentColor, 0 0 1px currentColor, 0 0 1px currentColor;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        -webkit-text-stroke: 0.45px currentColor;
+    }
+
+    .text-balance {
+        text-wrap: balance;
+    }
+}
+
 :root {
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 214, 219, 220;
