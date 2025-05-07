@@ -90,6 +90,7 @@ const config: Config = {
         attma: {
           primary: '#25C6A3',
           accent: '#4EF9DB',
+          logo: '#80f1e5', // Adding specific logo color for consistent reference
           muted: 'rgba(37, 198, 163, 0.1)',
           border: 'rgba(37, 198, 163, 0.2)',
         },
