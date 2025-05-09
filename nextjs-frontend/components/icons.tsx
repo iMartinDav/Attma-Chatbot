@@ -62,21 +62,20 @@ export const AttachmentIcon = () => {
   );
 };
 
-export const VercelIcon = ({ size = 17 }) => {
+export const XIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
       height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
       width={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       style={{ color: 'currentcolor' }}
-      aria-labelledby="vercelIconTitle"
+      aria-labelledby="xIconTitle"
     >
-      <title id="vercelIconTitle">Vercel</title>
+      <title id="xIconTitle">X (formerly Twitter)</title>
       <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M8 1L16 15H0L8 1Z"
+        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
         fill="currentColor"
       />
     </svg>

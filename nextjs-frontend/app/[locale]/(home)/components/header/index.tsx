@@ -422,7 +422,7 @@ const Logo = memo(({ locale }: { locale: Locale }) => {
         aria-label="Attma home page"
       >
         <Image
-          src="/images/attma-logo.webp"
+          src="/images/attma-logo.svg"
           alt="Attma Logo"
           width={40}
           height={40}
