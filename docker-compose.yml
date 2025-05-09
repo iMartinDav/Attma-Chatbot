@@ -7,18 +7,22 @@ services:
     environment:
       - DEV=true
       - OPENAPI_OUTPUT_FILE=./shared-data/openapi.json
-      # Use non-SQLAlchemy format for Drizzle compatibility
-      - DATABASE_URL=postgresql://postgres:password@db:5432/mydatabase
+      # Connect to the same Neon database as Next.js frontend
+      - DATABASE_URL=postgres://neondb_owner:REDACTED@ep-spring-scene-a2qod2lp-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
       - TEST_DATABASE_URL=postgresql://postgres:password@db:5433/testdatabase
       # Authentication secrets
       - ACCESS_SECRET_KEY=dev_secret_key_do_not_use_in_production
       - RESET_PASSWORD_SECRET_KEY=dev_reset_key_do_not_use_in_production
       - VERIFICATION_SECRET_KEY=dev_verification_key_do_not_use_in_production
       # CORS settings
-      - FRONTEND_URL=http://localhost:3000
-      - CORS_ORIGINS=["http://localhost:3000"]
+      - FRONTEND_URL=http://frontend:3000
+      - CORS_ORIGINS=["http://localhost:3000","http://frontend:3000"]
+      # Email service configuration
+      - EMAIL_API_TOKEN=dummy_token_for_local_dev
+      - EMAIL_API_ENDPOINT=/api/email
+      # Blob storage
+      - BLOB_READ_WRITE_TOKEN=REDACTED
       # Other settings
-      - MAIL_SERVER=mailhog
       - PYTHONPATH=/app
       - SINGLE_CELL_DATA_DIR=/app/shared-data/single_cell_data
       - LOG_LEVEL=INFO
@@ -94,6 +98,7 @@ services:
       # Use same database URL for Drizzle ORM
       DATABASE_URL: postgresql://postgres:password@db:5432/mydatabase
       API_BASE_URL: http://backend:8000
+      NEXT_PUBLIC_API_URL: http://backend:8000
       OPENAPI_OUTPUT_FILE: ./shared-data/openapi.json
       # NextAuth configuration
       NEXTAUTH_SECRET: dev_nextauth_secret_do_not_use_in_production
@@ -106,15 +111,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mail-server
-    restart: unless-stopped
-    ports:
-      - "1025:1025" # SMTP server
-      - "8025:8025" # Web UI
-    networks:
-      - my_network
 
 volumes:
   postgres_data:

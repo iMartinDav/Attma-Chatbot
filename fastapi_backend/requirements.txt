@@ -184,6 +184,8 @@ uvicorn==0.27.1
     #   fastapi-cli
 uvloop==0.21.0
     # via uvicorn
+vercel-blob==0.26.0
+    # via attma-backend-chatbot (pyproject.toml)
 watchfiles==1.0.3
     # via uvicorn
 websockets==14.1
