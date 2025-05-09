@@ -38,7 +38,7 @@ click==8.1.8
     #   rich-toolkit
     #   typer
     #   uvicorn
-cryptography==44.0.0
+cryptography==44.0.1
     # via pyjwt
 dnspython==2.7.0
     # via email-validator
