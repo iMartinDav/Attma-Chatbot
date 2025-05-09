@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
     
-    # Email Service
+    # Email Service - Using Frontend API
     EMAIL_API_TOKEN: str = "dummy_token"  # Default value added to make it optional
     EMAIL_API_ENDPOINT: str = "/api/email"
     EMAIL_API_MAX_RETRIES: int = 3
@@ -30,6 +30,24 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: Set[str]
+
+    # Blob Storage
+    BLOB_READ_WRITE_TOKEN: str = ""
+    
+    # Email Templates (Legacy - can be removed in future)
+    TEMPLATE_DIR: str = "email_templates"
+    
+    # Legacy Email settings (retained for compatibility)
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = "noreply@attma.bio"
+    MAIL_PORT: int = 1025
+    MAIL_SERVER: str = "localhost"
+    MAIL_FROM_NAME: str = "Attma"
+    MAIL_STARTTLS: bool = False
+    MAIL_SSL_TLS: bool = False
+    USE_CREDENTIALS: bool = False
+    VALIDATE_CERTS: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

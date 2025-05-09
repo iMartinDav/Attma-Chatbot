@@ -1,12 +1,21 @@
-import uuid
-from typing import Optional
-from datetime import datetime
+"""
+Pydantic schemas for the FastAPI application.
 
-from fastapi_users import schemas
-from pydantic import BaseModel, EmailStr, Field, UUID4
+This module contains all the Pydantic models used for data validation,
+serialization, and documentation throughout the application.
+"""
+import uuid
+from typing import Dict, List, Optional, Any, Union
+from datetime import datetime
 from uuid import UUID
 
+from fastapi_users import schemas
+from pydantic import BaseModel, EmailStr, Field, UUID4, HttpUrl, ConfigDict
 
+
+# -----------------------------------------------------------------------------
+# Core user schemas - aligned with FastAPI Users
+# -----------------------------------------------------------------------------
 class UserRead(BaseModel):
     """Schema for user data returned to clients."""
     id: UUID4
@@ -42,25 +51,32 @@ class PasswordResetConfirm(BaseModel):
     password: str
 
 
+# -----------------------------------------------------------------------------
+# Item schemas - sample resource using the User relationship
+# -----------------------------------------------------------------------------
 class ItemBase(BaseModel):
+    """Base schema for items."""
     name: str
     description: str | None = None
     quantity: int | None = None
 
 
 class ItemCreate(ItemBase):
+    """Schema for item creation."""
     pass
 
 
 class ItemRead(ItemBase):
+    """Schema for reading item data."""
     id: UUID
     user_id: UUID
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
-# Drizzle schema types for Next.js frontend integration
-
+# -----------------------------------------------------------------------------
+# Drizzle Table Schemas - matching Next.js schema structure
+# -----------------------------------------------------------------------------
 class UserTable(BaseModel):
     """Schema representing a User in the Drizzle database."""
     id: str = Field(..., description="UUID primary key")
@@ -128,17 +144,17 @@ class MessageTable(BaseModel):
     isDeleted: bool = Field(False, description="Whether message is deleted")
 
 
-from typing import Dict, List, Optional, Any, Union
-from datetime import datetime
-from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, ConfigDict
-
-# New schemas for Drizzle API
+# -----------------------------------------------------------------------------
+# Drizzle User Model - needed for integration with Next.js Drizzle
+# -----------------------------------------------------------------------------
 class DrizzleUserBase(BaseModel):
     """Base schema for a user in the Drizzle database."""
     email: EmailStr
     name: Optional[str] = None
     image: Optional[str] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
 
 class DrizzleUserCreate(DrizzleUserBase):
     """Schema for creating a user in the Drizzle database."""
@@ -152,65 +168,98 @@ class DrizzleUserUpdate(DrizzleUserBase):
 
 
 class DrizzleUser(DrizzleUserBase):
-    """Schema for a user in the Drizzle database."""
+    """Schema for a complete user in the Drizzle database."""
     id: str
+    emailVerified: Optional[datetime] = None
+    createdAt: datetime
+    updatedAt: datetime
     
     model_config = ConfigDict(from_attributes=True)
 
 
+# -----------------------------------------------------------------------------
+# Chat and Message models for the chat functionality
+# -----------------------------------------------------------------------------
 class ChatBase(BaseModel):
-    """Base schema for a chat."""
+    """Base schema for chat data"""
     title: str
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChatCreate(ChatBase):
-    """Schema for creating a chat."""
+    """Schema for creating a new chat"""
     pass
 
 
 class ChatUpdate(BaseModel):
-    """Schema for updating a chat."""
+    """Schema for updating a chat"""
     title: Optional[str] = None
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Chat(ChatBase):
-    """Schema for a chat."""
+    """Schema for a complete chat entity"""
     id: str
     userId: str
     createdAt: datetime
     updatedAt: Optional[datetime] = None
+    lastMessageAt: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
 
 
 class MessageBase(BaseModel):
-    """Base schema for a message."""
+    """Base schema for chat message data"""
     content: str
-    role: str = Field(default="user")
-
-
-class MessageCreate(MessageBase):
-    """Schema for creating a message."""
-    chatId: str
-
-
-class Message(MessageBase):
-    """Schema for a message."""
-    id: str
-    chatId: str
-    createdAt: datetime
+    role: str = Field(default="user", description="Message role (user/assistant/system)")
     
     model_config = ConfigDict(from_attributes=True)
 
 
-class ChatWithMessages(Chat):
-    """Schema for a chat with messages."""
+class MessageCreate(MessageBase):
+    """Schema for creating a new chat message"""
+    chatId: str
+
+
+class Message(MessageBase):
+    """Schema for a complete chat message entity"""
+    id: str
+    chatId: str
+    createdAt: datetime
+    updatedAt: Optional[datetime] = None
+    isDeleted: bool = False
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatWithMessages(BaseModel):
+    """Schema for a chat with its messages"""
+    chat: Chat
     messages: List[Message] = []
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
+# -----------------------------------------------------------------------------
+# API Response schemas - standardized response formats
+# -----------------------------------------------------------------------------
 class ApiResponse(BaseModel):
     """Schema for a standardized API response."""
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
     meta: Optional[Dict[str, Any]] = None
+
+
+class PaginatedResponse(ApiResponse):
+    """Schema for a paginated API response."""
+    meta: Dict[str, Any] = Field(
+        default_factory=lambda: {
+            "page": 1,
+            "per_page": 10,
+            "total_items": 0,
+            "total_pages": 0
+        }
+    )

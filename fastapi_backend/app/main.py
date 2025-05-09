@@ -331,7 +331,8 @@ try:
     app.include_router(single_cell_routes.router)
     logger.info("Single-cell analysis routes included")
 except (NameError, AttributeError):
-    logger.warning("Single-cell analysis routes not available")
+    # Change warning to debug level - this is an expected condition in most environments
+    logger.debug("Single-cell analysis routes not available (optional feature)")
 
 # Include authentication and user management routes
 app.include_router(

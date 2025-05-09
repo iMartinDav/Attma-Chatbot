@@ -173,13 +173,13 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.user.id}`,
               'X-Request-ID': requestId,
             },
             body: JSON.stringify({
               url: blobResult.url,
               filename,
               content_type: contentType,
+              user_id: userId, // Pass user ID directly in payload
               metadata: metadata,
             }),
             signal: controller.signal,

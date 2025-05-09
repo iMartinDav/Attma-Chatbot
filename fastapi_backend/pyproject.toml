@@ -26,6 +26,12 @@ dependencies = [
     "python-dotenv>=1.0.1,<2",
     "alembic>=1.14.0,<2",
     "aiohttp",
+    "vercel-blob>=0.26.0,<1.0",
+    "scanpy>=1.9.0,<2.0",
+    "anndata>=0.10.0,<0.11",
+    "plotly>=5.14.0,<6.0",
+    "python-jose[cryptography]>=3.3.0,<4", # Added for JWT authentication
+    "passlib[bcrypt]>=1.7.4,<2",          # Added for password hashing
 ]
 
 [project.optional-dependencies]

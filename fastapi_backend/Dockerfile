@@ -73,7 +73,10 @@ ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    SINGLE_CELL_DATA_DIR=/tmp/single_cell_data
+    SINGLE_CELL_DATA_DIR=/tmp/single_cell_data \
+    BLOB_STORE_ID="local" \
+    VERCEL_BLOB_TOKEN="dummy_token_for_local_development" \
+    NEXTFLOW_PATH="/usr/local/bin/nextflow"
 
 # Run the FastAPI application using the main entry point
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
