@@ -12,9 +12,9 @@ export function Spinner({
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      role="status"
       aria-label="Loading"
     >
+      <title>Loading...</title>
       <circle
         className="opacity-25"
         cx="12"

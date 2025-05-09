@@ -156,7 +156,7 @@ export function MessageSearch({
         body: JSON.stringify({
           id: chatId,
           messages: [formattedMessage],
-          saveOnly: true, // Flag to indicate we're just saving, not generating
+          saveOnly: true,
         }),
       });
 

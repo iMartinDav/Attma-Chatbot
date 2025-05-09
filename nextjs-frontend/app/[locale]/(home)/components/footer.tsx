@@ -4,24 +4,8 @@ import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Github, Linkedin, Send } from 'lucide-react';
+import { XIcon } from '@/components/icons';
 import type { Locale } from '@/lib/internationalization/config';
-import { ATTMA_COLOR_CLASS, ATTMA_BOLD_CLASS } from './header';
-
-// X icon component for modern Twitter/X branding
-const XIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-      fill="currentColor"
-    />
-  </svg>
-);
 
 interface FooterProps {
   locale: Locale;
@@ -96,7 +80,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
               aria-label="Attma home page"
             >
               <Image
-                src="/images/attma-logo.webp"
+                src="/images/attma-logo.svg"
                 alt="Attma Logo"
                 width={40}
                 height={40}
