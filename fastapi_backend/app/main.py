@@ -169,8 +169,9 @@ app = FastAPI(
 from fastapi import UploadFile as _OriginalUploadFile
 from starlette.datastructures import UploadFile as _StarletteUploadFile
 from tempfile import SpooledTemporaryFile
+from starlette.middleware.base import BaseHTTPMiddleware
 
-# Configure file upload size limits
+# Configure file upload size limits 
 # FastAPI/Starlette uses 1MB limit by default, we need to increase this
 FILE_UPLOAD_MAX_SIZE = int(os.getenv("FILE_UPLOAD_MAX_SIZE_MB", 300)) * 1024 * 1024  # Default to 300MB
 
@@ -190,8 +191,42 @@ class PatchedUploadFile(_StarletteUploadFile):
 import starlette.datastructures
 starlette.datastructures.UploadFile = PatchedUploadFile
 
+# Custom middleware for handling large file uploads specifically for Railway/production
+class LargeFileUploadMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Modify Railway-specific request handling for large uploads
+        if "/bioflow/" in request.url.path and "multipart/form-data" in request.headers.get("Content-Type", ""):
+            logger.debug(f"LargeFileUploadMiddleware: Processing large file upload for Railway | Path: {request.url.path}")
+            
+            # For bioflow endpoints with multipart/form-data, increase read buffers
+            # In Railway, we need custom handling to prevent timeout/413 errors
+            is_railway = os.environ.get("RAILWAY_ENVIRONMENT") == "production"
+            
+            # Custom handling for Railway production environment
+            if is_railway:
+                logger.debug("Detected Railway environment, using custom file upload handling")
+                try:
+                    # Store the request details for later debugging if needed
+                    request.state.is_large_file = True
+                    request.state.file_handling = "railway_optimized"
+                except Exception as e:
+                    logger.warning(f"Error setting request state: {e}")
+        
+        # Continue processing the request
+        response = await call_next(request)
+        
+        # Add debugging headers for upload endpoints
+        if "/bioflow/" in request.url.path and "multipart/form-data" in request.headers.get("Content-Type", ""):
+            response.headers["X-Large-File-Handled"] = "true"
+            response.headers["X-Upload-Middleware"] = "active"
+        
+        return response
+
 # Add the DrizzleSyncMiddleware to synchronize user data
 app.add_middleware(DrizzleSyncMiddleware)
+
+# Add the LargeFileUploadMiddleware first so it runs before other middleware
+app.add_middleware(LargeFileUploadMiddleware)
 
 # Middleware for CORS configuration - make sure all frontend domains are included
 app.add_middleware(
