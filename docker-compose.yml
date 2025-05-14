@@ -86,6 +86,9 @@ services:
   frontend:
     build:
       context: ./nextjs-frontend
+      args:
+        - DOCKER_BUILD=true
+        - NEXT_TELEMETRY_DISABLED=1
     container_name: nextjs-frontend
     restart: unless-stopped
     user: node
@@ -95,8 +98,14 @@ services:
       - my_network
     environment:
       NODE_ENV: development
-      # Use same database URL for Drizzle ORM
+      DOCKER_BUILD: "true"
+      NEXT_TELEMETRY_DISABLED: 1
+      # Email service - use dummy values for development
+      RESEND_API_KEY: dummy_key_for_local_dev
+      EMAIL_FROM: no-reply@example.com
+      # Database connection
       DATABASE_URL: postgresql://postgres:password@db:5432/mydatabase
+      # API endpoints
       API_BASE_URL: http://backend:8000
       NEXT_PUBLIC_API_URL: http://backend:8000
       OPENAPI_OUTPUT_FILE: ./shared-data/openapi.json

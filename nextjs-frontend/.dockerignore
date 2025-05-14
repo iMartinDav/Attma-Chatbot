@@ -1,0 +1,39 @@
+# Ignore development files
+node_modules/
+.next/cache/
+dist/
+build/
+coverage/
+
+# Ignore version control
+.git/
+.github/
+.gitignore
+
+# Ignore editor configs
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Ignore environment files
+.env
+.env.*
+.envrc
+
+# Ignore test files
+__tests__/
+**/*.test.*
+**/*.spec.*
+jest.config.*
+
+# Ignore documentation
+docs/
+*.md
+LICENSE
+
+# Ignore misc files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
