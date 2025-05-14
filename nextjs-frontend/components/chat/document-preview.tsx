@@ -68,9 +68,11 @@ export function DocumentPreview({
           result={{
             id: result.id ?? '',
             title: result.title ?? '',
-            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(result.kind as string)
+            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
+              result.kind as string,
+            )
               ? (result.kind as ArtifactKind)
-              : 'text'
+              : 'text',
           }}
           isReadonly={isReadonly}
         />
@@ -89,12 +91,20 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    const validKinds: ArtifactKind[] = ['text', 'code', 'image', 'sheet', 'pdf', 'graph'];
-    const kind = result && validKinds.includes(result.kind as ArtifactKind)
-      ? (result.kind as ArtifactKind)
-      : validKinds.includes(args?.kind as ArtifactKind)
-        ? (args?.kind as ArtifactKind)
-        : 'text';
+    const validKinds: ArtifactKind[] = [
+      'text',
+      'code',
+      'image',
+      'sheet',
+      'pdf',
+      'graph',
+    ];
+    const kind =
+      result && validKinds.includes(result.kind as ArtifactKind)
+        ? (result.kind as ArtifactKind)
+        : validKinds.includes(args?.kind as ArtifactKind)
+          ? (args?.kind as ArtifactKind)
+          : 'text';
     return <LoadingSkeleton artifactKind={kind} />;
   }
 
@@ -103,7 +113,9 @@ export function DocumentPreview({
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: ['text', 'code', 'image', 'sheet', 'pdf'].includes(artifact.kind as string)
+          kind: ['text', 'code', 'image', 'sheet', 'pdf'].includes(
+            artifact.kind as string,
+          )
             ? (artifact.kind as 'text' | 'code' | 'image' | 'sheet' | 'pdf')
             : 'text',
           content: artifact.content,
@@ -123,9 +135,11 @@ export function DocumentPreview({
           result={{
             id: result.id ?? '',
             title: result.title ?? '',
-            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(result.kind as string)
+            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
+              result.kind as string,
+            )
               ? (result.kind as ArtifactKind)
-              : 'text'
+              : 'text',
           }}
           setArtifact={setArtifact}
         />
@@ -133,7 +147,9 @@ export function DocumentPreview({
       <DocumentHeader
         title={document.title}
         kind={
-          ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(document.kind)
+          ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
+            document.kind,
+          )
             ? (document.kind as ArtifactKind)
             : 'text'
         }
@@ -207,7 +223,7 @@ const PureHitboxLayer = ({
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-<div
+    <div
       className="size-full absolute top-0 left-0 rounded-xl z-10"
       ref={hitboxRef}
       onClick={handleClick}

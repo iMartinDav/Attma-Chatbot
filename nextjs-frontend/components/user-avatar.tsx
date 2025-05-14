@@ -55,7 +55,8 @@ function UserAvatarComponent({
           const cachedImage = localStorage.getItem(cacheKey);
           const cacheTimestamp = localStorage.getItem(`${cacheKey}-timestamp`);
           const cacheExpired =
-            cacheTimestamp && Date.now() - Number.parseInt(cacheTimestamp) > 86400000; // 24 hours
+            cacheTimestamp &&
+            Date.now() - Number.parseInt(cacheTimestamp) > 86400000; // 24 hours
 
           if (cachedImage && !cacheExpired) {
             setAvatarUrl(cachedImage);

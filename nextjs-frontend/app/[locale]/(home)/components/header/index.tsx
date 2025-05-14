@@ -31,8 +31,8 @@ import {
 import type { Locale } from '@/lib/internationalization/config';
 import { LanguageSwitcher } from './language-switcher';
 
-export const ATTMA_COLOR_CLASS = "text-[#80f1e5]";
-export const ATTMA_BOLD_CLASS = "text-ultra-bold";
+export const ATTMA_COLOR_CLASS = 'text-[#80f1e5]';
+export const ATTMA_BOLD_CLASS = 'text-ultra-bold';
 
 // ------ Types ------
 export interface NavItem {
@@ -430,7 +430,9 @@ const Logo = memo(({ locale }: { locale: Locale }) => {
           priority
         />
         <span className="font-bold text-xl tracking-tight">
-          <span className={`${ATTMA_COLOR_CLASS} ${ATTMA_BOLD_CLASS}`}>Attma</span>
+          <span className={`${ATTMA_COLOR_CLASS} ${ATTMA_BOLD_CLASS}`}>
+            Attma
+          </span>
           <span className="ml-0.5 text-foreground/80 font-normal text-sm align-text-top">
             beta
           </span>

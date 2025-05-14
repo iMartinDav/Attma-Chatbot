@@ -13,11 +13,9 @@ const MAX_UPLOAD_SIZE = 300 * 1024 * 1024;
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
-  file: z
-    .instanceof(Blob)
-    .refine((file) => file.size <= MAX_UPLOAD_SIZE, {
-      message: `File size should be less than ${MAX_UPLOAD_SIZE / (1024 * 1024)}MB`,
-    }),
+  file: z.instanceof(Blob).refine((file) => file.size <= MAX_UPLOAD_SIZE, {
+    message: `File size should be less than ${MAX_UPLOAD_SIZE / (1024 * 1024)}MB`,
+  }),
 });
 
 export async function POST(request: Request) {

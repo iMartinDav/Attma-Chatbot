@@ -12,7 +12,10 @@ interface BioflowTaskStatus {
  * @param taskId The task ID returned from the backend after upload
  * @param pollIntervalMs How often to poll (default: 2000ms)
  */
-export function useBioflowTaskStatus(taskId?: string, pollIntervalMs = 2000): BioflowTaskStatus {
+export function useBioflowTaskStatus(
+  taskId?: string,
+  pollIntervalMs = 2000,
+): BioflowTaskStatus {
   const [status, setStatus] = useState<string>('pending');
   const [result, setResult] = useState<unknown>(null);
   const [error, setError] = useState<string | undefined>(undefined);
