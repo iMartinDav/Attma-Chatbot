@@ -231,9 +231,7 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
 });
 
 // Helper function to parse graph title to extract visualization parameters
-function parseGraphTitle(
-  title: string,
-): {
+function parseGraphTitle(title: string): {
   visType: string;
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   parameters: Record<string, any>;
@@ -247,7 +245,7 @@ function parseGraphTitle(
 
   // Extract any parameters mentioned in the title
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    const parameters: Record<string, any> = {};
+  const parameters: Record<string, any> = {};
 
   // Simple parameter extraction logic
   if (title.includes('resolution')) {
@@ -274,9 +272,7 @@ function parseGraphTitle(
 }
 
 // Helper function to parse graph description for updates
-function parseGraphDescription(
-  description: string,
-): {
+function parseGraphDescription(description: string): {
   visType?: string;
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   parameters?: Record<string, any>;
@@ -290,7 +286,7 @@ function parseGraphDescription(
 
   // Extract parameters
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    const parameters: Record<string, any> = {};
+  const parameters: Record<string, any> = {};
 
   // Simple parameter extraction
   if (description.includes('resolution')) {

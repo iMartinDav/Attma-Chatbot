@@ -41,13 +41,13 @@ export function SingleCellVisualization({
   interface UMAPData {
     data: [number, number][];
   }
-  
+
   interface PlotData {
     umap?: UMAPData;
     // Add other properties as needed
   }
-  
-    const [plotData, setPlotData] = useState<PlotData | null>(null);
+
+  const [plotData, setPlotData] = useState<PlotData | null>(null);
 
   // Parse content when streaming is complete
   useEffect(() => {

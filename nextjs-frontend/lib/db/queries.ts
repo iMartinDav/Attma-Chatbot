@@ -372,7 +372,9 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     interface MessageId {
       id: string;
     }
-    const messageIds: string[] = (messagesToDelete as MessageId[]).map((message: MessageId) => message.id);
+    const messageIds: string[] = (messagesToDelete as MessageId[]).map(
+      (message: MessageId) => message.id,
+    );
 
     if (messageIds.length > 0) {
       await db
@@ -458,7 +460,7 @@ export async function saveBioAnalysisDocument({
       // Only include 'id' if your schema allows manual id insertion
       ...(document.id ? { id } : {}),
       title,
-      kind: "text", // Use an allowed literal from your schema, or update schema to allow "bio-data"
+      kind: 'text', // Use an allowed literal from your schema, or update schema to allow "bio-data"
       content,
       userId,
       createdAt: new Date(),
@@ -484,18 +486,18 @@ export async function updateBioAnalysisStatus({
       .select()
       .from(document)
       .where(eq(document.id, id));
-    
+
     if (!existingDoc) {
       throw new Error(`Document with ID ${id} not found`);
     }
 
     // Parse existing content
     const content = JSON.parse(existingDoc.content || '{}');
-    
+
     // Update status and optionally add results
     content.analysisStatus = analysisStatus;
     content.analysisCompletedAt = new Date().toISOString();
-    
+
     if (results) {
       content.results = results;
     }
@@ -503,8 +505,8 @@ export async function updateBioAnalysisStatus({
     // Update document with new content
     return await db
       .update(document)
-      .set({ 
-        content: JSON.stringify(content)
+      .set({
+        content: JSON.stringify(content),
       })
       .where(eq(document.id, id));
   } catch (error) {

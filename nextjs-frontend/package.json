@@ -11,8 +11,8 @@
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
     "format": "biome format --write",
-    "test": "jest",
-    "coverage": "jest --coverage || true",
+    "test": "jest --passWithNoTests",
+    "coverage": "jest --coverage --passWithNoTests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
@@ -126,6 +126,9 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^14.2.3",
+    "@testing-library/user-event": "^14.5.2",
     "@types/d3-scale": "^4.0.9",
     "@types/jest": "^29.5.14",
     "@types/md5": "^2.3.5",
@@ -143,19 +146,17 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-tailwindcss": "^3.18.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "next-router-mock": "^0.9.12",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.1.2",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },
   "description": "An advanced AI chatbot platform developed by Attma TechBio",
-  "keywords": [
-    "ai",
-    "chatbot",
-    "next.js",
-    "typescript",
-    "Attma techbio"
-  ],
+  "keywords": ["ai", "chatbot", "next.js", "typescript", "Attma techbio"],
   "pnpm": {
     "ignoredBuiltDependencies": [
       "@biomejs/biome",
