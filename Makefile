@@ -12,17 +12,19 @@ help:
 	@awk '/^[a-zA-Z_-]+:/{split($$1, target, ":"); print "  " target[1] "\t" substr($$0, index($$0,$$2))}' $(MAKEFILE_LIST)
 
 # Backend commands
-.PHONY: start-backend test-backend create-start-script
+.PHONY: start-backend test-backend test-bioflow deploy-backend-railway
 
 start-backend: ## Start the backend server with FastAPI and hot reload
-	cd $(BACKEND_DIR) && uvicorn fastapi_backend.main:app --reload --host 0.0.0.0 --port 8000
-
-create-start-script: ## Create a startup script for the backend
-	echo '#!/bin/bash\n\necho "Starting Single-Cell Analysis API..."\n\nPORT=$${PORT:-8000}\nHOST=$${HOST:-0.0.0.0}\nLOG_LEVEL=$${LOG_LEVEL:-info}\n\nuvicorn fastapi_backend.main:app --host $$HOST --port $$PORT --reload --log-level $$LOG_LEVEL' > $(BACKEND_DIR)/start.sh && chmod +x $(BACKEND_DIR)/start.sh
+	cd $(BACKEND_DIR) && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-level info
 
 test-backend: ## Run backend tests using pytest
 	cd $(BACKEND_DIR) && uv run pytest
 
+test-bioflow: ## Run bioflow-specific tests
+	cd $(BACKEND_DIR) && PYTHONPATH=$$PYTHONPATH:$(PWD)/$(BACKEND_DIR) uv run pytest tests/test_bioflow_api.py tests/test_bioflow_processor.py -v dataprep/biodata/tests/test_analysis_components.py dataprep/biodata/tests/test_analysis_service.py dataprep/biodata/tests/test_processing_queue.py dataprep/biodata/tests/test_result_formatters.py -v
+
+deploy-backend-railway: ## Deploy backend to Railway
+	cd $(BACKEND_DIR) && railway up
 
 # Frontend commands
 .PHONY: start-frontend test-frontend
