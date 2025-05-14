@@ -26,8 +26,8 @@ interface SingleCellVisualizationProps {
   isCurrentVersion: boolean;
   getDocumentContentById: (index: number) => string;
   isLoading: boolean;
-  metadata: Record<string, any>;
-  setMetadata: (metadata: Record<string, any>) => void;
+  metadata: Record<string, unknown>;
+  setMetadata: (metadata: Record<string, unknown>) => void;
 }
 
 export function SingleCellVisualization({
@@ -38,7 +38,16 @@ export function SingleCellVisualization({
   status,
 }: SingleCellVisualizationProps) {
   const { artifact } = useArtifact();
-  const [plotData, setPlotData] = useState<any>(null);
+  interface UMAPData {
+    data: [number, number][];
+  }
+  
+  interface PlotData {
+    umap?: UMAPData;
+    // Add other properties as needed
+  }
+  
+    const [plotData, setPlotData] = useState<PlotData | null>(null);
 
   // Parse content when streaming is complete
   useEffect(() => {
@@ -81,7 +90,12 @@ export function SingleCellVisualization({
 
   // Prepare scatter plot data
   const umapData = plotData.umap;
-  let scatterData = [];
+  interface ScatterPoint {
+    x: number;
+    y: number;
+  }
+
+  let scatterData: ScatterPoint[] = [];
   if (umapData && Array.isArray(umapData.data)) {
     scatterData = umapData.data.map((point: [number, number]) => ({
       x: point[0],
