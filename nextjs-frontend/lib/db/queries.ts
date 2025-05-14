@@ -26,6 +26,32 @@ import type { ArtifactKind } from '@/components/chat/artifact';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
+/**
+ * Analysis status options for bioinformatics documents
+ */
+export const AnalysisStatus = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+};
+
+/**
+ * Unified document types to include bioinformatics data
+ */
+export const DocumentKind = {
+  // Original document types
+  TEXT: 'text',
+  CODE: 'code',
+  IMAGE: 'image',
+  PDF: 'pdf',
+  GRAPH: 'graph',
+  // New bioinformatics types
+  BIO_DATA: 'bio-data',
+  BIO_ANALYSIS: 'bio-analysis',
+  BIO_VISUALIZATION: 'bio-visualization',
+};
+
 export async function getUser(email: string): Promise<Array<User>> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
@@ -401,5 +427,88 @@ export async function linkUserChats(
   } catch (error) {
     console.error('Error linking user chats:', error);
     return false;
+  }
+}
+
+export async function saveBioAnalysisDocument({
+  id,
+  title,
+  fileUrl,
+  metadata,
+  analysisStatus = AnalysisStatus.PENDING,
+  userId,
+}: {
+  id: string;
+  title: string;
+  fileUrl: string;
+  metadata: Record<string, unknown>;
+  analysisStatus?: string;
+  userId: string;
+}) {
+  try {
+    // Store analysis metadata in the document content as JSON
+    const content = JSON.stringify({
+      fileUrl,
+      metadata,
+      analysisStatus,
+      analysisStartedAt: new Date().toISOString(),
+    });
+
+    return await db.insert(document).values({
+      // Only include 'id' if your schema allows manual id insertion
+      ...(document.id ? { id } : {}),
+      title,
+      kind: "text", // Use an allowed literal from your schema, or update schema to allow "bio-data"
+      content,
+      userId,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    console.error('Failed to save bio analysis document in database', error);
+    throw error;
+  }
+}
+
+export async function updateBioAnalysisStatus({
+  id,
+  analysisStatus,
+  results = null,
+}: {
+  id: string;
+  analysisStatus: string;
+  results?: Record<string, unknown> | null;
+}) {
+  try {
+    // Get existing document to update its content
+    const [existingDoc] = await db
+      .select()
+      .from(document)
+      .where(eq(document.id, id));
+    
+    if (!existingDoc) {
+      throw new Error(`Document with ID ${id} not found`);
+    }
+
+    // Parse existing content
+    const content = JSON.parse(existingDoc.content || '{}');
+    
+    // Update status and optionally add results
+    content.analysisStatus = analysisStatus;
+    content.analysisCompletedAt = new Date().toISOString();
+    
+    if (results) {
+      content.results = results;
+    }
+
+    // Update document with new content
+    return await db
+      .update(document)
+      .set({ 
+        content: JSON.stringify(content)
+      })
+      .where(eq(document.id, id));
+  } catch (error) {
+    console.error('Failed to update bio analysis status in database', error);
+    throw error;
   }
 }
