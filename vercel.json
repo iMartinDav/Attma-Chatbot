@@ -1,6 +1,8 @@
 {
-  "buildCommand": "cd nextjs-frontend && npm install && npm run build",
+  "version": 2,
+  "buildCommand": "cd nextjs-frontend && pnpm install && pnpm run build",
   "outputDirectory": "nextjs-frontend/.next",
+  "installCommand": "cd nextjs-frontend && npm install -g pnpm && pnpm install",
   "framework": "nextjs",
   "rewrites": [
     {
