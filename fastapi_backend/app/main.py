@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, status, Depends, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from typing import Dict, Any
 from dotenv import load_dotenv
 
 # User management imports
@@ -163,6 +164,16 @@ app = FastAPI(
     openapi_url=settings.OPENAPI_URL,
     lifespan=lifespan
 )
+
+# Add health check endpoint for container monitoring
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Health check endpoint for container monitoring"""
+    return {
+        "status": "healthy",
+        "version": getattr(settings, "APP_VERSION", "0.1.0"),
+        "timestamp": time.time()
+    }
 
 # Set FastAPI upload limit globally by modifying the max request size
 # This uses a subclass of UploadFile to increase the allowed upload size
@@ -360,6 +371,14 @@ async def generic_exception_handler(request: Request, exc: Exception):
             "path": request.url.path
         }
     )
+
+# --- Health check route definition ---
+def add_healthcheck(app: FastAPI) -> None:
+    """Add health check endpoint to FastAPI app"""
+    @app.get("/health", tags=["Health"])
+    def health_check() -> Dict[str, str]:
+        """Health check endpoint for container monitoring"""
+        return {"status": "healthy", "version": settings.APP_VERSION}
 
 # Include single-cell routes if available
 try:

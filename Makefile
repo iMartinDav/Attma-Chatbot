@@ -57,7 +57,7 @@ docker-build-backend: ## Build the backend container with no cache
 	$(DOCKER_COMPOSE) build backend --no-cache
 
 docker-build-frontend: ## Build the frontend container with no cache
-	$(DOCKER_COMPOSE) build frontend --no-cache
+	NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILD=true $(DOCKER_COMPOSE) build frontend --no-cache
 
 docker-start-backend: ## Start the backend container in the foreground
 	-$(DOCKER_COMPOSE) stop backend
