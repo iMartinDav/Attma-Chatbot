@@ -106,22 +106,28 @@ WORKERS=4
 
 ## Backend Deployment
 
-### Docker Deployment
+### Railway Deployment
 
-1. **Build Container**:
+The backend is deployed to Railway for improved performance and scalability.
+
+1. **Set Up Railway Project**:
+   - Create an account on [Railway](https://railway.app)
+   - Connect your GitHub repository
+   - Set your backend directory (fastapi_backend) as the source
+
+2. **Configure Environment Variables**:
+   - Add all required environment variables in Railway dashboard
+   - Ensure DATABASE_URL is properly set
+
+3. **Deploy to Railway**:
    ```bash
-   docker build -t bioplatform-backend -f fastapi_backend/Dockerfile .
+   cd fastapi_backend
+   railway up
    ```
 
-2. **Test Container Locally**:
-   ```bash
-   docker run -p 8000:8000 --env-file .env.production bioplatform-backend
-   ```
-
-3. **Deploy Container**:
-   - Push to container registry: `docker push your-registry/bioplatform-backend:latest`
-   - Deploy to your container service (ECS, GKE, etc.)
-   - Configure environment variables
+4. **Access the Deployed Backend**:
+   - The backend is available at [attma-chatbot-production.up.railway.app](https://attma-chatbot-production.up.railway.app)
+   - API documentation is available at [attma-chatbot-production.up.railway.app/docs](https://attma-chatbot-production.up.railway.app/docs)
 
 ### Health Checks
 

@@ -197,8 +197,10 @@ vercel --prod
 ### Backend Deployment
 ```bash
 cd fastapi_backend
-vercel --prod
+railway up
 ```
+
+The backend is deployed to Railway at: [attma-chatbot-production.up.railway.app](https://attma-chatbot-production.up.railway.app)
 
 For detailed deployment instructions, refer to the [Deployment Guide](./docs/deployment.md).
 
