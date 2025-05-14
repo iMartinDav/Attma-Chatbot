@@ -76,7 +76,10 @@ ENV PYTHONPATH=/app \
     SINGLE_CELL_DATA_DIR=/tmp/single_cell_data \
     BLOB_STORE_ID="local" \
     VERCEL_BLOB_TOKEN="dummy_token_for_local_development" \
-    NEXTFLOW_PATH="/usr/local/bin/nextflow"
+    NEXTFLOW_PATH="/usr/local/bin/nextflow" \
+    PORT=8000 \
+    HOST=0.0.0.0 \
+    LOG_LEVEL=info
 
-# Run the FastAPI application using the main entry point
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the FastAPI application using the main entry point with shell form to allow variable substitution
+CMD uvicorn app.main:app --host ${HOST} --port ${PORT} --log-level ${LOG_LEVEL}
