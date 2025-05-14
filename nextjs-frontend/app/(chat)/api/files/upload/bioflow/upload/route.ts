@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { uploadToBlob } from '@/app/lib/blob-upload';
+import { uploadToBlob } from '@/lib/blob-upload';
 import { saveDocument } from '@/lib/db/queries';
 import { auth } from '@/app/(auth)/auth';
 import { rateLimit } from '@/lib/rate-limit';
