@@ -46,9 +46,24 @@
     "hero": {
       "title": "全球首个人工智能生物信息学家",
       "subtitle": "利用前沿人工智能技术革新您的生物数据分析",
-      "ctaStart": "开始对话",
       "ctaExplore": "探索功能",
-      "introducing": "隆重介绍 Attma"
+      "introducing": "隆重介绍 Attma",
+      "promptPlaceholder": "询问 Attma...",
+      "suggestionBubbles": {
+        "analyzeRna": "分析RNA-seq数据",
+        "explainSingleCell": "解释单细胞测序",
+        "compareProteins": "比较蛋白质结构",
+        "identifyMarkers": "识别基因标记物",
+        "visualizeGenomic": "可视化基因组数据",
+        "interpretCrispr": "解读CRISPR结果"
+      },
+      "typingEffectPrompts": [
+        "分析这个RNA-seq数据集以查看差异基因表达...",
+        "您能在这个蛋白质序列比对中识别出哪些模式？",
+        "用简单的术语解释CRISPR-Cas9机制",
+        "帮我解读这些单细胞测序结果",
+        "您能告诉我关于这些基因组变异的信息吗？"
+      ]
     },
     "features": {
       "title": "提升您的研究效率",
