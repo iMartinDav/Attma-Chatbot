@@ -47,9 +47,24 @@
     "hero": {
       "title": "The World's First AI Bioinformatician",
       "subtitle": "Revolutionize your biological data analysis with cutting-edge AI",
-      "ctaStart": "Start Conversation",
       "ctaExplore": "Explore Features",
-      "introducing": "Introducing Attma"
+      "introducing": "Introducing Attma",
+      "promptPlaceholder": "Ask Attma...",
+      "suggestionBubbles": {
+        "analyzeRna": "Analyze RNA-seq data",
+        "explainSingleCell": "Explain single-cell sequencing",
+        "compareProteins": "Compare protein structures",
+        "identifyMarkers": "Identify gene markers",
+        "visualizeGenomic": "Visualize genomic data",
+        "interpretCrispr": "Interpret CRISPR results"
+      },
+      "typingEffectPrompts": [
+        "Analyze this RNA-seq dataset for differential gene expression...",
+        "What patterns can you identify in this protein sequence alignment?",
+        "Explain the CRISPR-Cas9 mechanism in simple terms",
+        "Help me interpret these single-cell sequencing results",
+        "What can you tell me about these genomic variants?"
+      ]
     },
     "features": {
       "title": "Supercharge Your Research",

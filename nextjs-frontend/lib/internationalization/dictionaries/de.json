@@ -46,9 +46,24 @@
     "hero": {
       "title": "Der weltweit erste KI-Bioinformatiker",
       "subtitle": "Revolutionieren Sie Ihre biologische Datenanalyse mit modernster KI",
-      "ctaStart": "Chat starten",
       "ctaExplore": "Funktionen entdecken",
-      "introducing": "Wir präsentieren Attma"
+      "introducing": "Wir präsentieren Attma",
+      "promptPlaceholder": "Fragen Sie Attma...",
+      "suggestionBubbles": {
+        "analyzeRna": "RNA-seq Daten analysieren",
+        "explainSingleCell": "Einzelzellsequenzierung erklären",
+        "compareProteins": "Proteinstrukturen vergleichen",
+        "identifyMarkers": "Gen-Marker identifizieren",
+        "visualizeGenomic": "Genomische Daten visualisieren",
+        "interpretCrispr": "CRISPR-Ergebnisse interpretieren"
+      },
+      "typingEffectPrompts": [
+        "Analysieren Sie diesen RNA-seq-Datensatz auf differentielle Genexpression...",
+        "Welche Muster können Sie in diesem Protein-Sequenz-Alignment identifizieren?",
+        "Erklären Sie den CRISPR-Cas9-Mechanismus in einfachen Worten",
+        "Helfen Sie mir, diese Einzelzellsequenzierungsergebnisse zu interpretieren",
+        "Was können Sie mir über diese genomischen Varianten sagen?"
+      ]
     },
     "features": {
       "title": "Beschleunigen Sie Ihre Forschung",

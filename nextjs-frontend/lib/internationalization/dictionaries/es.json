@@ -46,9 +46,24 @@
     "hero": {
       "title": "El Primer Bioinformático con IA del Mundo",
       "subtitle": "Revolucione su análisis de datos biológicos con IA de vanguardia",
-      "ctaStart": "Comenzar Conversación",
       "ctaExplore": "Explorar Características",
-      "introducing": "Presentamos a Attma"
+      "introducing": "Presentamos a Attma",
+      "promptPlaceholder": "Pregunta a Attma...",
+      "suggestionBubbles": {
+        "analyzeRna": "Analizar datos de ARN-seq",
+        "explainSingleCell": "Explicar secuenciación unicelular",
+        "compareProteins": "Comparar estructuras proteicas",
+        "identifyMarkers": "Identificar marcadores génicos",
+        "visualizeGenomic": "Visualizar datos genómicos",
+        "interpretCrispr": "Interpretar resultados CRISPR"
+      },
+      "typingEffectPrompts": [
+        "Analiza este conjunto de datos de RNA-seq para expresión génica diferencial...",
+        "¿Qué patrones puedes identificar en esta alineación de secuencias de proteínas?",
+        "Explica el mecanismo CRISPR-Cas9 en términos simples",
+        "Ayúdame a interpretar estos resultados de secuenciación de células individuales",
+        "¿Qué puedes decirme sobre estas variantes genómicas?"
+      ]
     },
     "features": {
       "title": "Potencie su Investigación",

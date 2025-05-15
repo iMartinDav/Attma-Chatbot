@@ -1,24 +1,108 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Sparkles, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { Locale } from '@/lib/internationalization/config';
 
-// Define the props interface to fix the type error
 interface HeroProps {
   dictionary: {
     title: string;
     subtitle: string;
     introducing?: string;
-    ctaStart?: string;
     ctaExplore?: string;
+    promptPlaceholder?: string;
+    suggestionBubbles?: {
+      analyzeRna?: string;
+      explainSingleCell?: string;
+      compareProteins?: string;
+      identifyMarkers?: string;
+      visualizeGenomic?: string;
+      interpretCrispr?: string;
+    };
+    typingEffectPrompts?: string[];
   };
   locale: Locale;
 }
 
+const DEFAULT_SAMPLE_PROMPTS = [
+  "Analyze this RNA-seq dataset for differential gene expression...",
+  "What patterns can you identify in this protein sequence alignment?",
+  "Explain the CRISPR-Cas9 mechanism in simple terms",
+  "Help me interpret these single-cell sequencing results",
+  "What can you tell me about these genomic variants?",
+];
+
 export const Hero = ({ dictionary, locale }: HeroProps) => {
+  const [query, setQuery] = useState('');
+  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  const [currentText, setCurrentText] = useState('');
+  const router = useRouter();
+
+  const samplePrompts = dictionary.typingEffectPrompts?.length 
+    ? dictionary.typingEffectPrompts
+    : DEFAULT_SAMPLE_PROMPTS;
+  
+  useEffect(() => {
+    if (!samplePrompts.length) return;
+    
+    const safeIndex = Math.min(currentPlaceholderIndex, samplePrompts.length - 1);
+    const placeholder = samplePrompts[safeIndex];
+    
+    let typingTimer: NodeJS.Timeout;
+    let erasingTimer: NodeJS.Timeout;
+
+    if (isTyping) {
+      if (currentText.length < placeholder.length) {
+        typingTimer = setTimeout(() => {
+          setCurrentText(placeholder.substring(0, currentText.length + 1));
+        }, 50);
+      } else {
+        setIsTyping(false);
+        erasingTimer = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000);
+      }
+    } else {
+      if (currentText.length > 0) {
+        erasingTimer = setTimeout(() => {
+          setCurrentText(currentText.substring(0, currentText.length - 1));
+        }, 30);
+      } else {
+        setIsTyping(true);
+        setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % samplePrompts.length);
+      }
+    }
+
+    return () => {
+      clearTimeout(typingTimer);
+      clearTimeout(erasingTimer);
+    };
+  }, [currentText, currentPlaceholderIndex, isTyping, samplePrompts]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (query.trim()) {
+        const encodedQuery = encodeURIComponent(query.trim());
+        const maxLength = 2000;
+        const safeQuery = encodedQuery.length > maxLength 
+          ? encodedQuery.substring(0, maxLength) 
+          : encodedQuery;
+          
+        router.push(`/${locale}/chat?prompt=${safeQuery}`);
+      } else {
+        router.push(`/${locale}/chat`);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      router.push(`/${locale}/chat`);
+    }
+  };
+
   return (
     <section className="relative py-20 md:py-32 overflow-hidden w-full">
       {/* Decorative background elements */}
@@ -54,20 +138,58 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
             {dictionary.subtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <Link href={`/${locale}/chat`}>
-              <Button size="lg" className="font-medium w-full sm:w-auto">
-                {dictionary.ctaStart || 'Start Chatting'}{' '}
-                <ArrowRight className="ml-1.5 size-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              className="font-medium w-full sm:w-auto"
-            >
-              {dictionary.ctaExplore || 'Explore Features'}
-            </Button>
+          <div className="w-full max-w-3xl mt-8">
+            <form onSubmit={handleSubmit}>
+              <div className="relative bg-background/20 backdrop-blur-md rounded-xl overflow-hidden border border-[#20c997]/30 shadow-lg">
+                <Input
+                  type="text"
+                  placeholder={currentText || (dictionary.promptPlaceholder || 'Ask Attma...')}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full px-6 py-4 h-20 text-lg border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground"
+                  autoComplete="off"
+                  aria-label={dictionary.promptPlaceholder || 'Ask Attma...'}
+                />
+                <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="h-10 w-10 rounded-full bg-[#20c997] hover:bg-[#20c997]/90"
+                    aria-label="Submit question"
+                  >
+                    <ArrowUp className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            </form>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              {dictionary.suggestionBubbles && Object.entries(dictionary.suggestionBubbles).map(([key, text]) => {
+                if (!text) return null;
+                
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-label={`Suggestion: ${text}`}
+                    className="px-4 py-2 text-sm font-medium rounded-full border border-[#343541]/20
+                             bg-background/30 backdrop-blur-sm hover:border-[#20c997]/50 transition-colors
+                             text-foreground/80 hover:text-foreground hover:bg-background/50"
+                    onClick={() => {
+                      setQuery(text);
+                      const form = document.querySelector<HTMLFormElement>('form');
+                      if (form) {
+                        form.requestSubmit();
+                      } else {
+                        handleSubmit(new Event('click') as unknown as React.FormEvent);
+                      }
+                    }}
+                  >
+                    {text}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
