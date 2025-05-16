@@ -19,5 +19,5 @@ export type LocaleParams = {
 export const defaultLocale = 'en';
 
 export function isValidLocale(locale: string): locale is Locale {
-  return locales.includes(locale as any);
+  return locales.includes(locale as Locale);
 }

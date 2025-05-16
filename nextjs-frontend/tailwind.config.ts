@@ -114,6 +114,7 @@ const config: Config = {
         'soft-sm': '0 2px 4px rgba(37, 198, 163, 0.06)',
         'soft-md': '0 4px 6px rgba(37, 198, 163, 0.1)',
         'soft-lg': '0 10px 15px rgba(37, 198, 163, 0.1)',
+        'attma-subtle': '0 0 0 1px rgba(37, 198, 163, 0.12), 0 2px 8px rgba(37, 198, 163, 0.08)',
         glass:
           '0 0 0 1px rgba(37, 198, 163, 0.05), 0 4px 6px rgba(37, 198, 163, 0.1)',
       },
