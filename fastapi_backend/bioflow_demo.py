@@ -7,14 +7,17 @@ It creates a simple matrix file and performs basic operations on it.
 """
 
 import os
-import tempfile
 import sys
-from pathlib import Path
+import tempfile
 
 # Add the parent directory to the path so we can import the module
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi_backend.bioflow.biodata import MatrixStructure, BioinformaticsProcessor, WorkflowRunner
+from fastapi_backend.bioflow.biodata import (
+    BioinformaticsProcessor,
+    MatrixStructure,
+    WorkflowRunner,
+)
 
 
 def create_test_matrix():

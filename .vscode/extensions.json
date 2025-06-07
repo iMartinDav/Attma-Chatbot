@@ -1,0 +1,75 @@
+{
+	"recommendations": [
+		// Essential GitHub Copilot & AI
+		"GitHub.copilot",
+		"GitHub.copilot-chat",
+		
+		// Python Development (uv + FastAPI)
+		"ms-python.python",
+		"ms-python.pylance", 
+		"ms-python.black-formatter",
+		"ms-python.isort",
+		"charliermarsh.ruff",
+		
+		// JavaScript/TypeScript (Next.js + Biome)
+		"biomejs.biome",
+		"bradlc.vscode-tailwindcss",
+		"esbenp.prettier-vscode",
+		
+		// Docker & Containers
+		"ms-azuretools.vscode-docker",
+		"ms-vscode-remote.remote-containers",
+		
+		// Database & SQL
+		"cweijan.vscode-mysql-client2",
+		"mtxr.sqltools",
+		"mtxr.sqltools-driver-pg",
+		
+		// TOML & Configuration Files
+		"tamasfe.even-better-toml",
+		"redhat.vscode-yaml",
+		
+		// Git & Version Control
+		"eamodio.gitlens",
+		"GitHub.vscode-pull-request-github",
+		
+		// Code Quality & Utilities
+		"streetsidesoftware.code-spell-checker",
+		"EditorConfig.EditorConfig",
+		"usernamehw.errorlens",
+		"oderwat.indent-rainbow",
+		"christian-kohler.path-intellisense",
+		
+		// Testing & Debugging
+		"ms-playwright.playwright",
+		"hbenl.vscode-test-explorer",
+		
+		// Productivity
+		"Gruntfuggly.todo-tree",
+		"shardulm94.trailing-spaces",
+		"PKief.material-icon-theme",
+		"vscode-icons-team.vscode-icons",
+		
+		// Next.js Specific
+		"foxundermoon.next-js",
+		"burkeholland.simple-react-snippets",
+		"dsznajder.es7-react-js-snippets",
+		
+		// FastAPI Specific
+		"ms-toolsai.jupyter",
+		"ms-toolsai.jupyter-renderers"
+	],
+	"unwantedRecommendations": [
+		// Avoid conflicting formatters
+		"ms-python.autopep8",
+		"ms-python.flake8",
+		"dbaeumer.vscode-eslint",
+		
+		// Avoid deprecated tools
+		"ms-python.pylint",
+		"hookyqr.beautify",
+		
+		// Avoid conflicting Docker tools
+		"peterjausovec.vscode-docker"
+	]
+}

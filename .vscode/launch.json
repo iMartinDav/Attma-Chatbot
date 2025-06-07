@@ -1,0 +1,77 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "🐍 Debug: FastAPI Backend",
+			"type": "debugpy",
+			"request": "launch",
+			"program": "${workspaceFolder}/fastapi_backend/bioflow_venv/bin/uvicorn",
+			"args": [
+				"app.main:app",
+				"--reload",
+				"--host",
+				"0.0.0.0",
+				"--port",
+				"8000"
+			],
+			"cwd": "${workspaceFolder}/fastapi_backend",
+			"env": {
+				"PYTHONPATH": "${workspaceFolder}/fastapi_backend"
+			},
+			"console": "integratedTerminal",
+			"justMyCode": false,
+			"django": false,
+			"autoReload": {
+				"enable": true
+			}
+		},
+		{
+			"name": "🧪 Debug: Python Tests",
+			"type": "debugpy",
+			"request": "launch",
+			"module": "pytest",
+			"args": [
+				"-v",
+				"--tb=short"
+			],
+			"cwd": "${workspaceFolder}/fastapi_backend",
+			"env": {
+				"PYTHONPATH": "${workspaceFolder}/fastapi_backend"
+			},
+			"console": "integratedTerminal",
+			"justMyCode": false
+		},
+		{
+			"name": "⚡ Debug: Next.js Frontend",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceFolder}/nextjs-frontend/node_modules/.bin/next",
+			"args": ["dev"],
+			"cwd": "${workspaceFolder}/nextjs-frontend",
+			"env": {
+				"NODE_OPTIONS": "--inspect"
+			},
+			"console": "integratedTerminal",
+			"serverReadyAction": {
+				"pattern": "started server on .+, url: (https?://.+)",
+				"uriFormat": "%s",
+				"action": "debugWithChrome"
+			}
+		}
+	],
+	"compounds": [
+		{
+			"name": "🚀 Debug: Full Stack Development",
+			"configurations": [
+				"🐍 Debug: FastAPI Backend",
+				"⚡ Debug: Next.js Frontend"
+			],
+			"stopAll": true,
+			"presentation": {
+				"hidden": false,
+				"group": "Full Stack",
+				"order": 1
+			}
+		}
+	]
+}

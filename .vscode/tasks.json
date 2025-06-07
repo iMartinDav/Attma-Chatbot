@@ -1,0 +1,220 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "🐳 Docker: Build & Start All Services",
+			"type": "shell",
+			"command": "docker-compose up --build",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"detail": "Build and start all Docker services (frontend + backend)"
+		},
+		{
+			"label": "🐍 Backend: uv sync & install",
+			"type": "shell",
+			"command": "cd fastapi_backend && uv sync",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [],
+			"detail": "Sync Python dependencies using uv"
+		},
+		{
+			"label": "🚀 Backend: Start FastAPI Server",
+			"type": "shell",
+			"command": "cd fastapi_backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": {
+					"regexp": ".",
+					"file": 1,
+					"location": 2,
+					"message": 3
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Started server process",
+					"endsPattern": "Uvicorn running on"
+				}
+			},
+			"detail": "Start FastAPI development server with hot reload"
+		},
+		{
+			"label": "⚡ Frontend: Start Next.js Dev Server",
+			"type": "shell",
+			"command": "cd nextjs-frontend && pnpm dev",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": {
+					"regexp": ".",
+					"file": 1,
+					"location": 2,
+					"message": 3
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Starting the development server",
+					"endsPattern": "Ready in"
+				}
+			},
+			"detail": "Start Next.js development server with Tailwind CSS v4"
+		},
+		{
+			"label": "🎨 Format: All Code (Biome + Black)",
+			"type": "shell",
+			"command": "cd nextjs-frontend && pnpm biome format --write . && cd ../fastapi_backend && uv run black .",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [],
+			"detail": "Format all JavaScript/TypeScript with Biome and Python with Black"
+		},
+		{
+			"label": "🔍 Lint: All Code (Biome + Ruff)",
+			"type": "shell",
+			"command": "cd nextjs-frontend && pnpm biome lint . && cd ../fastapi_backend && uv run ruff check .",
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [
+				"$eslint-stylish",
+				{
+					"pattern": {
+						"regexp": "^(.+):(\\d+):(\\d+): (.+) (.+)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"severity": 4,
+						"message": 5
+					}
+				}
+			],
+			"detail": "Lint JavaScript/TypeScript with Biome and Python with Ruff"
+		},
+		{
+			"label": "🧪 Test: Backend (pytest)",
+			"type": "shell",
+			"command": "cd fastapi_backend && uv run pytest -v",
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": {
+				"pattern": {
+					"regexp": "^(.+):(\\d+): (.+)$",
+					"file": 1,
+					"line": 2,
+					"message": 3
+				}
+			},
+			"detail": "Run Python tests with pytest"
+		},
+		{
+			"label": "🧪 Test: Frontend (Jest)",
+			"type": "shell",
+			"command": "cd nextjs-frontend && pnpm test",
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [],
+			"detail": "Run frontend tests with Jest"
+		},
+		{
+			"label": "🗄️ Database: Run Migrations",
+			"type": "shell",
+			"command": "cd fastapi_backend && uv run alembic upgrade head",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [],
+			"detail": "Run database migrations with Alembic"
+		},
+		{
+			"label": "🧹 Clean: All Build Artifacts",
+			"type": "shell",
+			"command": "docker-compose down && docker system prune -f && cd nextjs-frontend && rm -rf .next node_modules && cd ../fastapi_backend && rm -rf __pycache__ .pytest_cache .mypy_cache .ruff_cache",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true
+			},
+			"problemMatcher": [],
+			"detail": "Clean all build artifacts, caches, and Docker containers"
+		},
+		{
+			"label": "🔄 Full Development Setup",
+			"type": "shell",
+			"command": "echo '🚀 Starting full development environment...' && cd fastapi_backend && uv sync && cd ../nextjs-frontend && pnpm install && cd .. && docker-compose up --build",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "new",
+				"showReuseMessage": true
+			},
+			"isBackground": false,
+			"problemMatcher": [],
+			"detail": "Complete setup: install dependencies and start all services"
+		}
+	]
+}
