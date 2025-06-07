@@ -107,7 +107,7 @@ export function SingleCellVisualization({
     <div className="h-full w-full p-4">
       <div className="grid grid-cols-2 gap-4 h-full">
         {/* QC Metrics */}
-        <div className="bg-background p-4 rounded-lg shadow-sm">
+        <div className="bg-background p-4 rounded-lg shadow-xs">
           <h3 className="font-semibold mb-4 text-lg">Quality Control</h3>
           <p className="text-sm text-muted-foreground">
             Placeholder for QC metrics (e.g., violin plots, histograms).
@@ -115,7 +115,7 @@ export function SingleCellVisualization({
         </div>
 
         {/* Dimensionality Reduction */}
-        <div className="bg-background p-4 rounded-lg shadow-sm">
+        <div className="bg-background p-4 rounded-lg shadow-xs">
           <h3 className="font-semibold mb-4 text-lg">
             Dimensionality Reduction
           </h3>
@@ -144,7 +144,7 @@ export function SingleCellVisualization({
         </div>
 
         {/* Cluster Analysis */}
-        <div className="col-span-2 bg-background p-4 rounded-lg shadow-sm">
+        <div className="col-span-2 bg-background p-4 rounded-lg shadow-xs">
           <h3 className="font-semibold mb-4 text-lg">Cluster Analysis</h3>
           <p className="text-sm text-muted-foreground">
             Placeholder for cluster analysis (e.g., marker gene expression,

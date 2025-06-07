@@ -77,7 +77,7 @@ function SidebarUserNavComponent({ user }: SidebarUserNavProps) {
             side="top"
             align="start"
             sideOffset={8}
-            className="w-[--radix-popper-anchor-width] min-w-[200px] animate-in slide-in-from-top-2 fade-in-0 z-50 p-1"
+            className="w-(--radix-popper-anchor-width) min-w-[200px] animate-in slide-in-from-top-2 fade-in-0 z-50 p-1"
           >
             <DropdownMenuItem className="px-1.5 py-1 focus:bg-transparent w-full hover:bg-transparent">
               <ThemeSwitcher />

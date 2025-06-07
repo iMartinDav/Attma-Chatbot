@@ -32,7 +32,7 @@ export function PasswordInput({
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
-        className={`w-full px-3 py-2.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 focus:border-[#25C6A3] pr-10 focus:outline-none transition-all duration-300 ${className}`}
+        className={`w-full px-3 py-2.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 focus:border-[#25C6A3] pr-10 focus:outline-hidden transition-all duration-300 ${className}`}
         onChange={(e) => setPassword(e.target.value)}
         value={password}
         {...props}

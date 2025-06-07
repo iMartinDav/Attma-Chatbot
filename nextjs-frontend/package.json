@@ -127,6 +127,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@tailwindcss/postcss": "^4.1.8",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.3.1",
@@ -152,7 +153,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "next-router-mock": "^0.9.13",
     "postcss": "^8.5.4",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.8",
     "ts-jest": "^29.3.4",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"

@@ -48,7 +48,7 @@ export function SourceLinks({ sources }: { sources: SourceLink[] }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-normal 
                   rounded-full border border-zinc-200 dark:border-zinc-800 bg-background/80
-                  hover:bg-accent/20 shadow-sm max-w-[200px] transition-colors no-underline text-foreground"
+                  hover:bg-accent/20 shadow-xs max-w-[200px] transition-colors no-underline text-foreground"
               >
                 <span
                   className="inline-flex items-center justify-center size-4 mr-1 text-xs 

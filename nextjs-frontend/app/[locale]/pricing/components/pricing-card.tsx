@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import { ArrowRight, CheckCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ArrowRight, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 
 interface PricingCardProps {
   title: string;
@@ -30,7 +30,7 @@ export function PricingCard({
         'relative flex flex-col p-6 rounded-xl border transition-all duration-200',
         highlighted
           ? 'border-primary shadow-lg'
-          : 'border-border hover:border-primary/40 hover:shadow-sm',
+          : 'border-border hover:border-primary/40 hover:shadow-xs',
       )}
     >
       {mostPopular && (

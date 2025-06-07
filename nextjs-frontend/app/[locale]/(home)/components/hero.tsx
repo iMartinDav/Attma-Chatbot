@@ -190,15 +190,15 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-linear-to-b from-background/80 via-background to-background/80 backdrop-blur-xs"
         />
         <div
           aria-hidden="true"
-          className="absolute left-1/2 top-10 w-[300%] max-w-[36rem] aspect-square -translate-x-1/2 bg-gradient-to-r from-violet-300/30 to-purple-300/30 blur-3xl dark:from-violet-700/30 dark:to-purple-700/30 sm:w-[100%]"
+          className="absolute left-1/2 top-10 w-[300%] max-w-xl aspect-square -translate-x-1/2 bg-linear-to-r from-violet-300/30 to-purple-300/30 blur-3xl dark:from-violet-700/30 dark:to-purple-700/30 sm:w-full"
         />
         <div
           aria-hidden="true"
-          className="absolute left-1/2 top-10 w-[300%] max-w-[36rem] aspect-square translate-x-1/4 bg-gradient-to-r from-indigo-300/30 to-blue-300/30 blur-3xl dark:from-indigo-700/30 dark:to-blue-700/30 sm:w-[100%]"
+          className="absolute left-1/2 top-10 w-[300%] max-w-xl aspect-square translate-x-1/4 bg-linear-to-r from-indigo-300/30 to-blue-300/30 blur-3xl dark:from-indigo-700/30 dark:to-blue-700/30 sm:w-full"
         />
       </div>
 
@@ -211,7 +211,7 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
             <Sparkles className="ml-1 size-3 sm:size-3.5 text-primary" />
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl xl:text-7xl max-w-3xl mx-auto bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-2">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl xl:text-7xl max-w-3xl mx-auto bg-clip-text text-transparent bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-2">
             {dictionary.title}
           </h1>
 
@@ -277,9 +277,9 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
                           type="button"
                           aria-label={`Suggestion: ${text}`}
                           className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full border border-[#343541]/20
-                              bg-background/30 backdrop-blur-sm hover:border-[#20c997]/50 transition-all
+                              bg-background/30 backdrop-blur-xs hover:border-[#20c997]/50 transition-all
                               text-foreground/80 hover:text-foreground hover:bg-background/50 active:scale-95 whitespace-nowrap
-                              touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#20c997]/50 focus:ring-offset-1
+                              touch-manipulation focus:outline-hidden focus:ring-2 focus:ring-[#20c997]/50 focus:ring-offset-1
                               snap-start snap-always select-none"
                           onClick={() => {
                             if (isSubmitting) return;

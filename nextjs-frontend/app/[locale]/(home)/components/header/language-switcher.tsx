@@ -93,7 +93,7 @@ export function LanguageSwitcher({
   };
 
   const triggerClasses =
-    'w-[50px] min-w-[50px] h-[40px] rounded-full bg-background/50 backdrop-blur-sm border-neutral-200/30 hover:bg-background/80 transition-all duration-200 px-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary/20';
+    'w-[50px] min-w-[50px] h-[40px] rounded-full bg-background/50 backdrop-blur-xs border-neutral-200/30 hover:bg-background/80 transition-all duration-200 px-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary/20';
   const contentClasses =
     'bg-background/80 backdrop-blur-md border-neutral-200/30 rounded-xl shadow-lg p-1 min-w-[180px]';
   const itemBaseClasses = cn(

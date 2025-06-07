@@ -79,7 +79,7 @@ export function ImageEditor({
           >
             <div
               className={cn('relative', {
-                'max-h-[calc(100dvh-140px)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow':
+                'max-h-[calc(100dvh-140px)] rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-shadow':
                   !isInline,
                 'w-full h-full rounded-t-xl overflow-hidden': isInline,
               })}

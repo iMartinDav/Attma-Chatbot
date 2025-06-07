@@ -32,8 +32,8 @@ export function ContactCTA({ locale, dictionary = {} }: ContactCTAProps) {
     >
       {/* Background blur effects */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute opacity-20 -top-32 -left-32 size-[30rem] rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute opacity-20 -bottom-32 -right-32 size-[30rem] rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute opacity-20 -top-32 -left-32 size-120 rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute opacity-20 -bottom-32 -right-32 size-120 rounded-full bg-primary/20 blur-3xl" />
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -52,7 +52,7 @@ export function ContactCTA({ locale, dictionary = {} }: ContactCTAProps) {
         <Link href={`/${locale}/contact`} className="md:shrink-0">
           <Button
             size="lg"
-            className="bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 px-8 text-base font-medium shadow-sm"
+            className="bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 px-8 text-base font-medium shadow-xs"
           >
             {buttonText} <ArrowRight className="ml-1.5 size-4" />
           </Button>

@@ -122,14 +122,14 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
           >
             {/* Improved gradient background with better opacity handling */}
             <div
-              className={`absolute inset-0 opacity-5 bg-gradient-to-br ${action.gradientFrom} ${action.gradientTo} group-hover:opacity-10 transition-opacity duration-300 ease-in-out`}
+              className={`absolute inset-0 opacity-5 bg-linear-to-br ${action.gradientFrom} ${action.gradientTo} group-hover:opacity-10 transition-opacity duration-300 ease-in-out`}
             />
 
             <div className="relative flex flex-col items-start gap-2 text-left w-full">
               <div className="flex items-center gap-2">
                 {/* Enhanced icon container with more sophisticated gradient */}
                 <div
-                  className={`p-1.5 rounded-md bg-gradient-to-br ${action.gradientFrom} ${action.gradientTo} shadow-sm`}
+                  className={`p-1.5 rounded-md bg-linear-to-br ${action.gradientFrom} ${action.gradientTo} shadow-xs`}
                 >
                   <action.icon
                     className="size-4 text-white"

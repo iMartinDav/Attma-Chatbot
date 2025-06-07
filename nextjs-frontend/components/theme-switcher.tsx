@@ -40,7 +40,7 @@ export function ThemeSwitcher() {
         Switch theme
       </div>
       <TooltipProvider>
-        <div className="flex items-center justify-between rounded-xl bg-muted/50 p-2 w-full shadow-sm ring-1 ring-muted/10">
+        <div className="flex items-center justify-between rounded-xl bg-muted/50 p-2 w-full shadow-xs ring-1 ring-muted/10">
           {themes.map(({ id, name, icon: Icon }) => (
             <Tooltip key={id} delayDuration={300}>
               <TooltipTrigger asChild>
