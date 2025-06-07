@@ -253,7 +253,7 @@ const PdfControls: React.FC<PdfControlsProps> = ({
       <div
         className={cn(
           'bg-background/70 backdrop-blur-md rounded-full border border-border/50',
-          'shadow-sm transition-all duration-300 px-4 py-2',
+          'shadow-xs transition-all duration-300 px-4 py-2',
           controlsVisible ? 'opacity-100' : 'opacity-50 hover:opacity-100',
         )}
       >
@@ -335,7 +335,7 @@ const PdfControls: React.FC<PdfControlsProps> = ({
 };
 
 const LoadingView = () => (
-  <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-sm shadow-xl ring-1 ring-border/10 rounded-xl">
+  <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-xs shadow-xl ring-1 ring-border/10 rounded-xl">
     <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
       <div className="animate-spin mb-4">
         <LoaderIcon size={32} />
@@ -349,7 +349,7 @@ const LoadingView = () => (
 );
 
 const ErrorView = ({ error }: { error: string }) => (
-  <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-sm shadow-xl ring-1 ring-border/10 rounded-xl">
+  <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-xs shadow-xl ring-1 ring-border/10 rounded-xl">
     <div className="flex flex-col items-center justify-center min-h-[60vh] bg-red-50 dark:bg-red-900/20 rounded-lg p-6">
       <span className="text-red-600 dark:text-red-400 text-lg font-medium">
         Error Loading PDF
@@ -400,7 +400,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
         }}
       />
       <div
-        className="w-full bg-gray-100 dark:bg-gray-900/50 flex-grow overflow-hidden"
+        className="w-full bg-gray-100 dark:bg-gray-900/50 grow overflow-hidden"
         style={{ height: pdfHeight }}
       >
         {pdfData && (

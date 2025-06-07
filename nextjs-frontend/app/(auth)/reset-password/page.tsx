@@ -11,7 +11,7 @@ import { SubmitButton } from '@/components/submit-button';
 // Loading component to show while suspense is active
 function LoadingState() {
   return (
-    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-gradient-to-br from-white to-zinc-200 dark:from-black dark:to-zinc-900">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-linear-to-br from-white to-zinc-200 dark:from-black dark:to-zinc-900">
       <div className="text-center">
         <div className="size-16 border-4 border-t-[#25C6A3] border-x-transparent border-b-transparent rounded-full animate-spin mx-auto" />
         <p className="mt-4 text-zinc-600 dark:text-zinc-400">Loading...</p>
@@ -85,25 +85,25 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-gradient-to-br from-white to-zinc-200 dark:from-black dark:to-zinc-900 text-black dark:text-white relative px-4">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-linear-to-br from-white to-zinc-200 dark:from-black dark:to-zinc-900 text-black dark:text-white relative px-4">
       <div className="w-full max-w-sm md:max-w-md overflow-hidden rounded-2xl flex flex-col gap-8">
         {/* Logo and branding */}
         <div className="flex flex-col items-center justify-center text-center space-y-2">
           <div className="relative">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-black to-zinc-600 dark:from-white dark:to-zinc-400">
+              <span className="bg-clip-text text-transparent bg-linear-to-r from-black to-zinc-600 dark:from-white dark:to-zinc-400">
                 Create New
               </span>
             </h1>
             <div className="relative inline-flex items-center justify-center">
               <span
                 className="text-7xl md:text-8xl font-black relative z-10
-                bg-gradient-to-r from-[#25C6A3] via-[#4EF9DB] to-[#25C6A3] bg-clip-text text-transparent
+                bg-linear-to-r from-[#25C6A3] via-[#4EF9DB] to-[#25C6A3] bg-clip-text text-transparent
                 animate-text-shine tracking-tight"
               >
                 Password
               </span>
-              <div className="absolute -inset-1 blur-sm bg-[#25C6A3] opacity-5" />
+              <div className="absolute -inset-1 blur-xs bg-[#25C6A3] opacity-5" />
             </div>
           </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-xs mx-auto">
@@ -112,7 +112,7 @@ function ResetPasswordForm() {
         </div>
 
         {/* Form section */}
-        <div className="backdrop-blur-sm rounded-xl overflow-hidden">
+        <div className="backdrop-blur-xs rounded-xl overflow-hidden">
           <form
             ref={formRef}
             onSubmit={handleSubmit}

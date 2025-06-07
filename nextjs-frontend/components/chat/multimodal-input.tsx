@@ -606,9 +606,9 @@ function PureMultimodalInput({
             value={input}
             onChange={handleInput}
             className={cx(
-              'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 w-full',
+              'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl text-base! bg-muted pb-10 dark:border-zinc-700 w-full',
               className,
-              isSearchMode && 'border-2 border-[#80f1e5]',
+              isSearchMode && 'border-2 border-attma-logo',
             )}
             rows={2}
             autoFocus
@@ -709,7 +709,7 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-[#80f1e5] hover:bg-zinc-200"
+      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 dark:hover:bg-attma-logo hover:bg-zinc-200"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();

@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 transition-all duration-300 relative overflow-hidden group',
+  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 transition-all duration-300 relative overflow-hidden group',
   {
     variants: {
       variant: {
@@ -85,7 +85,7 @@ export function SubmitButton({
       ) : (
         <>
           {children}
-          <span className="absolute inset-0 size-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          <span className="absolute inset-0 size-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </>
       )}
     </button>

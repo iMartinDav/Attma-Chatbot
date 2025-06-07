@@ -191,7 +191,7 @@ export function ContactForm({ dictionary, locale }: ContactFormProps) {
           </p>
           <Button
             onClick={() => router.push(`/${locale}`)}
-            className="mt-8 bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-sm"
+            className="mt-8 bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-xs"
           >
             {dictionary.success.button} <ArrowRight className="ml-2 size-4" />
           </Button>
@@ -261,7 +261,7 @@ export function ContactForm({ dictionary, locale }: ContactFormProps) {
         <div>
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 border border-[#25C6A3]/20 rounded-lg p-6 bg-card shadow-sm hover:border-[#25C6A3]/30 transition-colors duration-200"
+            className="space-y-6 border border-[#25C6A3]/20 rounded-lg p-6 bg-card shadow-xs hover:border-[#25C6A3]/30 transition-colors duration-200"
           >
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -343,7 +343,7 @@ export function ContactForm({ dictionary, locale }: ContactFormProps) {
 
             <Button
               type="submit"
-              className="w-full bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-sm"
+              className="w-full bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-xs"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : dictionary.form.submit}

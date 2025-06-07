@@ -67,7 +67,7 @@ export const getTextGradient = (
   const currentTheme = theme || 'light';
 
   // Return the appropriate gradient with the clip text setup
-  return `bg-gradient-to-r ${TEXT_GRADIENTS[style][currentTheme]} bg-clip-text text-transparent`;
+  return `bg-linear-to-r ${TEXT_GRADIENTS[style][currentTheme]} bg-clip-text text-transparent`;
 };
 
 /**
@@ -82,7 +82,7 @@ export const getButtonGradient = (
   isHovered = false,
 ) => {
   if (isHovered && style === 'primary') {
-    return `bg-gradient-to-r ${BUTTON_GRADIENTS.primaryHover}`;
+    return `bg-linear-to-r ${BUTTON_GRADIENTS.primaryHover}`;
   }
-  return `bg-gradient-to-r ${BUTTON_GRADIENTS[style]}`;
+  return `bg-linear-to-r ${BUTTON_GRADIENTS[style]}`;
 };

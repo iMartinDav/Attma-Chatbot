@@ -237,7 +237,7 @@ const PureSpreadsheetEditor = ({
                 'min-w-[100px] min-h-[32px] p-2 truncate text-left bg-transparent border-none',
                 isSystemMode
                   ? 'cursor-not-allowed bg-muted/50 text-muted-foreground'
-                  : 'cursor-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring',
+                  : 'cursor-text focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-ring',
               )}
               onClick={() => {
                 if (!isSystemMode) {
@@ -354,7 +354,7 @@ const PureSpreadsheetEditor = ({
 
         <div
           className={cn(
-            'p-[2px] rounded-xl bg-gradient-to-r shadow-xl',
+            'p-[2px] rounded-xl bg-linear-to-r shadow-xl',
             isSystemMode
               ? 'from-amber-500/20 via-orange-500/20 to-yellow-500/20'
               : 'from-indigo-500/20 via-purple-500/20 to-pink-500/20',
@@ -501,7 +501,7 @@ const SearchInput = ({
       placeholder="Search data content..."
       value={value}
       onChange={onChange}
-      className="pl-9 rounded-full border-border shadow-sm"
+      className="pl-9 rounded-full border-border shadow-xs"
     />
     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
       <Search className="size-4" />
@@ -546,7 +546,7 @@ const PageSizeSelector = ({
   onChange: (value: string) => void;
 }) => (
   <Select value={value} onValueChange={onChange}>
-    <SelectTrigger className="h-9 w-[120px] rounded-full border-border shadow-sm">
+    <SelectTrigger className="h-9 w-[120px] rounded-full border-border shadow-xs">
       <SelectValue placeholder={`${value} rows`} />
     </SelectTrigger>
     <SelectContent className="rounded-xl border-border">

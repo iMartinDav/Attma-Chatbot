@@ -179,7 +179,7 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ dictionary }) => {
             <button
               type="button"
               onClick={prevSlide}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur border border-border rounded-full p-2 shadow-md hover:bg-muted transition-all"
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm border border-border rounded-full p-2 shadow-md hover:bg-muted transition-all"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="size-5" />
@@ -187,7 +187,7 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ dictionary }) => {
             <button
               type="button"
               onClick={nextSlide}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur border border-border rounded-full p-2 shadow-md hover:bg-muted transition-all"
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm border border-border rounded-full p-2 shadow-md hover:bg-muted transition-all"
               aria-label="Next testimonial"
             >
               <ChevronRight className="size-5" />

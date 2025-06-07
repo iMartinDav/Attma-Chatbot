@@ -31,7 +31,7 @@ import {
 import type { Locale } from '@/lib/internationalization/config';
 import { LanguageSwitcher } from './language-switcher';
 
-export const ATTMA_COLOR_CLASS = 'text-[#80f1e5]';
+export const ATTMA_COLOR_CLASS = 'text-attma-logo';
 export const ATTMA_BOLD_CLASS = 'text-ultra-bold';
 
 // ------ Types ------
@@ -219,7 +219,7 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
       className={cn(
         'sticky top-0 z-50 w-full backdrop-blur-md transition-all duration-300',
         scrolled
-          ? 'border-b border-border/40 bg-background/95 shadow-sm'
+          ? 'border-b border-border/40 bg-background/95 shadow-xs'
           : 'bg-background/80',
       )}
     >
@@ -398,7 +398,7 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
 
             <div className="p-4 pt-2 pb-6">
               <Link href={`/${locale}/chat`} className="block w-full">
-                <Button className="w-full font-medium bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-sm">
+                <Button className="w-full font-medium bg-[#25C6A3] hover:opacity-90 transition-opacity border-0 shadow-xs">
                   {cta.console || 'Go to Console'}
                 </Button>
               </Link>

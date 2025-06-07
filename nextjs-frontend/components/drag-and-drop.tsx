@@ -44,7 +44,7 @@ export const DragAndDrop: React.FC<DragAndDropProps> = ({
   return (
     <div
       className={`relative size-full rounded-2xl transition-colors duration-200 ${
-        isDragging ? 'bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm' : ''
+        isDragging ? 'bg-white/30 dark:bg-gray-900/30 backdrop-blur-xs' : ''
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

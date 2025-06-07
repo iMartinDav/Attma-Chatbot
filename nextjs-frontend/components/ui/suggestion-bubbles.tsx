@@ -53,9 +53,9 @@ export function SuggestionBubbles({
             type="button"
             aria-label={`Suggestion: ${text}`}
             className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full border border-[#343541]/20
-                    bg-background/30 backdrop-blur-sm hover:border-[#20c997]/50 transition-all
+                    bg-background/30 backdrop-blur-xs hover:border-[#20c997]/50 transition-all
                     text-foreground/80 hover:text-foreground hover:bg-background/50 active:scale-95 whitespace-nowrap
-                    touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#20c997]/50 focus:ring-offset-1
+                    touch-manipulation focus:outline-hidden focus:ring-2 focus:ring-[#20c997]/50 focus:ring-offset-1
                     snap-start snap-always select-none"
             onClick={() => !disabled && onSelectSuggestion(text)}
             disabled={disabled}

@@ -62,12 +62,12 @@ function PureChatHeader({
     <div className="relative">
       {/* Main gradient overlay */}
       <div className="absolute inset-x-0 top-0 h-40 pointer-events-none">
-        <div className="h-full bg-gradient-to-b from-background via-background/95 to-transparent" />
+        <div className="h-full bg-linear-to-b from-background via-background/95 to-transparent" />
       </div>
 
       {/* Header - increased top padding/margin */}
       <header className="relative flex h-14 items-center px-3 md:px-4 gap-3 z-50 mt-2">
-        <div className="absolute inset-0 backdrop-blur-[1px] bg-background/[0.01] supports-[backdrop-filter]:bg-background/[0.01]" />
+        <div className="absolute inset-0 backdrop-blur-[1px] bg-background/[0.01] supports-backdrop-filter:bg-background/[0.01]" />
 
         <div className="relative flex w-full items-center gap-3">
           {/* Show toggle in header only when sidebar is closed */}
@@ -82,7 +82,7 @@ function PureChatHeader({
                   variant="ghost"
                   className="order-2 md:order-1 h-7 px-2 ml-auto md:ml-0 
                     transition-colors duration-200
-                    text-foreground/70 hover:text-foreground/100
+                    text-foreground/70 hover:text-foreground
                     hover:bg-background/[0.015]
                     bg-transparent z-10
                     active:scale-95"
@@ -91,7 +91,7 @@ function PureChatHeader({
                     router.refresh();
                   }}
                 >
-                  <div className="text-foreground/70 hover:text-foreground/100 transition-colors">
+                  <div className="text-foreground/70 hover:text-foreground transition-colors">
                     <PlusIcon />
                   </div>
                 </Button>
@@ -103,7 +103,7 @@ function PureChatHeader({
           {!isReadonly && (
             <ModelSelector
               selectedModelId={selectedModelId}
-              className="order-1 md:order-2 h-7 z-10 text-foreground/80 hover:text-foreground/100 transition-colors"
+              className="order-1 md:order-2 h-7 z-10 text-foreground/80 hover:text-foreground transition-colors"
             />
           )}
 
@@ -111,7 +111,7 @@ function PureChatHeader({
             <VisibilitySelector
               chatId={chatId}
               selectedVisibilityType={selectedVisibilityType}
-              className="order-1 md:order-3 h-7 z-10 text-foreground/80 hover:text-foreground/100 transition-colors"
+              className="order-1 md:order-3 h-7 z-10 text-foreground/80 hover:text-foreground transition-colors"
             />
           )}
 
@@ -170,7 +170,7 @@ function PureChatHeader({
 
       {/* Bottom gradient */}
       <div className="absolute inset-x-0 top-14 pointer-events-none">
-        <div className="h-12 bg-gradient-to-b from-background/[0.015] to-transparent" />
+        <div className="h-12 bg-linear-to-b from-background/[0.015] to-transparent" />
       </div>
     </div>
   );

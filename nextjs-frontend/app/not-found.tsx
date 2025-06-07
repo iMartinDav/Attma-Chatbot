@@ -52,7 +52,7 @@ export default function NotFound() {
   const handleGoBack = useCallback(() => router.back(), [router]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-background to-[#25C6A3]/5 p-4">
+    <div className="flex min-h-screen bg-linear-to-b from-background to-[#25C6A3]/5 p-4">
       <div className="container max-w-4xl mx-auto flex flex-col items-center justify-center">
         {/* 404 DNA visualization */}
         <div
@@ -115,7 +115,7 @@ export default function NotFound() {
           <Button
             asChild
             size="lg"
-            className="bg-[#25C6A3] hover:opacity-90 transition-opacity shadow-sm"
+            className="bg-[#25C6A3] hover:opacity-90 transition-opacity shadow-xs"
           >
             <Link href="/">
               <span className="mr-2 group-hover:animate-pulse">🏠</span>

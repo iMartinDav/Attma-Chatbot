@@ -214,7 +214,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
           <div className="relative lg:col-span-1 lg:row-span-2 lg:col-start-1 lg:row-start-1 order-first feature-card transition-all duration-300 ease-out">
             {/* Safari-compatible card background */}
             <div
-              className="absolute inset-px rounded-xl lg:rounded-l-[2rem]"
+              className="absolute inset-px rounded-xl lg:rounded-l-4xl"
               style={{
                 background:
                   'linear-gradient(to bottom right, rgba(6,182,212,0.1), rgba(37,99,235,0.1))',
@@ -223,7 +223,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
               }}
             />
             <div
-              className="relative flex h-full flex-col overflow-hidden rounded-xl border lg:rounded-l-[2rem]"
+              className="relative flex h-full flex-col overflow-hidden rounded-xl border lg:rounded-l-4xl"
               style={{
                 borderColor: 'rgba(255,255,255,0.1)',
                 background: 'rgba(255,255,255,0.05)',
@@ -447,7 +447,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
           {/* Secure & Private (Bottom-right, full height) */}
           <div className="relative lg:col-span-1 lg:row-span-2 lg:col-start-4 lg:row-start-1 feature-card transition-all duration-300 ease-out">
             <div
-              className="absolute inset-px rounded-xl lg:rounded-r-[2rem]"
+              className="absolute inset-px rounded-xl lg:rounded-r-4xl"
               style={{
                 background:
                   'linear-gradient(to bottom right, rgba(139,92,246,0.1), rgba(79,70,229,0.1))',
@@ -456,7 +456,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
               }}
             />
             <div
-              className="relative flex h-full flex-col overflow-hidden rounded-xl border lg:rounded-r-[2rem]"
+              className="relative flex h-full flex-col overflow-hidden rounded-xl border lg:rounded-r-4xl"
               style={{
                 borderColor: 'rgba(255,255,255,0.1)',
                 background: 'rgba(255,255,255,0.05)',

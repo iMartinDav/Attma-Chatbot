@@ -20,7 +20,7 @@ export function EmailInput({ className = '', ...props }: EmailInputProps) {
         className={`w-full px-3 py-2.5 rounded-md bg-white dark:bg-zinc-800 border 
           ${showValidIndicator ? 'border-green-500' : 'border-zinc-300 dark:border-zinc-700'}
           ${isFocused ? 'border-[#25C6A3]' : ''}
-          pr-10 focus:outline-none transition-all duration-300 ${className}`}
+          pr-10 focus:outline-hidden transition-all duration-300 ${className}`}
         onChange={(e) => setEmail(e.target.value)}
         value={email}
         onFocus={() => setIsFocused(true)}

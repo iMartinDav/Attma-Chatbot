@@ -49,7 +49,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-border/30 bg-gradient-to-b from-background/50 via-background/80 to-background relative overflow-hidden z-0">
+    <footer className="w-full border-t border-border/30 bg-linear-to-b from-background/50 via-background/80 to-background relative overflow-hidden z-0">
       {/* Elegant background elements - simplified without motion */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         {/* Main purple glow in bottom left corner */}
@@ -71,7 +71,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
 
       <div className="container mx-auto px-4 md:px-6 max-w-7xl py-16 md:py-20 relative">
         {/* Main footer grid with glassmorphism effect */}
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-12 backdrop-blur-sm">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-12 backdrop-blur-xs">
           {/* Company Info - Using consistent header logo style */}
           <div className="lg:col-span-4 space-y-6">
             <Link
@@ -87,7 +87,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 className="h-10 w-auto object-contain"
               />
               <span className="font-bold text-xl tracking-tight">
-                <span className="text-[#80f1e5]">Attma</span>
+                <span className="text-attma-logo">Attma</span>
                 <span className="ml-0.5 text-foreground/80 font-normal text-sm align-text-top">
                   beta
                 </span>
@@ -246,7 +246,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
             </h3>
             <p className="text-muted-foreground text-sm">{newsletterText}</p>
             <div className="relative mt-2 max-w-sm">
-              <div className="relative overflow-hidden rounded-xl border border-border/60 bg-background/30 backdrop-blur-sm transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30">
+              <div className="relative overflow-hidden rounded-xl border border-border/60 bg-background/30 backdrop-blur-xs transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30">
                 <div className="flex">
                   <Input
                     type="email"
