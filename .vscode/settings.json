@@ -1,0 +1,72 @@
+{
+	// ========================================
+	// WORKSPACE-SPECIFIC SETTINGS
+	// ========================================
+	
+	// Docker Compose specific settings
+	"files.associations": {
+		"docker-compose*.yml": "dockercompose",
+		"docker-compose*.yaml": "dockercompose",
+		"Dockerfile*": "dockerfile",
+		"*.dockerfile": "dockerfile"
+	},
+
+	// Python environment detection for uv
+	"python.terminal.activateEnvironment": true,
+	"python.terminal.activateEnvInCurrentTerminal": true,
+	"python.venvPath": "./bioflow_venv",
+	"python.defaultInterpreterPath": "./bioflow_venv/bin/python",
+
+	// Next.js specific optimizations
+	"typescript.preferences.includePackageJsonAutoImports": "auto",
+	"typescript.suggest.autoImports": true,
+	"javascript.suggest.autoImports": true,
+
+	// Tailwind CSS IntelliSense
+	"tailwindCSS.rootFontSize": 16,
+	"tailwindCSS.classAttributes": [
+		"class",
+		"className",
+		"ngClass",
+		"[class]",
+		"[className]"
+	],
+
+	// File exclusions for performance
+	"files.exclude": {
+		"**/bioflow_venv": true,
+		"**/node_modules": true,
+		"**/.next": true,
+		"**/dist": true,
+		"**/build": true,
+		"**/__pycache__": true,
+		"**/.pytest_cache": true,
+		"**/.mypy_cache": true,
+		"**/.ruff_cache": true,
+		"**/artifacts": true
+	},
+
+	// Search exclusions
+	"search.exclude": {
+		"**/bioflow_venv": true,
+		"**/node_modules": true,
+		"**/.next": true,
+		"**/dist": true,
+		"**/build": true,
+		"**/__pycache__": true,
+		"**/.pytest_cache": true,
+		"**/.mypy_cache": true,
+		"**/.ruff_cache": true,
+		"**/artifacts": true,
+		"**/uv.lock": true,
+		"**/pnpm-lock.yaml": true
+	},
+
+	// Fast refresh settings for Next.js
+	"typescript.suggest.completeFunctionCalls": true,
+	"javascript.suggest.completeFunctionCalls": true,
+
+	// Better error handling
+	"problems.decorations.enabled": true,
+	"problems.showCurrentInStatus": true
+}

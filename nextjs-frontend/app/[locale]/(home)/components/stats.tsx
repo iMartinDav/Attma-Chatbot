@@ -9,7 +9,6 @@ interface StatItem {
   label: string;
   description: string;
 }
-
 interface StatsClientProps {
   title: string;
   subtitle: string;
