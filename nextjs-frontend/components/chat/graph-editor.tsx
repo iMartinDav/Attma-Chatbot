@@ -1,11 +1,12 @@
+import cn from 'classnames';
 import { RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
+import { LoaderIcon } from '../icons';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
-import { Badge } from '../ui/badge';
-import cn from 'classnames';
 import { TextShimmer } from '../ui/text-shimmer';
-import { LoaderIcon } from '../icons';
 
 interface GraphMetadata {
   graphType?: string;
@@ -202,9 +203,11 @@ export function GraphEditor({
                 padding: '1rem',
               }}
             >
-              <img
+              <Image
                 src={imageUrl}
                 alt={title || 'Graph Visualization'}
+                width={800}
+                height={600}
                 className={cn('max-w-full', {
                   'rounded-md': !isInline,
                   'rounded-t-xl': isInline,

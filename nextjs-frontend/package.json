@@ -66,7 +66,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^0.24.1",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.1.44",
+    "ai": "4.2.11",
     "bcrypt-ts": "^5.0.3",
     "canvas": "^3.1.0",
     "class-variance-authority": "^0.7.1",
@@ -90,7 +90,7 @@
     "motion": "^12.16.0",
     "nanoid": "^5.1.5",
     "negotiator": "^1.0.0",
-    "next": "15.3.1",
+    "next": "15.4.6",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
@@ -123,7 +123,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.1",
-    "zod": "^3.25.56"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -145,7 +145,7 @@
     "@types/react-dom": "^18.3.7",
     "drizzle-kit": "^0.25.0",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.5",
+    "eslint-config-next": "15.4.6",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-tailwindcss": "^3.18.0",
@@ -159,7 +159,13 @@
     "typescript": "^5.8.3"
   },
   "description": "An advanced AI chatbot platform developed by Attma TechBio",
-  "keywords": ["ai", "chatbot", "next.js", "typescript", "Attma techbio"],
+  "keywords": [
+    "ai",
+    "chatbot",
+    "next.js",
+    "typescript",
+    "Attma techbio"
+  ],
   "pnpm": {
     "ignoredBuiltDependencies": [
       "@biomejs/biome",

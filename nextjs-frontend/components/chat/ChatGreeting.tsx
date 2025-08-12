@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 interface ChatGreetingProps {
   user?: User | null;
@@ -46,7 +46,7 @@ export const ChatGreeting = ({ user }: ChatGreetingProps) => {
       <span>{greeting},</span>
       <span className="inline-block">{userName}!</span>
       <span className="inline-flex items-center">
-        I'm
+        I&apos;m
         <motion.span
           className="Attma-text font-bold ml-1"
           whileHover={{ scale: 1.1, rotate: 2 }}
