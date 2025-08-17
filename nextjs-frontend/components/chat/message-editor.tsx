@@ -1,33 +1,37 @@
 'use client';
 
-import type { ChatRequestOptions, Message } from 'ai';
-import { Button } from '../ui/button';
-import { useEffect, useRef, useState } from 'react';
-import type { Dispatch, SetStateAction } from 'react';
-import { Textarea } from '../ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import { toast } from 'sonner';
+import type { ChatMessage } from '@/lib/types';
+import { getTextFromMessage } from '@/lib/utils';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 
 export type MessageEditorProps = {
-  message: Message;
+  message: ChatMessage;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
 };
 
 export function MessageEditor({
   message,
   setMode,
   setMessages,
-  reload,
+  regenerate,
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const [draftContent, setDraftContent] = useState<string>(message.content);
+  const [draftContent, setDraftContent] = useState<string>(
+    getTextFromMessage(message),
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -51,8 +55,9 @@ export function MessageEditor({
   return (
     <div className="flex flex-col gap-2 w-full">
       <Textarea
+        data-testid="message-editor"
         ref={textareaRef}
-        className="bg-transparent outline-hidden overflow-hidden resize-none text-base! rounded-xl w-full"
+        className="bg-transparent outline-none overflow-hidden resize-none !text-base rounded-xl w-full"
         value={draftContent}
         onChange={handleInput}
       />
@@ -68,6 +73,7 @@ export function MessageEditor({
           Cancel
         </Button>
         <Button
+          data-testid="message-editor-send-button"
           variant="default"
           className="h-fit py-2 px-3"
           disabled={isSubmitting}
@@ -82,9 +88,9 @@ export function MessageEditor({
               const index = messages.findIndex((m) => m.id === message.id);
 
               if (index !== -1) {
-                const updatedMessage = {
+                const updatedMessage: ChatMessage = {
                   ...message,
-                  content: draftContent,
+                  parts: [{ type: 'text', text: draftContent }],
                 };
 
                 return [...messages.slice(0, index), updatedMessage];
@@ -94,7 +100,7 @@ export function MessageEditor({
             });
 
             setMode('view');
-            reload();
+            regenerate();
           }}
         >
           {isSubmitting ? 'Sending...' : 'Send'}

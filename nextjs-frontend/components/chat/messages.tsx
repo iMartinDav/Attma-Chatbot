@@ -1,19 +1,20 @@
-import type { ChatRequestOptions, Message } from 'ai';
-import { PreviewMessage, ThinkingMessage } from './message';
+import type { ChatRequestOptions, UIMessage } from 'ai';
 import { useScrollToBottom } from '../use-scroll-to-bottom';
+import { PreviewMessage, ThinkingMessage } from './message';
+import { SearchMessage } from './message-search';
 
-import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
+import { memo } from 'react';
 import { ChatOverview } from './overview';
 
 interface MessagesProps {
   chatId: string;
   isLoading: boolean;
   votes: Array<Vote> | undefined;
-  messages: Array<Message>;
+  messages: Array<UIMessage>;
   setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
+    messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[]),
   ) => void;
   reload: (
     chatRequestOptions?: ChatRequestOptions,
@@ -46,15 +47,15 @@ function PureMessages({
           <PreviewMessage
             key={message.id}
             chatId={chatId}
-            message={message}
+            message={message as unknown as SearchMessage}
             isLoading={isLoading && messages.length - 1 === index}
             vote={
               votes
                 ? votes.find((vote) => vote.messageId === message.id)
                 : undefined
             }
-            setMessages={setMessages}
-            reload={reload}
+            setMessages={setMessages as unknown as (messages: SearchMessage[] | ((messages: SearchMessage[]) => SearchMessage[])) => void}
+            regenerate={reload}
             isReadonly={isReadonly}
           />
         ))}
@@ -72,14 +73,12 @@ function PureMessages({
   );
 }
 
-export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
-
+const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.isLoading !== nextProps.isLoading) return false;
-  if (prevProps.isLoading && nextProps.isLoading) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.messages, nextProps.messages)) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
-
-  return true;
+  if (prevProps.isArtifactVisible !== nextProps.isArtifactVisible) return false;
+  if (prevProps.isReadonly !== nextProps.isReadonly) return false;
+  
+  return equal(prevProps.messages, nextProps.messages) && equal(prevProps.votes, nextProps.votes);
 });
+
+export { Messages };

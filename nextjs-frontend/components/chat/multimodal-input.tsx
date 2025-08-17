@@ -1,30 +1,34 @@
 'use client';
 
-import type { Attachment, ChatRequestOptions, CreateMessage } from 'ai';
+import type { Attachment } from '@/lib/types';
 import cx from 'classnames';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
 import type React from 'react';
 import {
-  useRef,
-  useEffect,
-  useState,
+  memo,
   useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
   type Dispatch,
   type SetStateAction,
-  type ChangeEvent,
-  memo,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { sanitizeUIMessages } from '@/lib/utils';
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from '../icons';
-import { PreviewAttachment } from './preview-attachment';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
+import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
+import { getMessageText } from '@/lib/ai/message-utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from '../icons';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 import { MessageSearch, type SearchMessage } from './message-search';
-import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
+import { PreviewAttachment } from './preview-attachment';
+import { SuggestedActions } from './suggested-actions';
+import type { VisibilityType } from './visibility-selector';
 
 type Message = SearchMessage;
 
@@ -32,38 +36,30 @@ function PureMultimodalInput({
   chatId,
   input,
   setInput,
-  isLoading,
+  status,
   stop,
   attachments,
   setAttachments,
-  messages: _messages,
+  messages,
   setMessages,
-  append: _append,
-  handleSubmit,
+  sendMessage,
   className,
   isFullSize,
+  selectedVisibilityType,
 }: {
   chatId: string;
   input: string;
-  setInput: (value: string) => void;
-  isLoading: boolean;
+  setInput: Dispatch<SetStateAction<string>>;
+  status: 'ready' | 'submitted' | 'processing';
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions,
-  ) => void;
+  sendMessage: (message: any) => void;
   className?: string;
   isFullSize: boolean;
+  selectedVisibilityType?: VisibilityType;
 }) {
   // Refs and state management
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -78,6 +74,22 @@ function PureMultimodalInput({
   );
   const [bioflowTaskId, setBioflowTaskId] = useState<string | null>(null);
   const bioflowStatus = useBioflowTaskStatus(bioflowTaskId ?? undefined);
+
+  // Scroll to bottom functionality - create a custom implementation for now
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const scrollToBottom = useCallback(() => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }, []);
+
+  // Check if loading based on status
+  const isLoading = status === 'submitted' || status === 'processing';
+
+  // Auto-scroll when status changes to submitted
+  useEffect(() => {
+    if (status === 'submitted') {
+      scrollToBottom();
+    }
+  }, [status, scrollToBottom]);
 
   /**
    * Adjusts textarea height based on content
@@ -161,25 +173,36 @@ function PureMultimodalInput({
       return;
     }
 
-    // Normal chat flow
-    handleSubmit(undefined, {
-      experimental_attachments: attachments,
+    // Normal chat flow using v5 sendMessage with parts structure
+    sendMessage({
+      role: 'user',
+      parts: [
+        ...attachments.map((attachment) => ({
+          type: 'file' as const,
+          url: attachment.url,
+          filename: attachment.name,
+          mediaType: attachment.contentType,
+        })),
+        {
+          type: 'text' as const,
+          text: input,
+        },
+      ],
     });
 
     // Reset inputs and UI
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
+    setInput('');
 
     // Focus on input after sending
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
   }, [
-    attachments,
     chatId,
     handleSearch,
-    handleSubmit,
     input,
     isSearchMode,
     resetHeight,
@@ -187,6 +210,8 @@ function PureMultimodalInput({
     setInput,
     setLocalStorageInput,
     width,
+    attachments,
+    sendMessage,
   ]);
 
   /**
@@ -572,6 +597,55 @@ function PureMultimodalInput({
     <div
       className={`relative w-full flex flex-col items-center gap-4 ${isFullSize ? 'h-full' : 'max-w-4xl mx-auto'}`}
     >
+      {/* Scroll to bottom button */}
+      <AnimatePresence>
+        {!isAtBottom && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="absolute left-1/2 bottom-28 -translate-x-1/2 z-50"
+          >
+            <Button
+              data-testid="scroll-to-bottom-button"
+              className="rounded-full"
+              size="icon"
+              variant="outline"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToBottom();
+              }}
+            >
+              <ArrowDown />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Suggested actions for empty chat */}
+      {messages.length === 0 &&
+        attachments.length === 0 &&
+        uploadQueue.length === 0 &&
+        selectedVisibilityType && (
+          <SuggestedActions
+            chatId={chatId}
+            append={async (message) => {
+              // Convert to v5 format and use sendMessage
+              sendMessage({
+                role: 'user',
+                parts: [
+                  {
+                    type: 'text' as const,
+                    text: getMessageText(message),
+                  },
+                ],
+              });
+              return Promise.resolve('');
+            }}
+          />
+        )}
+
       <div className={`w-full ${isFullSize ? 'h-full' : 'max-w-2xl relative'}`}>
         {/* Attachment previews */}
         {(attachments.length > 0 || uploadQueue.length > 0) && (
@@ -580,7 +654,7 @@ function PureMultimodalInput({
               <PreviewAttachment
                 key={attachment.url || `attachment-${index}`}
                 attachment={attachment}
-                onDelete={handleDeleteAttachment}
+                onDelete={handleDeleteAttachment as any}
               />
             ))}
 
@@ -601,12 +675,13 @@ function PureMultimodalInput({
         {/* Input area with drag and drop */}
         <DragAndDrop onDrop={handleFileDrop} isFullSize={isFullSize}>
           <Textarea
+            data-testid="multimodal-input"
             ref={textareaRef}
-            placeholder={isSearchMode ? 'Search whit Attma...' : 'Ask Attma...'}
+            placeholder={isSearchMode ? 'Search with Attma...' : 'Send a message...'}
             value={input}
             onChange={handleInput}
             className={cx(
-              'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl text-base! bg-muted pb-10 dark:border-zinc-700 w-full',
+              'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 w-full',
               className,
               isSearchMode && 'border-2 border-attma-logo',
             )}
@@ -615,10 +690,14 @@ function PureMultimodalInput({
             suppressHydrationWarning={true}
             onKeyDown={(event) => {
               // Submit on Enter (without Shift)
-              if (event.key === 'Enter' && !event.shiftKey) {
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
                 event.preventDefault();
 
-                if (isLoading) {
+                if (status !== 'ready') {
                   toast.error(
                     'Please wait for the model to finish its response!',
                   );
@@ -646,7 +725,7 @@ function PureMultimodalInput({
 
         {/* Send or stop button */}
         <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-          {isLoading ? (
+          {status === 'submitted' ? (
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
             <SendButton
@@ -691,8 +770,10 @@ export const MultimodalInput = memo(
   (prevProps, nextProps) => {
     // Only re-render when these props change
     if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+      return false;
     return true;
   },
 );
@@ -738,13 +819,13 @@ function PureStopButton({
 }) {
   return (
     <Button
+      data-testid="stop-button"
       className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         stop();
-        setMessages(
-          (messages) => sanitizeUIMessages(messages) as SearchMessage[],
-        );
+        // Just call setMessages with current messages, no sanitization needed for v5
+        setMessages((messages) => messages);
       }}
       aria-label="Stop generating"
       title="Stop generating"

@@ -1,6 +1,6 @@
-import type { Attachment } from 'ai';
+import type { Attachment } from '@/lib/types';
+import { FileTextIcon, XIcon } from 'lucide-react';
 import { LoaderIcon } from '../icons';
-import { XIcon, FileTextIcon } from 'lucide-react';
 
 export const PreviewAttachment = ({
   attachment,

@@ -1,5 +1,10 @@
-import { Artifact } from '@/components/chat/create-artifact';
 import { CodeEditor } from '@/components/chat/code-editor';
+import {
+  Console,
+  type ConsoleOutput,
+  type ConsoleOutputContent,
+} from '@/components/chat/console';
+import { Artifact } from '@/components/chat/create-artifact';
 import {
   CopyIcon,
   LogsIcon,
@@ -8,13 +13,8 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import { toast } from 'sonner';
 import { generateUUID } from '@/lib/utils';
-import { Console } from '@/components/chat/console';
-import type {
-  ConsoleOutput,
-  ConsoleOutputContent,
-} from '@/components/chat/console';
+import { toast } from 'sonner';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
@@ -76,10 +76,10 @@ export const codeArtifact = new Artifact<'code', Metadata>({
     });
   },
   onStreamPart: ({ streamPart, setArtifact }) => {
-    if (streamPart.type === 'code-delta') {
+    if (streamPart.type === 'data-codeDelta') {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
-        content: streamPart.content as string,
+        content: streamPart.data,
         isVisible:
           draftArtifact.status === 'streaming' &&
           draftArtifact.content.length > 300 &&
@@ -193,20 +193,14 @@ export const codeArtifact = new Artifact<'code', Metadata>({
               },
             ],
           }));
-        } catch (error: unknown) {
-          let errorMessage = 'An unknown error occurred';
-          if (error instanceof Error) {
-            errorMessage = error.message;
-          } else if (typeof error === 'string') {
-            errorMessage = error;
-          }
+        } catch (error: any) {
           setMetadata((metadata) => ({
             ...metadata,
             outputs: [
               ...metadata.outputs.filter((output) => output.id !== runId),
               {
                 id: runId,
-                contents: [{ type: 'text', value: errorMessage }],
+                contents: [{ type: 'text', value: error.message }],
                 status: 'failed',
               },
             ],
@@ -255,20 +249,30 @@ export const codeArtifact = new Artifact<'code', Metadata>({
     {
       icon: <MessageIcon />,
       description: 'Add comments',
-      onClick: ({ appendMessage }) => {
-        appendMessage({
+      onClick: ({ sendMessage }) => {
+        sendMessage({
           role: 'user',
-          content: 'Add comments to the code snippet for understanding',
+          parts: [
+            {
+              type: 'text',
+              text: 'Add comments to the code snippet for understanding',
+            },
+          ],
         });
       },
     },
     {
       icon: <LogsIcon />,
       description: 'Add logs',
-      onClick: ({ appendMessage }) => {
-        appendMessage({
+      onClick: ({ sendMessage }) => {
+        sendMessage({
           role: 'user',
-          content: 'Add logs to the code snippet for debugging',
+          parts: [
+            {
+              type: 'text',
+              text: 'Add logs to the code snippet for debugging',
+            },
+          ],
         });
       },
     },

@@ -1,5 +1,5 @@
-import { generateUUID } from '@/lib/utils';
 import type { SearchMessage } from '@/components/chat/message-search';
+import { generateUUID } from '@/lib/utils';
 
 /**
  * Options to customize the search behavior
@@ -83,7 +83,7 @@ export function createSearchMessages(query: string): {
   const userMessage: SearchMessage = {
     id: generateUUID(),
     role: 'user',
-    content: query,
+    parts: [{ type: 'text', text: query }],
     createdAt: new Date(),
   };
 
@@ -91,7 +91,7 @@ export function createSearchMessages(query: string): {
   const pendingMessage: SearchMessage = {
     id: generateUUID(),
     role: 'assistant',
-    content: 'Searching the web...',
+    parts: [{ type: 'text', text: 'Searching the web...' }],
     createdAt: new Date(),
     sourceType: 'searching',
   };
@@ -144,10 +144,10 @@ export function createSearchResponseMessage(
   return {
     id: generateUUID(),
     role: 'assistant',
-    content: searchResult.content,
+    parts: [{ type: 'text', text: searchResult.content }],
     createdAt: new Date(),
     sourceType: 'web-search',
-    reasoning: 'Information retrieved from web search',
+    reasoningText: 'Information retrieved from web search',
     annotations: cleanedAnnotations,
   };
 }

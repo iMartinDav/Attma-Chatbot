@@ -1,37 +1,48 @@
-import { PreviewMessage } from './message';
-import { useScrollToBottom } from '../use-scroll-to-bottom';
-import { Vote } from '@/lib/db/schema';
-import { ChatRequestOptions, Message } from 'ai';
-import { memo } from 'react';
+import { useMessages } from '@/hooks/use-messages';
+import type { Vote } from '@/lib/db/schema';
+import type { ChatMessage } from '@/lib/types';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import equal from 'fast-deep-equal';
-import { UIArtifact } from './artifact';
+import { motion } from 'framer-motion';
+import { memo } from 'react';
+import type { UIArtifact } from './artifact';
+import { PreviewMessage, ThinkingMessage } from './message';
 
 interface ArtifactMessagesProps {
   chatId: string;
-  isLoading: boolean;
+  status: UseChatHelpers<ChatMessage>['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<Message>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  messages: ChatMessage[];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
 }
 
 function PureArtifactMessages({
   chatId,
-  isLoading,
+  status,
   votes,
   messages,
   setMessages,
-  reload,
+  regenerate,
   isReadonly,
 }: ArtifactMessagesProps) {
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  // Wrapper function to match expected signature
+  const handleRegenerate = async () => {
+    await regenerate();
+    return null;
+  };
+  const {
+    containerRef: messagesContainerRef,
+    endRef: messagesEndRef,
+    onViewportEnter,
+    onViewportLeave,
+    hasSentMessage,
+  } = useMessages({
+    chatId,
+    status,
+  });
 
   return (
     <div
@@ -43,21 +54,30 @@ function PureArtifactMessages({
           chatId={chatId}
           key={message.id}
           message={message}
-          isLoading={isLoading && index === messages.length - 1}
+          isLoading={status === 'streaming' && index === messages.length - 1}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
           setMessages={setMessages}
-          reload={reload}
+          regenerate={handleRegenerate}
           isReadonly={isReadonly}
+          requiresScrollPadding={
+            hasSentMessage && index === messages.length - 1
+          }
         />
       ))}
 
-      <div
+      {status === 'submitted' &&
+        messages.length > 0 &&
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+
+      <motion.div
         ref={messagesEndRef}
         className="shrink-0 min-w-[24px] min-h-[24px]"
+        onViewportLeave={onViewportLeave}
+        onViewportEnter={onViewportEnter}
       />
     </div>
   );
@@ -73,8 +93,8 @@ function areEqual(
   )
     return true;
 
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
-  if (prevProps.isLoading && nextProps.isLoading) return false;
+  if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.status && nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
 

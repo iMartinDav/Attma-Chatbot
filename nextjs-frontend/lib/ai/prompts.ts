@@ -1,5 +1,12 @@
 import type { ArtifactKind } from '@/components/chat/artifact';
 
+export interface RequestHints {
+  longitude?: number;
+  latitude?: number;
+  city?: string;
+  country?: string;
+}
+
 // Tool descriptions for available bioinformatics functions
 const toolDescriptions = {
   qcVisualization:

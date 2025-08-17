@@ -1,7 +1,7 @@
 import { Artifact } from '@/components/chat/create-artifact';
-import { CopyIcon, RedoIcon, UndoIcon, DownloadIcon } from '@/components/icons';
-import { toast } from 'sonner';
 import { GraphEditor } from '@/components/chat/graph-editor';
+import { CopyIcon, DownloadIcon, RedoIcon, UndoIcon } from '@/components/icons';
+import { toast } from 'sonner';
 
 // Define metadata structure for graph artifacts
 interface GraphMetadata {
@@ -39,57 +39,46 @@ export const graphArtifact = new Artifact<'graph', GraphMetadata>({
     });
   },
   onStreamPart: ({ streamPart, setArtifact, setMetadata }) => {
-    switch (streamPart.type) {
-      case 'text-delta':
-        try {
-          // Try to parse as JSON in case it contains graph metadata
-          if (typeof streamPart.content === 'string') {
-            const parsedContent = JSON.parse(streamPart.content);
-            if (parsedContent.metadata) {
-              setMetadata((prevMetadata) => ({
-                ...prevMetadata,
-                ...parsedContent.metadata,
-              }));
-            }
+    // For now, handle any stream part that might contain graph data
+    if (streamPart.type.includes('graph') || streamPart.type === 'data-graphArtifact') {
+      try {
+        // Use type assertion to access data property
+        const data = (streamPart as any).data;
+        if (typeof data === 'string') {
+          const parsedContent = JSON.parse(data);
+          if (parsedContent.metadata) {
+            setMetadata((prevMetadata) => ({
+              ...prevMetadata,
+              ...parsedContent.metadata,
+            }));
+          }
 
-            if (parsedContent.graphUrl) {
-              setArtifact((prevArtifact) => ({
-                ...prevArtifact,
-                content: parsedContent.graphUrl,
-                isVisible: true,
-                status: 'streaming',
-              }));
-            }
-          } else {
-            // If not a string, treat as plain object or handle accordingly
+          if (parsedContent.graphUrl) {
             setArtifact((prevArtifact) => ({
               ...prevArtifact,
-              content: '',
+              content: parsedContent.graphUrl,
               isVisible: true,
               status: 'streaming',
             }));
           }
-        } catch (e) {
-          // If not JSON, treat as plain text/URL content
+        } else {
           setArtifact((prevArtifact) => ({
             ...prevArtifact,
-            content:
-              typeof streamPart.content === 'string' ? streamPart.content : '',
+            content: '',
             isVisible: true,
             status: 'streaming',
           }));
         }
-        break;
-
-      case 'graph-delta':
+      } catch (e) {
+        // If not JSON, treat as plain text/URL content
+        const data = (streamPart as any).data || '';
         setArtifact((prevArtifact) => ({
           ...prevArtifact,
-          content:
-            typeof streamPart.content === 'string' ? streamPart.content : '',
+          content: typeof data === 'string' ? data : '',
           isVisible: true,
           status: 'streaming',
         }));
-        break;
+      }
     }
   },
   content: (props) => <GraphEditor {...props} />,

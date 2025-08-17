@@ -1,19 +1,19 @@
 import { Artifact } from '@/components/chat/create-artifact';
 import {
   DownloadIcon,
-  RedoIcon,
-  UndoIcon,
   FileIcon,
   LoaderIcon,
+  RedoIcon,
+  UndoIcon,
   ZoomInIcon,
   ZoomOutIcon,
 } from '@/components/icons';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 // **Interfaces**
 interface PdfViewerProps {
@@ -433,32 +433,27 @@ export const pdfArtifact = new Artifact<
   initialize: async () => {},
 
   onStreamPart: ({ streamPart, setArtifact, setMetadata }) => {
-    if (streamPart.type === 'pdf-delta') {
-      if (
-        typeof streamPart.content === 'string' &&
-        streamPart.content.length > 0
-      ) {
+    if (streamPart.type === 'data-pdfArtifact') {
+      const data = (streamPart as any).data;
+      if (typeof data === 'string' && data.length > 0) {
         const isProgressMessage =
-          streamPart.content.length < 100 &&
-          !streamPart.content.includes('JVBERi');
+          data.length < 100 && !data.includes('JVBERi');
         setArtifact((draft) => ({
           ...draft,
-          content: isProgressMessage
-            ? draft.content
-            : (streamPart.content as string),
+          content: isProgressMessage ? draft.content : data,
           isVisible: !isProgressMessage,
           status: 'streaming',
         }));
       }
     }
 
-    if (streamPart.type === 'finish') {
+    if (streamPart.type === 'data-finish') {
       console.log('PDF generation complete');
       setArtifact((draft) => ({ ...draft, status: 'idle' }));
     }
 
-    if ('documentTitle' in streamPart && streamPart.documentTitle) {
-      const docTitle = streamPart.documentTitle as string;
+    if (streamPart.type === 'data-title') {
+      const docTitle = (streamPart as any).data as string;
       setMetadata((meta) => ({
         ...meta,
         documentTitle: docTitle,
@@ -496,10 +491,9 @@ export const pdfArtifact = new Artifact<
     {
       description: 'Enhance Document',
       icon: <FileIcon size={16} />,
-      onClick: ({ appendMessage }) => {
-        appendMessage({
-          role: 'user',
-          content:
+      onClick: ({ sendMessage }) => {
+        sendMessage({
+          text:
             'Please enhance this PDF document with more detailed information and better formatting.',
         });
       },

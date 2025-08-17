@@ -1,33 +1,31 @@
 'use client';
 
+import { useArtifact } from '@/hooks/use-artifact';
+import type { Document } from '@/lib/db/schema';
+import { cn, fetcher } from '@/lib/utils';
+import equal from 'fast-deep-equal';
 import {
   memo,
+  type MouseEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
-  type MouseEvent,
 } from 'react';
-import type { ArtifactKind, UIArtifact } from './artifact';
-import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from '../icons';
-import { cn, fetcher } from '@/lib/utils';
-import type { Document } from '@/lib/db/schema';
-import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR from 'swr';
-
-import { DocumentToolCall, DocumentToolResult } from './document';
+import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from '../icons';
+import type { ArtifactKind, UIArtifact } from './artifact';
 import { CodeEditor } from './code-editor';
-import { useArtifact } from '@/hooks/use-artifact';
-import equal from 'fast-deep-equal';
-
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { InlineDocumentSkeleton } from './document-skeleton';
 import { ImageEditor } from './image-editor';
-import { Editor } from './text-editor';
 import { SpreadsheetEditor } from './sheet-editor';
+import { Editor } from './text-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
-  result?: Partial<Document>;
-  args?: { title: string; kind: ArtifactKind };
+  result?: any;
+  args?: any;
 }
 
 export function DocumentPreview({
@@ -65,15 +63,7 @@ export function DocumentPreview({
       return (
         <DocumentToolResult
           type="create"
-          result={{
-            id: result.id ?? '',
-            title: result.title ?? '',
-            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
-              result.kind as string,
-            )
-              ? (result.kind as ArtifactKind)
-              : 'text',
-          }}
+          result={{ id: result.id, title: result.title, kind: result.kind }}
           isReadonly={isReadonly}
         />
       );
@@ -83,7 +73,7 @@ export function DocumentPreview({
       return (
         <DocumentToolCall
           type="create"
-          args={{ title: args.title }}
+          args={{ title: args.title, kind: args.kind }}
           isReadonly={isReadonly}
         />
       );
@@ -91,21 +81,7 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    const validKinds: ArtifactKind[] = [
-      'text',
-      'code',
-      'image',
-      'sheet',
-      'pdf',
-      'graph',
-    ];
-    const kind =
-      result && validKinds.includes(result.kind as ArtifactKind)
-        ? (result.kind as ArtifactKind)
-        : validKinds.includes(args?.kind as ArtifactKind)
-          ? (args?.kind as ArtifactKind)
-          : 'text';
-    return <LoadingSkeleton artifactKind={kind} />;
+    return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
 
   const document: Document | null = previewDocument
@@ -113,11 +89,7 @@ export function DocumentPreview({
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: ['text', 'code', 'image', 'sheet', 'pdf'].includes(
-            artifact.kind as string,
-          )
-            ? (artifact.kind as 'text' | 'code' | 'image' | 'sheet' | 'pdf')
-            : 'text',
+          kind: artifact.kind,
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
@@ -129,30 +101,14 @@ export function DocumentPreview({
 
   return (
     <div className="relative w-full cursor-pointer">
-      {result?.id && result?.title && result?.kind ? (
-        <HitboxLayer
-          hitboxRef={hitboxRef}
-          result={{
-            id: result.id ?? '',
-            title: result.title ?? '',
-            kind: ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
-              result.kind as string,
-            )
-              ? (result.kind as ArtifactKind)
-              : 'text',
-          }}
-          setArtifact={setArtifact}
-        />
-      ) : null}
+      <HitboxLayer
+        hitboxRef={hitboxRef}
+        result={result}
+        setArtifact={setArtifact}
+      />
       <DocumentHeader
         title={document.title}
-        kind={
-          ['text', 'code', 'image', 'sheet', 'pdf', 'graph'].includes(
-            document.kind,
-          )
-            ? (document.kind as ArtifactKind)
-            : 'text'
-        }
+        kind={document.kind}
         isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -191,7 +147,7 @@ const PureHitboxLayer = ({
   setArtifact,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
-  result: { id: string; title: string; kind: ArtifactKind };
+  result: any;
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
   ) => void;
@@ -222,7 +178,6 @@ const PureHitboxLayer = ({
   );
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
       className="size-full absolute top-0 left-0 rounded-xl z-10"
       ref={hitboxRef}
@@ -231,7 +186,7 @@ const PureHitboxLayer = ({
       aria-hidden="true"
     >
       <div className="w-full p-4 flex justify-end items-center">
-        <div className="absolute right-[9px] top-[13px] p-2 dark:hover:bg-zinc-700 rounded-md hover:bg-zinc-100">
+        <div className="absolute right-[9px] top-[13px] p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100">
           <FullscreenIcon />
         </div>
       </div>

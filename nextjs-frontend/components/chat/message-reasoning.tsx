@@ -1,19 +1,19 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { ChevronDownIcon, LoaderIcon } from '../icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Markdown } from './markdown';
 import { TextShimmer } from '../ui/text-shimmer';
+import { Markdown } from './markdown';
 
 interface MessageReasoningProps {
   isLoading: boolean;
-  reasoning: string;
+  reasoningText: string;
 }
 
 export function MessageReasoning({
   isLoading,
-  reasoning,
+  reasoningText,
 }: MessageReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -70,7 +70,7 @@ export function MessageReasoning({
             style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
-            <Markdown>{reasoning}</Markdown>
+            <Markdown>{reasoningText}</Markdown>
           </motion.div>
         )}
       </AnimatePresence>

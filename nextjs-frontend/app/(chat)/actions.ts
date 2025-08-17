@@ -1,16 +1,17 @@
 'use server';
 
+import type { UIMessage } from 'ai';
 import { generateText } from 'ai';
-import type { Message } from 'ai';
 import { cookies } from 'next/headers';
 
+import type { VisibilityType } from '@/components/chat/visibility-selector';
+import { chatModels } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/providers';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisiblityById,
 } from '@/lib/db/queries';
-import type { VisibilityType } from '@/components/chat/visibility-selector';
-import { myProvider } from '@/lib/ai/models';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -20,16 +21,29 @@ export async function saveChatModelAsCookie(model: string) {
 export async function generateTitleFromUserMessage({
   message,
 }: {
-  message: Message;
+  message: UIMessage | any; // Allow both v4 and v5 message formats
 }) {
+  // Extract text content from either v4 or v5 message format
+  let messageText = '';
+  if (typeof (message as any).content === 'string') {
+    messageText = (message as any).content;
+  } else if ((message as any).parts) {
+    // v5 format with parts
+    messageText = (message as any).parts
+      .filter((part: any) => part.type === 'text')
+      .map((part: any) => part.text)
+      .join(' ');
+  }
+
   const { text: title } = await generateText({
-    model: myProvider.languageModel('title-model'),
-    system: `\n
+    model: myProvider.languageModel(chatModels[0].id), // Use the first/primary chat model for title generation
+    system: `
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
+    - ensure it is not generic, but specific to the content of the message
+    - ensure it is in the same language as the first message
     - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
+    prompt: messageText,
   });
 
   return title;

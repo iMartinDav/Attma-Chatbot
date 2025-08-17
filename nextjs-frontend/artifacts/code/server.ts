@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { streamObject } from 'ai';
-import { myProvider } from '@/lib/ai/models';
 import { codePrompt, updateDocumentPrompt } from '@/lib/ai/prompts';
+import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
+import { streamObject } from 'ai';
+import { z } from 'zod';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
@@ -26,9 +26,10 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
         const { code } = object;
 
         if (code) {
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code ?? '',
+          dataStream.write({
+            type: 'data-codeDelta',
+            data: code ?? '',
+            transient: true,
           });
 
           draftContent = code;
@@ -42,7 +43,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: myProvider.languageModel('artifacts-model'),
+      model: myProvider.languageModel('artifact-model'),
       system: updateDocumentPrompt(document.content, 'code'),
       prompt: description,
       schema: z.object({
@@ -58,9 +59,10 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
         const { code } = object;
 
         if (code) {
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code ?? '',
+          dataStream.write({
+            type: 'data-codeDelta',
+            data: code ?? '',
+            transient: true,
           });
 
           draftContent = code;
