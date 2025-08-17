@@ -1,12 +1,15 @@
+import { createUser, getUser, linkUserChats } from '@/lib/db/queries';
+import { sendWelcomeEmail } from '@/lib/email/services'; // Direct import
 import { compare } from 'bcrypt-ts';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { getUser, createUser, linkUserChats } from '@/lib/db/queries';
-import { authConfig } from './auth.config';
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { sendWelcomeEmail } from '@/lib/email/services'; // Direct import
+import { NextResponse } from 'next/server';
+import { authConfig } from './auth.config';
+
+// Export UserType for use in other modules
+export type UserType = 'free' | 'pro' | 'enterprise';
 
 // Define explicit types that match our database schema
 interface UserData {

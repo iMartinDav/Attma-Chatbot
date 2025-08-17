@@ -1,14 +1,13 @@
 import { codeDocumentHandler } from '@/artifacts/code/server';
+import { graphDocumentHandler } from '@/artifacts/graph/server';
 import { imageDocumentHandler } from '@/artifacts/image/server';
+import { pdfDocumentHandler } from '@/artifacts/pdf/server';
 import { sheetDocumentHandler } from '@/artifacts/sheet/server';
 import { textDocumentHandler } from '@/artifacts/text/server';
-import { pdfDocumentHandler } from '@/artifacts/pdf/server';
-import { graphDocumentHandler } from '@/artifacts/graph/server';
 import type { ArtifactKind } from '@/components/chat/artifact';
-import type { DataStreamWriter } from 'ai';
-import type { Document } from '../db/schema';
-import { saveDocument } from '../db/queries';
 import type { Session } from 'next-auth';
+import { saveDocument } from '../db/queries';
+import type { Document } from '../db/schema';
 
 export interface SaveDocumentProps {
   id: string;
@@ -21,14 +20,14 @@ export interface SaveDocumentProps {
 export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
-  dataStream: DataStreamWriter;
+  dataStream?: any; // TODO: Replace with proper AI SDK v5 writer type - now optional
   session: Session;
 }
 
 export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
-  dataStream: DataStreamWriter;
+  dataStream?: any; // TODO: Replace with proper AI SDK v5 writer type - now optional
   session: Session;
 }
 

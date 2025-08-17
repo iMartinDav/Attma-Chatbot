@@ -1,38 +1,22 @@
 import { Artifact } from '@/components/chat/create-artifact';
-import { CopyIcon, RedoIcon, UndoIcon, DownloadIcon } from '@/components/icons';
 import { ImageEditor } from '@/components/chat/image-editor';
+import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { toast } from 'sonner';
-
-const downloadImage = (title: string, content: string) => {
-  try {
-    const link = document.createElement('a');
-    link.href = `data:image/png;base64,${content}`;
-    link.download = title ? `${title}.png` : 'generated-image.png';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return true;
-  } catch (error) {
-    console.error('Error downloading image:', error);
-    return false;
-  }
-};
 
 export const imageArtifact = new Artifact({
   kind: 'image',
   description: 'Useful for image generation',
   onStreamPart: ({ streamPart, setArtifact }) => {
-    if (streamPart.type === 'image-delta') {
+    if (streamPart.type === 'data-imageDelta') {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
-        content: streamPart.content as string,
+        content: streamPart.data,
         isVisible: true,
         status: 'streaming',
       }));
     }
   },
-  content: (props) => <ImageEditor {...props} onDownload={downloadImage} />,
+  content: ImageEditor,
   actions: [
     {
       icon: <UndoIcon size={18} />,
@@ -44,6 +28,7 @@ export const imageArtifact = new Artifact({
         if (currentVersionIndex === 0) {
           return true;
         }
+
         return false;
       },
     },
@@ -57,6 +42,7 @@ export const imageArtifact = new Artifact({
         if (isCurrentVersion) {
           return true;
         }
+
         return false;
       },
     },
@@ -83,24 +69,6 @@ export const imageArtifact = new Artifact({
         };
 
         toast.success('Copied image to clipboard!');
-      },
-    },
-    {
-      icon: <DownloadIcon size={18} />,
-      description: 'Download image',
-      onClick: (context) => {
-        const { content } = context;
-        const titleContainer = document.querySelector('[data-image-title]');
-        const title = titleContainer
-          ? titleContainer.getAttribute('data-image-title')
-          : '';
-
-        const success = downloadImage(title || '', content);
-        if (success) {
-          toast.success('Image downloaded!');
-        } else {
-          toast.error('Failed to download image');
-        }
       },
     },
   ],

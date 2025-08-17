@@ -1,10 +1,16 @@
-import type {
-  Attachment,
-  ChatRequestOptions,
-  CreateMessage,
-  Message,
-} from 'ai';
+import { codeArtifact } from '@/artifacts/code/client';
+import { graphArtifact } from '@/artifacts/graph/client';
+import { imageArtifact } from '@/artifacts/image/client';
+import { pdfArtifact } from '@/artifacts/pdf/client';
+import { sheetArtifact } from '@/artifacts/sheet/client';
+import { textArtifact } from '@/artifacts/text/client';
+import { useArtifact } from '@/hooks/use-artifact';
+import type { Document, Vote } from '@/lib/db/schema';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { fetcher } from '@/lib/utils';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import { formatDistance } from 'date-fns';
+import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
@@ -16,31 +22,22 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import type { Document, Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
-import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from '../toolbar';
-import { VersionFooter } from './version-footer';
+import { useSidebar } from '../ui/sidebar';
 import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
-import { useSidebar } from '../ui/sidebar';
-import { useArtifact } from '@/hooks/use-artifact';
-import { imageArtifact } from '@/artifacts/image/client';
-import { codeArtifact } from '@/artifacts/code/client';
-import { sheetArtifact } from '@/artifacts/sheet/client';
-import { textArtifact } from '@/artifacts/text/client';
-import { pdfArtifact } from '@/artifacts/pdf/client'; // Import the PDF artifact
-import { graphArtifact } from '@/artifacts/graph/client'; // Import the Graph artifact
-import equal from 'fast-deep-equal';
+import { MultimodalInput } from './multimodal-input';
+import { VersionFooter } from './version-footer';
+import type { VisibilityType } from './visibility-selector';
 
 export const artifactDefinitions = [
   textArtifact,
   codeArtifact,
   imageArtifact,
-  sheetArtifact,
   pdfArtifact,
-  graphArtifact, // Add the graph artifact to the definitions
+  graphArtifact,
+  sheetArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
@@ -63,45 +60,34 @@ function PureArtifact({
   chatId,
   input,
   setInput,
-  handleSubmit,
-  isLoading,
+  status,
   stop,
   attachments,
   setAttachments,
-  append,
+  sendMessage,
   messages,
   setMessages,
-  reload,
+  regenerate,
   votes,
   isReadonly,
+  selectedVisibilityType,
 }: {
   chatId: string;
   input: string;
-  setInput: (input: string) => void;
-  isLoading: boolean;
-  stop: () => void;
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<Message>;
-  setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  setInput: Dispatch<SetStateAction<string>>;
+  status: UseChatHelpers<ChatMessage>['status'];
+  stop: UseChatHelpers<ChatMessage>['stop'];
+  attachments: Attachment[];
+  setAttachments: Dispatch<SetStateAction<Attachment[]>>;
+  messages: ChatMessage[];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   votes: Array<Vote> | undefined;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions,
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
+  selectedVisibilityType: VisibilityType;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
-  const isFullSize = true;
 
   const {
     data: documents,
@@ -136,12 +122,8 @@ function PureArtifact({
   }, [documents, setArtifact]);
 
   useEffect(() => {
-    // SWR automatically revalidates when the key changes (which depends on artifact.status)
-    // Explicit mutation might be redundant unless needed for specific re-render scenarios.
-    // If issues arise, consider adding artifact.status back with an eslint-disable comment
-    // or making the dependency usage explicit within the effect body.
     mutateDocuments();
-  }, [mutateDocuments]);
+  }, [artifact.status, mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -278,6 +260,7 @@ function PureArtifact({
     <AnimatePresence>
       {artifact.isVisible && (
         <motion.div
+          data-testid="artifact"
           className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
@@ -331,14 +314,14 @@ function PureArtifact({
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col h-full justify-between items-center gap-4">
+              <div className="flex flex-col h-full justify-between items-center">
                 <ArtifactMessages
                   chatId={chatId}
-                  isLoading={isLoading}
+                  status={status}
                   votes={votes}
                   messages={messages}
                   setMessages={setMessages}
-                  reload={reload}
+                  regenerate={regenerate}
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}
                 />
@@ -348,16 +331,16 @@ function PureArtifact({
                     chatId={chatId}
                     input={input}
                     setInput={setInput}
-                    handleSubmit={handleSubmit}
-                    isLoading={isLoading}
+                    status={status === 'error' ? 'ready' : status === 'streaming' ? 'processing' : status}
                     stop={stop}
                     attachments={attachments}
                     setAttachments={setAttachments}
                     messages={messages}
-                    append={append}
+                    sendMessage={sendMessage}
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
-                    isFullSize={isFullSize}
+                    selectedVisibilityType={selectedVisibilityType}
+                    isFullSize={false}
                   />
                 </form>
               </div>
@@ -469,7 +452,7 @@ function PureArtifact({
               />
             </div>
 
-            <div className="dark:bg-muted bg-background h-full overflow-y-scroll max-w-full! items-center">
+            <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
               <artifactDefinition.content
                 title={artifact.title}
                 content={
@@ -495,8 +478,8 @@ function PureArtifact({
                   <Toolbar
                     isToolbarVisible={isToolbarVisible}
                     setIsToolbarVisible={setIsToolbarVisible}
-                    append={append}
-                    isLoading={isLoading}
+                    sendMessage={sendMessage}
+                    status={status === 'error' ? 'ready' : status === 'streaming' ? 'processing' : status}
                     stop={stop}
                     setMessages={setMessages}
                     artifactKind={artifact.kind}
@@ -522,10 +505,12 @@ function PureArtifact({
 }
 
 export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (prevProps.status !== nextProps.status) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
   if (prevProps.input !== nextProps.input) return false;
   if (!equal(prevProps.messages, nextProps.messages.length)) return false;
+  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+    return false;
 
   return true;
 });

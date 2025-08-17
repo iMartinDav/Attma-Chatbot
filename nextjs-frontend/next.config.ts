@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
-  reactStrictMode: true,
+  reactStrictMode: false, // Temporarily disabled to debug multiple mounting
   // Next.js telemetry is disabled via NEXT_TELEMETRY_DISABLED environment variable
   experimental: {
     ppr: false,

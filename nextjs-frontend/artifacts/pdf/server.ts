@@ -1,6 +1,7 @@
-import { myProvider } from '@/lib/ai/models';
+import { chatModels } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
-import { type StreamData, streamText } from 'ai';
+import { streamText } from 'ai';
 import { jsPDF, type TextOptionsLight } from 'jspdf';
 import { z } from 'zod';
 
@@ -609,13 +610,15 @@ async function generatePDFContent(
     ENDTABLE`;
 
     const { fullStream } = streamText({
-      model: myProvider.languageModel('artifact-model'),
+      model: myProvider.languageModel(chatModels[0].id), // Use primary chat model
       system: templateWithTableSupport,
       prompt: `Write a professional ${docType} document about: ${title}. Include tables for any relevant data.`,
     });
 
     for await (const chunk of fullStream) {
-      if (chunk.type === 'text-delta') fullContent += chunk.textDelta;
+      if (chunk.type === 'text-delta') {
+        fullContent += (chunk as any).textDelta || (chunk as any).text || '';
+      }
     }
   } catch (error) {
     console.error('Error generating PDF content:', error);
@@ -745,18 +748,10 @@ const pdfInputSchema = z.object({
 // Unified PDF generation function with APA formatting
 async function generateAndStreamPdf(
   input: { title: string; docType?: BioinformaticsDocType },
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  dataStream: any, // Assuming dataStream has a writeData method from the handler
 ): Promise<string> {
   try {
     // Validate input
     const { title, docType } = pdfInputSchema.parse(input);
-
-    // Send initial progress message
-    dataStream.writeData({
-      type: 'pdf-delta',
-      content: 'Generating document...',
-    });
 
     // Generate content
     const { title: docTitle, sections } = await generatePDFContent(
@@ -780,21 +775,14 @@ async function generateAndStreamPdf(
       throw new Error('Invalid PDF output');
     }
 
-    // Send metadata first, then PDF content
-    dataStream.writeData({ type: 'metadata', documentTitle: docTitle });
-    dataStream.writeData({ type: 'pdf-delta', content: pdfBase64 });
-    dataStream.writeData({ type: 'finish' });
-
     return pdfBase64;
   } catch (error) {
-    return handlePdfError(error, dataStream);
+    return handlePdfError(error);
   }
 }
 
 // Error handler
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const handlePdfError = (error: unknown, dataStream: any): string => {
-  // Assuming dataStream has a writeData method
+const handlePdfError = (error: unknown): string => {
   console.error(`PDF generation failed: ${error}`);
 
   const errorDoc = new jsPDF();
@@ -808,21 +796,16 @@ const handlePdfError = (error: unknown, dataStream: any): string => {
     .text('An error occurred. Please try again.', 105, 40, { align: 'center' });
 
   const errorPdfBase64 = errorDoc.output('datauristring').split(',')[1];
-
-  dataStream.writeData({ type: 'metadata', documentTitle: 'Error' });
-  dataStream.writeData({ type: 'pdf-delta', content: errorPdfBase64 });
-  dataStream.writeData({ type: 'finish' });
-
   return errorPdfBase64;
 };
 
 export const pdfDocumentHandler = createDocumentHandler<'pdf'>({
   kind: 'pdf',
-  onCreateDocument: async ({ title, dataStream }) => {
-    return generateAndStreamPdf({ title }, dataStream);
+  onCreateDocument: async ({ title }) => {
+    return generateAndStreamPdf({ title });
   },
 
-  onUpdateDocument: async ({ description, dataStream }) => {
-    return generateAndStreamPdf({ title: description }, dataStream);
+  onUpdateDocument: async ({ description }) => {
+    return generateAndStreamPdf({ title: description });
   },
 });

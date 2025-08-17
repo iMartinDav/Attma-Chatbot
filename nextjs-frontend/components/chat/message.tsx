@@ -1,32 +1,36 @@
 'use client';
 
-import type { ChatRequestOptions } from 'ai';
-import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState, useEffect, useMemo } from 'react';
-
 import type { Vote } from '@/lib/db/schema';
-
+import { cn } from '@/lib/utils';
+import cx from 'classnames';
+import equal from 'fast-deep-equal';
+import { AnimatePresence, motion } from 'framer-motion';
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { GlobeIcon, PencilEditIcon, SparklesIcon } from '../icons';
+import { Button } from '../ui/button';
+import { TextShimmer } from '../ui/text-shimmer';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon, GlobeIcon } from '../icons';
+import { DocumentPreview } from './document-preview';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
-import { CopyIcon, CheckIcon } from 'lucide-react';
-import { toast } from 'sonner';
 import { SearchingMessage, type SearchMessage } from './message-search';
+import { PreviewAttachment } from './preview-attachment';
 import { SourceLinks } from './source-links';
-import { TextShimmer } from '../ui/text-shimmer';
+import { Weather } from './weather';
 
-// Use the extended message type that includes sourceType
+// AI SDK v5 utilities
+import {
+  getMessageFiles,
+  getMessageReasoning,
+  getMessageText
+} from '@/lib/ai/message-utils';
+
+// Extended message type that includes sourceType and custom properties
 type Message = SearchMessage;
 
 // Define a more specific type for the url_citation annotation
@@ -46,8 +50,9 @@ const PurePreviewMessage = ({
   vote,
   isLoading,
   setMessages,
-  reload,
+  regenerate,
   isReadonly,
+  requiresScrollPadding = false,
 }: {
   chatId: string;
   message: Message;
@@ -56,27 +61,25 @@ const PurePreviewMessage = ({
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  regenerate: () => Promise<string | null | undefined>;
   isReadonly: boolean;
+  requiresScrollPadding?: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [copying, setCopying] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
 
+  // Create a wrapper function that matches the expected regenerate signature
+  const wrappedRegenerate = async (options?: { messageId?: string }) => {
+    await regenerate();
+  };
+
   // Extract source links from annotations with proper type checking
   const sourceLinks = useMemo(() => {
     if (!message.annotations || message.sourceType !== 'web-search') return [];
 
-    console.log(
-      'Extracting source links from annotations:',
-      message.annotations,
-    );
-
     try {
-      // Use a safer approach with stronger type guards
       return Array.isArray(message.annotations)
         ? message.annotations
             .filter((annotation): annotation is any => {
@@ -91,11 +94,9 @@ const PurePreviewMessage = ({
               );
             })
             .map((annotation) => {
-              // After our type guard, we can safely access these properties
               const url = annotation?.url_citation?.url;
               const title = annotation?.url_citation?.title;
 
-              // Only return valid entries
               if (url && typeof url === 'string') {
                 return {
                   url,
@@ -112,7 +113,6 @@ const PurePreviewMessage = ({
             )
         : [];
     } catch (err) {
-      console.error('Error processing annotations:', err);
       return [];
     }
   }, [message.annotations, message.sourceType]);
@@ -129,29 +129,27 @@ const PurePreviewMessage = ({
 
   // Handle typing animation effect for search messages
   useEffect(() => {
-    // If this is a typing message, animate the content
+    const textContent = getMessageText(message);
+    
     if (
       message.isTyping &&
-      message.content &&
+      textContent &&
       message.sourceType === 'web-search'
     ) {
-      // Display the message content character by character
       let i = 0;
-      const typingSpeed = 15; // milliseconds per character
-      const content = message.content as string;
+      const typingSpeed = 15;
 
       setDisplayedContent('');
       setIsTypingComplete(false);
 
       const typingInterval = setInterval(() => {
-        if (i < content.length) {
-          setDisplayedContent((prev) => prev + content.charAt(i));
+        if (i < textContent.length) {
+          setDisplayedContent((prev) => prev + textContent.charAt(i));
           i++;
         } else {
           clearInterval(typingInterval);
           setIsTypingComplete(true);
 
-          // When typing is complete, remove the typing flag
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === message.id ? { ...msg, isTyping: false } : msg,
@@ -162,17 +160,10 @@ const PurePreviewMessage = ({
 
       return () => clearInterval(typingInterval);
     } else {
-      // For regular messages, display content immediately
-      setDisplayedContent(message.content as string);
+      setDisplayedContent(textContent);
       setIsTypingComplete(true);
     }
-  }, [
-    message.content,
-    message.isTyping,
-    message.id,
-    message.sourceType,
-    setMessages,
-  ]);
+  }, [message, setMessages]);
 
   // If this is a temporary searching message, show the SearchingMessage component
   if (message.sourceType === 'searching') {
@@ -198,6 +189,7 @@ const PurePreviewMessage = ({
   return (
     <AnimatePresence>
       <motion.div
+        data-testid={`message-${message.role}`}
         className="w-full group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -216,6 +208,9 @@ const PurePreviewMessage = ({
             className={cn(
               'flex gap-4 max-w-2xl',
               message.role === 'assistant' ? 'w-full' : 'w-fit',
+              {
+                'min-h-96': message.role === 'assistant' && requiresScrollPadding,
+              }
             )}
           >
             {message.role === 'assistant' && (
@@ -232,82 +227,284 @@ const PurePreviewMessage = ({
             )}
 
             <div className="flex flex-col gap-4 w-full">
-              {message.experimental_attachments && (
-                <div className="flex flex-row justify-end gap-2">
-                  {message.experimental_attachments.map((attachment, index) => (
-                    <PreviewAttachment
-                      key={attachment.url || `attachment-${index}`}
-                      attachment={attachment}
-                    />
-                  ))}
-                </div>
-              )}
+              {/* Handle v5 UIMessage file parts and v4 experimental_attachments */}
+              {(() => {
+                const fileParts = getMessageFiles(message);
+                const v4Attachments = message.experimental_attachments || [];
+                
+                return (fileParts.length > 0 || v4Attachments.length > 0) ? (
+                  <div className="flex flex-row justify-end gap-2">
+                    {fileParts.map((filePart: any, index: number) => (
+                      <PreviewAttachment
+                        key={filePart.url || `file-part-${index}`}
+                        attachment={{
+                          name: filePart.filename ?? filePart.name ?? 'file',
+                          contentType: filePart.mediaType,
+                          url: filePart.url,
+                        }}
+                      />
+                    ))}
+                    {v4Attachments.map((attachment, index) => (
+                      <PreviewAttachment
+                        key={attachment.url || `attachment-${index}`}
+                        attachment={attachment}
+                      />
+                    ))}
+                  </div>
+                ) : null;
+              })()}
 
-              {message.reasoning && (
+              {getMessageReasoning(message) && (
                 <MessageReasoning
                   isLoading={isLoading}
-                  reasoning={message.reasoning}
+                  reasoningText={getMessageReasoning(message)}
                 />
               )}
 
-              {(displayedContent || message.reasoning) && mode === 'view' && (
-                <div className="flex flex-row gap-2 items-start">
-                  {message.role === 'user' && !isReadonly && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                            onClick={() =>
-                              copyToClipboard(message.content as string)
-                            }
-                            disabled={copying}
-                          >
-                            {copying ? (
-                              <CheckIcon className="size-4 text-green-500" />
-                            ) : (
-                              <CopyIcon className="size-4" />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {copying ? 'Copied!' : 'Copy'}
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                            onClick={() => {
-                              setMode('edit');
-                            }}
-                          >
-                            <PencilEditIcon />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Edit message</TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
-                  {message.role === 'assistant' && (
-                    <div className="grow overflow-hidden" />
-                  )}
+              {/* Handle v5 UIMessage parts structure */}
+              {(message as any).parts?.map((part: any, index: number) => {
+                const { type } = part;
+                const key = `message-${message.id}-part-${index}`;
 
-                  <div
-                    className={cn('flex flex-col gap-4', {
-                      'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                        message.role === 'user',
-                    })}
-                  >
-                    <Markdown>{displayedContent}</Markdown>
-                    {message.isTyping && !isTypingComplete && (
-                      <span className="inline-block h-4 w-2 bg-current animate-pulse ml-1" />
-                    )}
-                  </div>
-                </div>
-              )}
+                if (type === 'reasoning') {
+                  return (
+                    <MessageReasoning
+                      key={key}
+                      isLoading={isLoading}
+                      reasoningText={part.text}
+                    />
+                  );
+                }
+
+                if (type === 'text') {
+                  if (mode === 'view') {
+                    return (
+                      <div key={key} className="flex flex-row gap-2 items-start">
+                        {message.role === 'user' && !isReadonly && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                  onClick={() =>
+                                    copyToClipboard(part.text)
+                                  }
+                                  disabled={copying}
+                                >
+                                  {copying ? (
+                                    <CheckIcon className="size-4 text-green-500" />
+                                  ) : (
+                                    <CopyIcon className="size-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {copying ? 'Copied!' : 'Copy'}
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  data-testid="message-edit-button"
+                                  variant="ghost"
+                                  className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                  onClick={() => {
+                                    setMode('edit');
+                                  }}
+                                >
+                                  <PencilEditIcon />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit message</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                        {message.role === 'assistant' && (
+                          <div className="grow overflow-hidden" />
+                        )}
+
+                        <div
+                          data-testid="message-content"
+                          className={cn('flex flex-col gap-4', {
+                            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                              message.role === 'user',
+                          })}
+                        >
+                          {/* Use displayedContent for typing animation, otherwise use part.text */}
+                          <Markdown>{
+                            message.isTyping && message.sourceType === 'web-search' 
+                              ? displayedContent 
+                              : part.text
+                          }</Markdown>
+                          {message.isTyping && !isTypingComplete && (
+                            <span className="inline-block h-4 w-2 bg-current animate-pulse ml-1" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (mode === 'edit') {
+                    return (
+                      <div key={key} className="flex flex-row gap-2 items-start">
+                        <div className="size-8" />
+
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          setMode={setMode}
+                          setMessages={setMessages}
+                          regenerate={async () => { await regenerate(); }}
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                // Handle tool calls in v5 format
+                if (type?.startsWith('tool-')) {
+                  const toolName = type.replace('tool-', '');
+                  const { toolCallId, state } = part;
+
+                  if (toolName === 'getWeather') {
+                    if (state === 'input-available') {
+                      return (
+                        <div key={toolCallId} className="skeleton">
+                          <Weather />
+                        </div>
+                      );
+                    }
+
+                    if (state === 'output-available') {
+                      const { output } = part;
+                      return (
+                        <div key={toolCallId}>
+                          <Weather weatherAtLocation={output} />
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (toolName === 'createDocument') {
+                    if (state === 'input-available') {
+                      const { input } = part;
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentPreview isReadonly={isReadonly} args={input} />
+                        </div>
+                      );
+                    }
+
+                    if (state === 'output-available') {
+                      const { output } = part;
+
+                      if ('error' in output) {
+                        return (
+                          <div
+                            key={toolCallId}
+                            className="text-red-500 p-2 border rounded"
+                          >
+                            Error: {String(output.error)}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentPreview
+                            isReadonly={isReadonly}
+                            result={output}
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (toolName === 'updateDocument') {
+                    if (state === 'input-available') {
+                      const { input } = part;
+
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentToolCall
+                            type="update"
+                            args={input}
+                            isReadonly={isReadonly}
+                          />
+                        </div>
+                      );
+                    }
+
+                    if (state === 'output-available') {
+                      const { output } = part;
+
+                      if ('error' in output) {
+                        return (
+                          <div
+                            key={toolCallId}
+                            className="text-red-500 p-2 border rounded"
+                          >
+                            Error: {String(output.error)}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentToolResult
+                            type="update"
+                            result={output}
+                            isReadonly={isReadonly}
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (toolName === 'requestSuggestions') {
+                    if (state === 'input-available') {
+                      const { input } = part;
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentToolCall
+                            type="request-suggestions"
+                            args={input}
+                            isReadonly={isReadonly}
+                          />
+                        </div>
+                      );
+                    }
+
+                    if (state === 'output-available') {
+                      const { output } = part;
+
+                      if ('error' in output) {
+                        return (
+                          <div
+                            key={toolCallId}
+                            className="text-red-500 p-2 border rounded"
+                          >
+                            Error: {String(output.error)}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={toolCallId}>
+                          <DocumentToolResult
+                            type="request-suggestions"
+                            result={output}
+                            isReadonly={isReadonly}
+                          />
+                        </div>
+                      );
+                    }
+                  }
+                }
+
+                return null;
+              })}
 
               {/* Only display source links if they exist and we're in web-search mode */}
               {message.sourceType === 'web-search' &&
@@ -321,20 +518,6 @@ const PurePreviewMessage = ({
                     <SourceLinks sources={sourceLinks} />
                   </motion.div>
                 )}
-
-              {message.content && mode === 'edit' && (
-                <div className="flex flex-row gap-2 items-start">
-                  <div className="size-8" />
-
-                  <MessageEditor
-                    key={message.id}
-                    message={message}
-                    setMode={setMode}
-                    setMessages={setMessages}
-                    reload={reload}
-                  />
-                </div>
-              )}
 
               {message.toolInvocations &&
                 message.toolInvocations.length > 0 && (
@@ -410,7 +593,7 @@ const PurePreviewMessage = ({
                 <MessageActions
                   key={`action-${message.id}`}
                   chatId={chatId}
-                  message={message}
+                  message={message as any}
                   vote={vote}
                   isLoading={isLoading}
                 />
@@ -427,9 +610,18 @@ export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
     if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (prevProps.message.reasoning !== nextProps.message.reasoning)
+    if (prevProps.message.id !== nextProps.message.id) return false;
+    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false;
-    if (prevProps.message.content !== nextProps.message.content) return false;
+    if (prevProps.message.reasoningText !== nextProps.message.reasoningText)
+      return false;
+    
+    // Compare text content using v5-compatible helper
+    if (getMessageText(prevProps.message) !== getMessageText(nextProps.message)) 
+      return false;
+    
+    // Check v5 parts if available
+    if (!equal((prevProps.message as any).parts, (nextProps.message as any).parts)) return false;
     if (
       !equal(
         prevProps.message.toolInvocations,
@@ -448,7 +640,8 @@ export const ThinkingMessage = () => {
 
   return (
     <motion.div
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+      data-testid="message-assistant-loading"
+      className="w-full group/message min-h-96"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}

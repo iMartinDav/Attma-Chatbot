@@ -1,24 +1,24 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Button } from '../ui/button';
-import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
-import { memo } from 'react';
+import type { Icon, IconWeight } from '@phosphor-icons/react';
 import {
-  ChartScatter,
-  Dna,
-  Virus,
-  Atom,
-  Brain,
-  Gauge,
+    Atom,
+    Brain,
+    ChartScatter,
+    Dna,
+    Gauge,
+    Virus,
 } from '@phosphor-icons/react';
-import type { Icon } from '@phosphor-icons/react';
-import type { IconWeight } from '@phosphor-icons/react';
+import type { ChatRequestOptions } from 'ai';
+import { motion } from 'framer-motion';
+import { memo } from 'react';
+import { Button } from '../ui/button';
+import { SearchMessage } from './message-search';
 
 interface SuggestedActionsProps {
   chatId: string;
   append: (
-    message: Message | CreateMessage,
+    message: SearchMessage,
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
 }
@@ -114,7 +114,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
               append({
                 role: 'user',
                 content: action.action,
-              });
+              } as SearchMessage);
             }}
             className="relative size-full min-h-[100px] p-4 overflow-hidden group
                      border border-primary/10 rounded-xl hover:border-primary/30

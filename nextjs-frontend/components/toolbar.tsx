@@ -1,6 +1,11 @@
 'use client';
 
-import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import cx from 'classnames';
 import {
   AnimatePresence,
@@ -8,6 +13,7 @@ import {
   useMotionValue,
   useTransform,
 } from 'framer-motion';
+import { nanoid } from 'nanoid';
 import {
   type Dispatch,
   memo,
@@ -18,28 +24,14 @@ import {
   useState,
 } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
-import { nanoid } from 'nanoid';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { sanitizeUIMessages } from '@/lib/utils';
 
-import {
-  ArrowUpIcon,
-  CodeIcon,
-  LogsIcon,
-  MessageIcon,
-  PenIcon,
-  SparklesIcon,
-  StopIcon,
-  SummarizeIcon,
-} from './icons';
 import { artifactDefinitions, ArtifactKind } from './chat/artifact';
 import { ArtifactToolbarItem } from './chat/create-artifact';
-import { UseChatHelpers } from 'ai/react';
+import {
+  ArrowUpIcon,
+  StopIcon,
+  SummarizeIcon
+} from './icons';
 
 type ToolProps = {
   description: string;
@@ -49,14 +41,11 @@ type ToolProps = {
   isToolbarVisible?: boolean;
   setIsToolbarVisible?: Dispatch<SetStateAction<boolean>>;
   isAnimating: boolean;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  sendMessage: (message: any) => void;
   onClick: ({
-    appendMessage,
+    sendMessage,
   }: {
-    appendMessage: UseChatHelpers['append'];
+    sendMessage: (message: any) => void;
   }) => void;
 };
 
@@ -68,7 +57,7 @@ const Tool = ({
   isToolbarVisible,
   setIsToolbarVisible,
   isAnimating,
-  append,
+  sendMessage,
   onClick,
 }: ToolProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -95,7 +84,7 @@ const Tool = ({
       setSelectedTool(description);
     } else {
       setSelectedTool(null);
-      onClick({ appendMessage: append });
+      onClick({ sendMessage });
     }
   };
 
@@ -148,15 +137,12 @@ const randomArr = [...Array(6)].map((x) => nanoid(5));
 
 const ReadingLevelSelector = ({
   setSelectedTool,
-  append,
+  sendMessage,
   isAnimating,
 }: {
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
   isAnimating: boolean;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  sendMessage: (message: any) => void;
 }) => {
   const LEVELS = [
     'Elementary',
@@ -230,9 +216,14 @@ const ReadingLevelSelector = ({
               }}
               onClick={() => {
                 if (currentLevel !== 2 && hasUserSelectedLevel) {
-                  append({
+                  sendMessage({
                     role: 'user',
-                    content: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`,
+                    parts: [
+                      {
+                        type: 'text' as const,
+                        text: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`,
+                      },
+                    ],
                   });
 
                   setSelectedTool(null);
@@ -259,7 +250,7 @@ export const Tools = ({
   isToolbarVisible,
   selectedTool,
   setSelectedTool,
-  append,
+  sendMessage,
   isAnimating,
   setIsToolbarVisible,
   tools,
@@ -267,10 +258,7 @@ export const Tools = ({
   isToolbarVisible: boolean;
   selectedTool: string | null;
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  sendMessage: (message: any) => void;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
   tools: Array<ArtifactToolbarItem>;
@@ -293,9 +281,9 @@ export const Tools = ({
               icon={secondaryTool.icon}
               selectedTool={selectedTool}
               setSelectedTool={setSelectedTool}
-              append={append}
+              sendMessage={sendMessage}
               isAnimating={isAnimating}
-              onClick={secondaryTool.onClick}
+              onClick={secondaryTool.onClick as any}
             />
           ))}
       </AnimatePresence>
@@ -307,9 +295,9 @@ export const Tools = ({
         setSelectedTool={setSelectedTool}
         isToolbarVisible={isToolbarVisible}
         setIsToolbarVisible={setIsToolbarVisible}
-        append={append}
+        sendMessage={sendMessage}
         isAnimating={isAnimating}
-        onClick={primaryTool.onClick}
+        onClick={primaryTool.onClick as any}
       />
     </motion.div>
   );
@@ -318,21 +306,18 @@ export const Tools = ({
 const PureToolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
-  append,
-  isLoading,
+  sendMessage,
+  status,
   stop,
   setMessages,
   artifactKind,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  isLoading: boolean;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  status: 'ready' | 'submitted' | 'processing';
+  sendMessage: (message: any) => void;
   stop: () => void;
-  setMessages: Dispatch<SetStateAction<Message[]>>;
+  setMessages: Dispatch<SetStateAction<any[]>>;
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -340,6 +325,9 @@ const PureToolbar = ({
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Check if loading based on status
+  const isLoading = status === 'submitted' || status === 'processing';
 
   useOnClickOutside(toolbarRef, () => {
     setIsToolbarVisible(false);
@@ -445,7 +433,8 @@ const PureToolbar = ({
             className="p-3"
             onClick={() => {
               stop();
-              setMessages((messages) => sanitizeUIMessages(messages));
+              // Just call setMessages with current messages, no sanitization needed for v5
+              setMessages((messages) => messages);
             }}
           >
             <StopIcon />
@@ -453,14 +442,14 @@ const PureToolbar = ({
         ) : selectedTool === 'adjust-reading-level' ? (
           <ReadingLevelSelector
             key="reading-level-selector"
-            append={append}
+            sendMessage={sendMessage}
             setSelectedTool={setSelectedTool}
             isAnimating={isAnimating}
           />
         ) : (
           <Tools
             key="tools"
-            append={append}
+            sendMessage={sendMessage}
             isAnimating={isAnimating}
             isToolbarVisible={isToolbarVisible}
             selectedTool={selectedTool}
@@ -475,7 +464,7 @@ const PureToolbar = ({
 };
 
 export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (prevProps.status !== nextProps.status) return false;
   if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
   if (prevProps.artifactKind !== nextProps.artifactKind) return false;
 

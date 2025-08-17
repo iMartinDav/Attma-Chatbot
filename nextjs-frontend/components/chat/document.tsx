@@ -1,9 +1,9 @@
 import { memo } from 'react';
 
-import type { ArtifactKind } from './artifact';
-import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from '../icons';
-import { toast } from 'sonner';
 import { useArtifact } from '@/hooks/use-artifact';
+import { toast } from 'sonner';
+import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from '../icons';
+import type { ArtifactKind } from './artifact';
 
 const getActionText = (
   type: 'create' | 'update' | 'request-suggestions',
@@ -88,7 +88,10 @@ export const DocumentToolResult = memo(PureDocumentToolResult, () => true);
 
 interface DocumentToolCallProps {
   type: 'create' | 'update' | 'request-suggestions';
-  args: { title: string };
+  args:
+    | { title: string; kind: ArtifactKind } // for create
+    | { id: string; description: string } // for update
+    | { documentId: string }; // for request-suggestions
   isReadonly: boolean;
 }
 
@@ -139,7 +142,15 @@ function PureDocumentToolCall({
         </div>
 
         <div className="text-left">
-          {`${getActionText(type, 'present')} ${args.title ? `"${args.title}"` : ''}`}
+          {`${getActionText(type, 'present')} ${
+            type === 'create' && 'title' in args && args.title
+              ? `"${args.title}"`
+              : type === 'update' && 'description' in args
+                ? `"${args.description}"`
+                : type === 'request-suggestions'
+                  ? 'for document'
+                  : ''
+          }`}
         </div>
       </div>
 

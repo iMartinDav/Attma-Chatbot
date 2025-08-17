@@ -9,15 +9,24 @@ export async function GET(request: Request) {
     return new Response('chatId is required', { status: 400 });
   }
 
+  // Handle the case when chatId is "new" (for new chats that haven't been saved yet)
+  if (chatId === 'new') {
+    return Response.json([], { status: 200 });
+  }
+
   const session = await auth();
 
   if (!session || !session.user || !session.user.email) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const votes = await getVotesByChatId({ id: chatId });
-
-  return Response.json(votes, { status: 200 });
+  try {
+    const votes = await getVotesByChatId({ id: chatId });
+    return Response.json(votes, { status: 200 });
+  } catch (error) {
+    console.error('Failed to get votes by chat id from database', error);
+    return Response.json([], { status: 200 });
+  }
 }
 
 export async function PATCH(request: Request) {

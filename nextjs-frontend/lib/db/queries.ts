@@ -1,22 +1,23 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
+import { sql } from 'drizzle-orm';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm/expressions';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import {
-  user,
-  chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  type Message,
-  message,
-  vote,
-} from './schema';
 import type { ArtifactKind } from '@/components/chat/artifact';
+import {
+    chat,
+    document,
+    type Message,
+    message,
+    type Suggestion,
+    suggestion,
+    user,
+    type User,
+    vote,
+} from './schema';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -103,20 +104,23 @@ export async function saveChat({
   id,
   userId,
   title,
+  visibility = 'private',
 }: {
   id: string;
   userId: string;
   title: string;
+  visibility?: 'public' | 'private';
 }) {
   try {
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
-      userId,
       title,
+      userId,
+      visibility,
     });
   } catch (error) {
-    console.error('Failed to save chat in database');
+    console.error('Failed to save chat to database');
     throw error;
   }
 }
@@ -511,6 +515,40 @@ export async function updateBioAnalysisStatus({
       .where(eq(document.id, id));
   } catch (error) {
     console.error('Failed to update bio analysis status in database', error);
+    throw error;
+  }
+}
+
+// Stream ID management for resumable streams
+export async function createStreamId({ streamId, chatId }: { streamId: string; chatId: string }) {
+  // For now, this is a placeholder implementation
+  // In a full implementation, you'd store stream IDs in a database table
+  return { streamId, chatId, createdAt: new Date() };
+}
+
+// Message count for rate limiting
+export async function getMessageCountByUserId({ 
+  id, 
+  differenceInHours = 24 
+}: { 
+  id: string; 
+  differenceInHours?: number; 
+}) {
+  try {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(message)
+      .innerJoin(chat, eq(message.chatId, chat.id))
+      .where(
+        and(
+          eq(chat.userId, id),
+          gte(message.createdAt, sql`now() - interval '${sql.raw(differenceInHours.toString())} hours'`)
+        )
+      );
+    
+    return result[0]?.count || 0;
+  } catch (error) {
+    console.error('Failed to get message count by user ID', error);
     throw error;
   }
 }

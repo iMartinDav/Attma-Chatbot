@@ -1,25 +1,28 @@
 'use client';
 
+import {
+  createSearchMessages,
+  executeWebSearch,
+} from '@/lib/ai/tools/search-function';
+import { generateUUID } from '@/lib/utils';
+import cx from 'classnames';
+import { motion } from 'framer-motion';
+import { memo, useState } from 'react';
 import { toast } from 'sonner';
-import type { Message as OriginalMessage } from 'ai';
 import { GlobeIcon, LoaderIcon } from '../icons';
 import { Button } from '../ui/button';
-import { memo, useState } from 'react';
-import { motion } from 'framer-motion';
-import cx from 'classnames';
-import { generateUUID } from '@/lib/utils';
-import {
-  executeWebSearch,
-  createSearchMessages,
-} from '@/lib/ai/tools/search-function';
 import { TextShimmer } from '../ui/text-shimmer';
 
+import { ChatMessage } from '@/lib/types';
+
 // Enhanced Message type with search-specific properties
-export type SearchMessage = OriginalMessage & {
+export type SearchMessage = ChatMessage & {
   sourceType?: string;
-  reasoning?: string;
+  reasoningText?: string;
   isTyping?: boolean;
   annotations?: Array<any>;
+  createdAt?: Date;
+  experimental_attachments?: Array<any>; // TODO: Update for AI SDK v5
 };
 
 interface MessageSearchProps {
@@ -139,13 +142,13 @@ export function MessageSearch({
       const formattedMessage = {
         id: message.id,
         role: message.role,
-        content: message.content,
+        content: message.parts?.filter(p => p.type === 'text').map(p => p.text).join(' ') || '',
         createdAt:
           message.createdAt instanceof Date
             ? message.createdAt.toISOString()
             : new Date().toISOString(),
         sourceType: message.sourceType,
-        reasoning: message.reasoning,
+        reasoningText: message.reasoningText,
         annotations: message.annotations,
       };
 
@@ -221,10 +224,10 @@ export function MessageSearch({
           const responseMessage: SearchMessage = {
             id: generateUUID(),
             role: 'assistant',
-            content: searchResult.content,
+            parts: [{ type: 'text', text: searchResult.content }],
             createdAt: new Date(),
             sourceType: 'web-search',
-            reasoning: 'Information retrieved from web search',
+            reasoningText: 'Information retrieved from web search',
             annotations: processAnnotations(searchResult.annotations),
           };
 
@@ -256,8 +259,8 @@ export function MessageSearch({
         const errorMessage: SearchMessage = {
           id: generateUUID(),
           role: 'assistant',
-          content:
-            'Sorry, I encountered an error while searching. Please try again.',
+          parts: [{ type: 'text', text: 'Sorry, I encountered an error while searching. Please try again.' }],
+          content: 'Sorry, I encountered an error while searching. Please try again.',
           createdAt: new Date(),
           sourceType: 'error',
         };
@@ -281,6 +284,7 @@ export function MessageSearch({
       const errorMessage: SearchMessage = {
         id: generateUUID(),
         role: 'assistant',
+        parts: [{ type: 'text', text: 'Sorry, I encountered an error while searching. Please try again.' }],
         content:
           'Sorry, I encountered an error while searching. Please try again.',
         createdAt: new Date(),

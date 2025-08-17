@@ -1,149 +1,188 @@
 'use client';
 
-import React, { useState } from 'react';
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
-import useSWR, { useSWRConfig } from 'swr';
-
-import { ChatHeader } from '@/components/chat/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, generateUUID } from '@/lib/utils';
-import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useAutoResume } from '@/hooks/use-auto-resume';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import type { Vote } from '@/lib/db/schema';
+import { ChatSDKError } from '@/lib/errors';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
+import type { Session } from 'next-auth';
+import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-
-import { SuggestedActions } from './suggested-actions';
-import { ChatOverview } from './overview';
-
-interface ChatProps {
-  id: string;
-  initialMessages: Array<Message>;
-  selectedChatModel: string;
-  selectedVisibilityType: VisibilityType;
-  isReadonly: boolean;
-}
+import useSWR, { useSWRConfig } from 'swr';
+import { unstable_serialize } from 'swr/infinite';
+import { Artifact } from './artifact';
+import { ChatHeader } from './chat-header';
+import { useDataStream } from './data-stream-provider';
+import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import { getChatHistoryPaginationKey } from './sidebar-history';
+import type { VisibilityType } from './visibility-selector';
 
 export function Chat({
   id,
   initialMessages,
-  selectedChatModel,
-  selectedVisibilityType,
+  initialChatModel,
+  initialVisibilityType,
   isReadonly,
-}: ChatProps) {
+  session,
+  autoResume,
+}: {
+  id: string;
+  initialMessages: ChatMessage[];
+  initialChatModel: string;
+  initialVisibilityType: VisibilityType;
+  isReadonly: boolean;
+  session: Session;
+  autoResume: boolean;
+}) {
+  const { visibilityType } = useChatVisibility({
+    chatId: id,
+    initialVisibility: initialVisibilityType,
+  });
+
   const { mutate } = useSWRConfig();
+  const { setDataStream } = useDataStream();
+  const [input, setInput] = useState<string>('');
+
+  // Use ref for dynamic values in v5 transport (per migration guide)
+  const visibilityTypeRef = useRef(visibilityType);
+  visibilityTypeRef.current = visibilityType;
 
   const {
     messages,
     setMessages,
-    handleSubmit,
-    input,
-    setInput,
-    append,
-    isLoading,
+    sendMessage,
+    status,
     stop,
-    reload,
-  } = useChat({
+    regenerate,
+    resumeStream,
+  } = useChat<ChatMessage>({
     id,
-    body: { id, selectedChatModel },
-    initialMessages,
+    messages: initialMessages, // Use initial messages for both new and existing chats
     experimental_throttle: 100,
-    sendExtraMessageFields: true,
     generateId: generateUUID,
-    onFinish: () => mutate('/api/history'),
-    onError: () => toast.error('An error occurred, please try again!'),
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+      fetch: fetchWithErrorHandlers,
+      prepareSendMessagesRequest({ messages, id, body }: any) {
+        return {
+          body: {
+            id,
+            message: messages.at(-1),
+            selectedChatModel: initialChatModel,
+            selectedVisibilityType: visibilityTypeRef.current, // ✅ Use ref for dynamic value
+            ...body,
+          },
+        };
+      },
+    }),
+    onData: (dataPart) => {
+      setDataStream((ds) => (ds ? [...ds, dataPart as any] : [dataPart as any]));
+    },
+    onFinish: () => {
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
+    },
+    onError: (error) => {
+      if (error instanceof ChatSDKError) {
+        toast.error(error.message);
+      }
+    },
   });
 
+  const searchParams = useSearchParams();
+  const query = searchParams.get('query');
+  const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
+
+  useEffect(() => {
+    if (query && !hasAppendedQuery) {
+      sendMessage({
+        role: 'user' as const,
+        parts: [{ type: 'text', text: query }],
+      });
+      setHasAppendedQuery(true);
+      window.history.replaceState({}, '', `/chat/${id}`);
+    }
+  }, [query, sendMessage, hasAppendedQuery, id]);
+
   const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
+    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
+
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
-  return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background">
-      <ChatHeader
-        chatId={id}
-        selectedModelId={selectedChatModel}
-        selectedVisibilityType={selectedVisibilityType}
-        isReadonly={isReadonly}
-      />
+  useAutoResume({
+    autoResume,
+    initialMessages,
+    resumeStream,
+    setMessages,
+  });
 
-      {messages.length === 0 ? (
-        <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-          <ChatOverview />
+  return (
+    <>
+      <div className="flex flex-col min-w-0 h-dvh bg-background">
+        <ChatHeader
+          chatId={id}
+          selectedModelId={initialChatModel}
+          selectedVisibilityType={initialVisibilityType}
+          isReadonly={isReadonly}
+        />
+
+        <Messages
+          chatId={id}
+          votes={votes}
+          messages={messages as any}
+          setMessages={setMessages as any}
+          isReadonly={isReadonly}
+          isArtifactVisible={isArtifactVisible}
+          isLoading={status === 'streaming'}
+          reload={async () => { await regenerate(); return null; }}
+        />
+
+        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (
-            <div className="w-full md:max-w-3xl mx-auto flex flex-col gap-3">
-              <MultimodalInput
-                chatId={id}
-                input={input}
-                setInput={setInput}
-                handleSubmit={handleSubmit}
-                isLoading={isLoading}
-                stop={stop}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                messages={messages}
-                setMessages={setMessages}
-                append={append}
-                isFullSize={false}
-              />
-              <SuggestedActions append={append} chatId={id} />
-            </div>
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              status={status === 'streaming' ? 'processing' : status === 'error' ? 'ready' : 'ready'}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages as any}
+              setMessages={setMessages as any}
+              sendMessage={sendMessage as any}
+              selectedVisibilityType={visibilityType}
+              isFullSize={false}
+            />
           )}
-        </main>
-      ) : (
-        <>
-          <Messages
-            chatId={id}
-            isLoading={isLoading}
-            votes={votes}
-            messages={messages}
-            setMessages={setMessages}
-            reload={reload}
-            isReadonly={isReadonly}
-            isArtifactVisible={isArtifactVisible}
-          />
-          <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-            {!isReadonly && (
-              <MultimodalInput
-                chatId={id}
-                input={input}
-                setInput={setInput}
-                handleSubmit={handleSubmit}
-                isLoading={isLoading}
-                stop={stop}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                messages={messages}
-                setMessages={setMessages}
-                append={append}
-                isFullSize={false}
-              />
-            )}
-          </form>
-        </>
-      )}
+        </form>
+      </div>
 
       <Artifact
         chatId={id}
         input={input}
         setInput={setInput}
-        handleSubmit={handleSubmit}
-        isLoading={isLoading}
+        status={status}
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}
-        append={append}
-        messages={messages}
-        setMessages={setMessages}
-        reload={reload}
+        sendMessage={sendMessage as any}
+        messages={messages as any}
+        setMessages={setMessages as any}
+        regenerate={regenerate}
         votes={votes}
         isReadonly={isReadonly}
+        selectedVisibilityType={visibilityType}
       />
-    </div>
+    </>
   );
 }
+
+export default React.memo(Chat);

@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import { auth } from '@/app/(auth)/auth';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { defaultLocale, locales } from './lib/internationalization/config';
 
 // List of paths that don't need i18n handling
@@ -26,13 +25,6 @@ const authRoutes = [
 
 // App routes that should not be localized but need auth
 const nonLocalizedAppRoutes = ['/chat', '/settings'];
-
-// Rate limiting configuration
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 100;
-
-// Simple in-memory rate limiting store (use Redis in production)
-const rateLimitStore = new Map<string, { count: number; timestamp: number }>();
 
 function getLocaleFromRequest(request: NextRequest): string {
   // Negotiator expects plain object so we need to transform headers
@@ -60,14 +52,6 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isNonLocalizedAppRoute) {
-    // Perform auth check for these routes
-    const session = await auth();
-    if (!session) {
-      // Redirect to login page
-      const url = new URL('/login', request.url);
-      url.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(url);
-    }
     return NextResponse.next();
   }
 
@@ -94,42 +78,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Apply rate limiting for authentication endpoints
-  if (pathname.startsWith('/api/auth')) {
-    const now = Date.now();
-
-    // Use headers to identify clients
-    const clientId =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
-
-    // Clean up old entries
-    for (const [key, data] of rateLimitStore.entries()) {
-      if (now - data.timestamp > RATE_LIMIT_WINDOW) {
-        rateLimitStore.delete(key);
-      }
-    }
-
-    // Check rate limit for this client
-    const rateData = rateLimitStore.get(clientId) || {
-      count: 0,
-      timestamp: now,
-    };
-
-    if (now - rateData.timestamp <= RATE_LIMIT_WINDOW) {
-      if (rateData.count >= MAX_REQUESTS_PER_WINDOW) {
-        return new NextResponse('Too many requests', { status: 429 });
-      }
-      rateData.count++;
-    } else {
-      rateData.count = 1;
-      rateData.timestamp = now;
-    }
-
-    rateLimitStore.set(clientId, rateData);
-  }
-
   // Handle direct auth routes without localization
   if (authRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next(); // Let Next.js handle these routes directly
@@ -137,15 +85,6 @@ export async function middleware(request: NextRequest) {
 
   // Skip locale handling for public routes
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    // For API routes that need auth, check auth
-    if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
-      const session = await auth();
-      if (!session) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
     return NextResponse.next();
   }
 
@@ -170,12 +109,5 @@ export const config = {
   matcher: [
     // Skip all internal paths but include all pages
     '/((?!api|_next/static|_next/image|images|fonts|favicon.ico).*)',
-    // Also use the middleware for protected routes
-    '/chat',
-    '/chat/:path*',
-    '/settings',
-    '/settings/:path*',
-    '/api/((?!auth).*)',
-    '/api/auth/:path*',
   ],
 };

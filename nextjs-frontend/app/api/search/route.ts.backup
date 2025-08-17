@@ -1,8 +1,10 @@
 import {
-  type Message,
-  createDataStreamResponse,
+  type UIMessage,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
   smoothStream,
   streamText,
+  convertToModelMessages,
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
@@ -23,10 +25,10 @@ import {
 import { generateTitleFromUserMessage } from '../../actions';
 
 // Add custom type definition for messages with annotations
-interface ExtendedMessage extends Message {
+interface ExtendedMessage extends UIMessage {
   annotations?: any[];
   sourceType?: string;
-  reasoning?: string;
+  reasoningText?: string;
 }
 
 export const maxDuration = 60;
@@ -133,7 +135,7 @@ async function handleDirectSearchRequest(query: string, options: any = {}) {
  */
 async function createSearchChat(
   userId: string,
-  message: Message,
+  message: UIMessage,
   chatId: string,
 ) {
   // Create a meaningful default title based on the search query
@@ -158,7 +160,7 @@ async function createSearchChat(
 /**
  * Add search-specific system prompt to messages
  */
-function addSearchSystemPrompt(messages: Message[]): Message[] {
+function addSearchSystemPrompt(messages: UIMessage[]): UIMessage[] {
   return [
     {
       id: 'search-system',
@@ -286,7 +288,7 @@ export async function POST(request: Request) {
             content: msg.content,
             createdAt: msg.createdAt,
             sourceType: msg.sourceType || undefined,
-            reasoning: msg.reasoning || undefined,
+            reasoningText: msg.reasoningText || undefined,
             annotations: processedAnnotations,
           };
         });
@@ -352,12 +354,12 @@ export async function POST(request: Request) {
           messages: searchMessages,
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          onFinish: async ({ response, reasoning }) => {
+          onFinish: async ({ response, reasoningText }) => {
             if (session.user?.id) {
               try {
                 const sanitizedMessages = sanitizeResponseMessages({
                   messages: response.messages,
-                  reasoning,
+                  reasoningText,
                 });
 
                 // Preserve annotations from assistant messages
@@ -376,7 +378,7 @@ export async function POST(request: Request) {
                     content: message.content,
                     createdAt: new Date(),
                     sourceType: 'web-search',
-                    reasoning: reasoning || 'Web search results',
+                    reasoningText: reasoning || 'Web search results',
                     annotations: annotations
                       ? processAnnotations(annotations)
                       : undefined,

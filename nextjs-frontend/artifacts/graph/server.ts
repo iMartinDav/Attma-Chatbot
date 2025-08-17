@@ -1,4 +1,3 @@
-import { myProvider } from '@/lib/ai/models';
 import { createDocumentHandler } from '@/lib/artifacts/server';
 
 import { z } from 'zod';
@@ -34,7 +33,7 @@ export type GraphContent = {
 
 export const graphDocumentHandler = createDocumentHandler<'graph'>({
   kind: 'graph',
-  onCreateDocument: async ({ id, title, dataStream, session }) => {
+  onCreateDocument: async ({ id, title, session }) => {
     // Parse the title to extract visualization parameters
     const parsedTitle = parseGraphTitle(title);
     const visType = parsedTitle?.visType || 'umap';
@@ -82,11 +81,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
           title,
           metadata: data.metadata || {},
         });
-
-        dataStream.writeData({
-          type: 'content-update',
-          content: result,
-        });
       }
 
       // If the visualization is being processed in the background
@@ -98,11 +92,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
           status: 'processing',
           parameters,
         });
-
-        dataStream.writeData({
-          type: 'content-update',
-          content: result,
-        });
       }
 
       return result;
@@ -112,7 +101,7 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
     }
   },
 
-  onUpdateDocument: async ({ document, description, dataStream, session }) => {
+  onUpdateDocument: async ({ document, description, session }) => {
     try {
       // Parse the existing document content
       let existingContent: GraphContent = {};
@@ -148,11 +137,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
               graphType,
               title: document.title,
               metadata: data.result.metadata || {},
-            });
-
-            dataStream.writeData({
-              type: 'content-update',
-              content: updatedContent,
             });
 
             return updatedContent;
@@ -194,11 +178,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
               metadata: data.metadata || {},
             });
 
-            dataStream.writeData({
-              type: 'content-update',
-              content: updatedContent,
-            });
-
             return updatedContent;
           }
 
@@ -209,11 +188,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
               title: document.title,
               status: 'processing',
               parameters: parsedDescription.parameters || {},
-            });
-
-            dataStream.writeData({
-              type: 'content-update',
-              content: updatedContent,
             });
 
             return updatedContent;
