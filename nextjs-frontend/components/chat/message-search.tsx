@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  createSearchMessages,
-  executeWebSearch,
+    createSearchMessages,
+    executeWebSearch,
 } from '@/lib/ai/tools/search-function';
 import { generateUUID } from '@/lib/utils';
 import cx from 'classnames';
@@ -168,7 +168,14 @@ export function MessageSearch({
         console.error('Failed to save search message:', errorText);
         return false;
       }
-
+      // If server minted a new id (when client had "new" or invalid), adopt it
+      try {
+        const data = await response.json();
+        if (data?.id && typeof window !== 'undefined') {
+          // Update URL in place so subsequent saves use the valid id
+          window.history.replaceState({}, '', `/chat/${data.id}`);
+        }
+      } catch {}
       return true;
     } catch (error) {
       console.error('Error saving search message:', error);
