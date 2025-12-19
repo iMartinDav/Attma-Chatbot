@@ -52,7 +52,7 @@ fastapi==0.115.6
     #   fastapi-users
 fastapi-cli==0.0.7
     # via fastapi
-fastapi-users==13.0.0
+fastapi-users==15.0.2
     # via
     #   attma-backend-chatbot (pyproject.toml)
     #   fastapi-users-db-sqlalchemy
