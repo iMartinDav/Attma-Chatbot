@@ -6,14 +6,17 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# No need to copy files, install dependencies, or build
-# as we'll mount the local directory including node_modules
+# Copy dependency files
+COPY package.json pnpm-lock.yaml* ./
 
-# The node:20-bookworm image already has node user and group
-# No need to create them again
+# Install dependencies
+RUN pnpm install
+
+# Copy source code
+COPY . .
 
 # Set ownership of the app directory
-RUN mkdir -p /app && chown -R node:node /app
+RUN chown -R node:node /app
 
 # Switch to non-root user
 USER node

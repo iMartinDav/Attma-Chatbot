@@ -41,8 +41,7 @@ function PureMessages({
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
-  // Debug logging
-  console.log('📝 Messages component - isReasoningMode:', isReasoningMode, 'isLoading:', isLoading);
+
 
   return (
     <div
@@ -81,12 +80,6 @@ function PureMessages({
           messages.length > 0 &&
           messages[messages.length - 1].role === 'user' && 
           (() => {
-            console.log('🔍 Rendering condition check:', {
-              isLoading,
-              messagesLength: messages.length,
-              lastMessageRole: messages.length > 0 ? messages[messages.length - 1].role : 'none',
-              isReasoningMode
-            });
             return isReasoningMode ? <ReasoningThinkingMessage /> : <ThinkingMessage />;
           })()}
 
@@ -104,8 +97,7 @@ function PureMessages({
 const ReasoningThinkingMessage = () => {
   const role = 'assistant';
   
-  // Debug logging
-  console.log('🧠 ReasoningThinkingMessage rendered');
+
 
   return (
     <motion.div
