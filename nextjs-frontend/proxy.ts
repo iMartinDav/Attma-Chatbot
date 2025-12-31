@@ -43,7 +43,7 @@ function getLocaleFromRequest(request: NextRequest): string {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // First, check if this is a non-localized app route (like /chat, /settings)
