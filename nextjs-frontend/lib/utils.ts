@@ -1,7 +1,7 @@
 import type {
-  CoreAssistantMessage,
-  CoreToolMessage,
-  UIMessage
+    AssistantModelMessage as CoreAssistantMessage,
+    ToolModelMessage as CoreToolMessage,
+    UIMessage,
 } from 'ai';
 import { clsx, type ClassValue } from 'clsx';
 import { getCookie, setCookie } from 'cookies-next';
@@ -164,7 +164,7 @@ function addToolMessageToChat({
         ...message,
         toolInvocations: (message as any).toolInvocations.map((toolInvocation: any) => {
           const toolResult = toolMessage.content.find(
-            (tool) => tool.toolCallId === toolInvocation.toolCallId,
+            (tool) => tool.type === 'tool-result' && tool.toolCallId === toolInvocation.toolCallId,
           );
 
           if (toolResult) {

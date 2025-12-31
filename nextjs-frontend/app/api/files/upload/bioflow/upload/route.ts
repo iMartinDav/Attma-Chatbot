@@ -1,9 +1,9 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
 import { uploadToBlob } from '@/lib/blob-upload';
 import { saveDocument } from '@/lib/db/queries';
-import { auth } from '@/app/(auth)/auth';
 import { rateLimit } from '@/lib/rate-limit';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Configure limits for file uploads
 const MAX_UPLOAD_SIZE = 200 * 1024 * 1024; // 200MB
@@ -25,14 +25,10 @@ const CONTENT_TYPE_WHITELIST = [
   // Add other allowed content types
 ];
 
-// Important: Use a consistent config format for App Router
-export const config = {
-  api: {
-    bodyParser: false, // Critical: Disable the built-in parser for large files
-    externalResolver: true, // Tell Next.js that the route is handled externally
-  },
-  maxDuration: 60, // Extend the function timeout to 60 seconds for large uploads
-};
+// Route Segment Config
+export const maxDuration = 60; // Extend timeout to 60 seconds
+export const dynamic = 'force-dynamic';
+// Note: App Router handlers (POST) automatically handle body streaming, so bodyParser config is not needed.
 
 // Create a rate limiter for the bioflow upload endpoint
 // 10 requests per minute per IP/user

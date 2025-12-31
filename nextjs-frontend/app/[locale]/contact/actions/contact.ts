@@ -1,8 +1,8 @@
 'use server';
 
-import { z } from 'zod';
-import { getDictionary } from '@/lib/internationalization/dictionaries';
 import type { Locale } from '@/lib/internationalization/config';
+import { getDictionary } from '@/lib/internationalization/dictionaries';
+import { z } from 'zod';
 
 // Define validation schema
 const contactFormSchema = z.object({
@@ -51,7 +51,7 @@ export async function submitContactForm(
 
   if (!result.success) {
     // Map errors to translated messages
-    const errors = result.error.errors.map((error) => {
+    const errors = result.error.issues.map((error) => {
       // Use the error code as a key to look up the translated message
       const message =
         errorMessages[error.message as keyof typeof errorMessages] ||
