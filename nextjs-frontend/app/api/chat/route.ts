@@ -4,11 +4,11 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import {
-  deleteChatById,
-  getChatById,
-  getMessagesByChatId,
-  saveChat,
-  saveMessages
+    deleteChatById,
+    getChatById,
+    getMessagesByChatId,
+    saveChat,
+    saveMessages
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import { streamText } from 'ai';
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const { id, message, selectedChatModel, selectedVisibilityType }: PostRequestBody = parseResult.data;
-    console.log('🔍 Request for chat:', id);
+
 
     const session = await auth();
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       // Get existing messages for context
       try {
         const existingMessages = await getMessagesByChatId({ id: chatId });
-        console.log(`📚 Loading ${existingMessages.length} existing messages`);
+
         
         simpleMessages = existingMessages.map((msg: any) => ({
           id: msg.id,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
             : [{ type: 'text', text: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content) }]
         }));
       } catch (error) {
-        console.log('⚠️ Could not load existing messages:', error);
+
       }
     }
 
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       parts: userMessageParts.length > 0 ? userMessageParts : [{ type: 'text' as const, text: message.content || '' }]
     });
 
-    console.log(`💬 Processing ${simpleMessages.length} messages for AI`);
+
 
     const streamingResult = await streamText({
       model: myProvider.languageModel('chat-model'),
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
             // For new chats, create the chat first
             if (isNewChat) {
               const title = await generateTitleFromUserMessage({ message });
-              console.log('💾 Creating new chat:', chatId);
+
               
               await saveChat({
                 id: chatId,
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
               }
             ];
 
-            console.log('💾 Saving 2 new messages');
+
             await saveMessages({ messages: messagesToSave });
           } catch (error) {
             console.error('❌ Error saving:', error);
