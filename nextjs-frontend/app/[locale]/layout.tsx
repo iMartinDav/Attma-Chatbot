@@ -1,13 +1,12 @@
-import type { Metadata } from 'next';
-import { getDictionary } from '@/lib/internationalization/dictionaries';
 import {
-  i18n,
-  type Locale,
-  type LocaleParams,
+    i18n,
+    type Locale,
 } from '@/lib/internationalization/config';
-import Header from './(home)/components/header';
-import Footer from './(home)/components/footer';
+import { getDictionary } from '@/lib/internationalization/dictionaries';
+import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
+import Footer from './(home)/components/footer';
+import Header from './(home)/components/header';
 
 // Base metadata configuration
 const baseMetadata: Metadata = {
@@ -40,10 +39,10 @@ const baseMetadata: Metadata = {
 export async function generateMetadata({
   params: paramsPromise,
 }: {
-  params: Promise<LocaleParams>;
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const params = await paramsPromise;
-  const dictionary = await getDictionary(params.locale);
+  const dictionary = await getDictionary(params.locale as Locale);
 
   return {
     ...baseMetadata,
@@ -77,11 +76,11 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: Locale } | Promise<{ locale: Locale }>;
+  params: Promise<{ locale: string }>;
 }) {
   // Await params if it's a Promise
   const resolvedParams = await Promise.resolve(params);
-  const locale = resolvedParams.locale;
+  const locale = resolvedParams.locale as Locale;
 
   const dictionary = await getDictionary(locale);
 

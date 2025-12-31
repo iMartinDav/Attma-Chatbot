@@ -13,7 +13,7 @@ const graphTypes = [
 ] as const;
 const graphRequestSchema = z.object({
   visType: z.enum(graphTypes),
-  parameters: z.record(z.any()).optional(),
+  parameters: z.record(z.string(), z.any()).optional(),
   dataDescription: z.string(),
   title: z.string().optional(),
 });

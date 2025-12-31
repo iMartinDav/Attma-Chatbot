@@ -142,6 +142,7 @@ export function Chat({
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
           isLoading={status === 'streaming'}
+          isReasoningMode={false}
           reload={async () => { await regenerate(); return null; }}
         />
 

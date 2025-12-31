@@ -1,7 +1,7 @@
+import { auth } from '@/app/(auth)/auth';
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/app/(auth)/auth';
 
 const ImageSchema = z.object({
   file: z
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const validatedFile = ImageSchema.safeParse({ file });
     if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
+      const errorMessage = validatedFile.error.issues
         .map((error) => error.message)
         .join(', ');
       return NextResponse.json({ error: errorMessage }, { status: 400 });

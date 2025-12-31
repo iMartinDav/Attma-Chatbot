@@ -1,10 +1,10 @@
 'use server';
 
-import { z } from 'zod';
-import { hash, compare } from 'bcrypt-ts';
 import { signIn } from '@/app/(auth)/auth';
 import { createUser, getUser } from '@/lib/db/queries';
 import { isValidEmail } from '@/lib/utils';
+import { compare, hash } from 'bcrypt-ts';
+import { z } from 'zod';
 
 // Define action state types with proper error handling
 export type RegisterActionState = {
@@ -73,7 +73,7 @@ export async function register(
       if (err instanceof z.ZodError) {
         return {
           status: 'invalid_data',
-          error: err.errors[0].message,
+          error: err.issues[0]?.message ?? 'Invalid data',
         };
       }
     }

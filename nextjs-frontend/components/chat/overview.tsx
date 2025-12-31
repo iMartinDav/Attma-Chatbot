@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { ChatGreeting } from './ChatGreeting';
@@ -9,7 +8,7 @@ import { ChatStyles } from './ChatStyles';
 export const ChatOverview = () => {
   const { data: session } = useSession();
 
-  const containerVariants = {
+  const containerVariants: import('framer-motion').Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,

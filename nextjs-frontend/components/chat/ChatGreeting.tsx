@@ -25,7 +25,7 @@ export const ChatGreeting = ({ user }: ChatGreetingProps) => {
     else setGreeting('Hello');
   }, []); // Empty dependency array ensures it runs once on mount
 
-  const greetingVariants = {
+  const greetingVariants: import('framer-motion').Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
       opacity: 1,

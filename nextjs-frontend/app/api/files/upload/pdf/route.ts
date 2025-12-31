@@ -1,7 +1,7 @@
+import { auth } from '@/app/(auth)/auth';
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/app/(auth)/auth';
 
 const PDFSchema = z.object({
   file: z
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const validatedFile = PDFSchema.safeParse({ file });
 
     if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
+      const errorMessage = validatedFile.error.issues
         .map((error) => error.message)
         .join(', ');
       return NextResponse.json({ error: errorMessage }, { status: 400 });
