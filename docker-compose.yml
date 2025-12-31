@@ -115,11 +115,10 @@ services:
       BACKEND_URL: http://backend:8000
     volumes:
       - ./nextjs-frontend:/app
-      - ./nextjs-frontend/node_modules:/app/node_modules
-      - ./local-shared-data:/app/shared-data
-    depends_on:
-      backend:
-        condition: service_healthy
+      - /app/node_modules
+    # depends_on:
+    #   backend:
+    #     condition: service_healthy
 
 volumes:
   postgres_data:

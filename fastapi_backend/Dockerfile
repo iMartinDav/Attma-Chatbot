@@ -1,9 +1,10 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 # Install system dependencies - grouped for better caching
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     build-essential \
+    python3-dev \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,7 +32,8 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Install core dependencies first for better layer caching
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
     "fastapi[standard]>=0.115.0,<0.116" \
     "uvicorn[standard]>=0.27.1,<0.28" \
     "asyncpg>=0.29.0,<0.30" \
