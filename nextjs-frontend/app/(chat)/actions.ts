@@ -8,9 +8,9 @@ import type { VisibilityType } from '@/components/chat/visibility-selector';
 import { chatModels } from '@/lib/ai/models';
 import { myProvider } from '@/lib/ai/providers';
 import {
-  deleteMessagesByChatIdAfterTimestamp,
-  getMessageById,
-  updateChatVisiblityById,
+    deleteMessagesByChatIdAfterTimestamp,
+    getMessageById,
+    updateChatVisiblityById,
 } from '@/lib/db/queries';
 
 export async function saveChatModelAsCookie(model: string) {
@@ -27,6 +27,11 @@ export async function generateTitleFromUserMessage({
   let messageText = '';
   if (typeof (message as any).content === 'string') {
     messageText = (message as any).content;
+  } else if (Array.isArray((message as any).content)) {
+    messageText = (message as any).content
+      .filter((part: any) => part.type === 'text')
+      .map((part: any) => (part as any).text)
+      .join(' ');
   } else if ((message as any).parts) {
     // v5 format with parts
     messageText = (message as any).parts
@@ -65,5 +70,7 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
+  if (chatId === 'new') return;
+  
   await updateChatVisiblityById({ chatId, visibility });
 }

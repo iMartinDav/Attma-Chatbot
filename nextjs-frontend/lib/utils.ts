@@ -202,29 +202,66 @@ export function convertToUIMessages(
     if (typeof (message as any).content === 'string') {
       textContent = (message as any).content;
     } else if (Array.isArray((message as any).content)) {
-      for (const content of (message as any).content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        } else if (content.type === 'tool-call') {
-          toolInvocations.push({
-            state: 'call',
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
-          });
-        } else if (content.type === 'reasoning') {
-          reasoning = content.reasoningText;
+      const content = (message as any).content;
+      for (const part of content) {
+        if (part.type === 'text') {
+          textContent += part.text;
+        } else if (part.type === 'tool-call') {
+          // Find if we already have a tool result for this ID in the same message
+          const toolResult = content.find(
+            (c: any) => c.type === 'tool-result' && c.toolCallId === part.toolCallId
+          );
+
+          if (toolResult) {
+            toolInvocations.push({
+              state: 'result',
+              toolCallId: part.toolCallId,
+              toolName: part.toolName,
+              args: part.args,
+              result: toolResult.result,
+            });
+          } else {
+            toolInvocations.push({
+              state: 'call',
+              toolCallId: part.toolCallId,
+              toolName: part.toolName,
+              args: part.args,
+            });
+          }
+        } else if (part.type === 'tool-result') {
+          // If we found a tool-result but no tool-call yet (unlikely but possible),
+          // check if we already pushed it via the tool-call branch above
+          const alreadyAdded = toolInvocations.some(ti => ti.toolCallId === part.toolCallId);
+          if (!alreadyAdded) {
+            toolInvocations.push({
+              state: 'result',
+              toolCallId: part.toolCallId,
+              toolName: part.toolName,
+              result: part.result,
+            });
+          }
+        } else if (part.type === 'reasoning') {
+          reasoning = (reasoning || '') + (part.reasoningText || part.text || '');
+        } else if (part.type === 'source') {
+          // Source parts are preserved in 'parts' for the UI sources panel
         }
       }
     }
 
+    const parts = Array.isArray((message as any).content) 
+      ? (message as any).content 
+      : [{ type: 'text', text: textContent || '' }];
+
     chatMessages.push({
       id: message.id,
       role: message.role as ChatMessage['role'],
-      content: textContent || '', // Ensure content is never empty/undefined
-      parts: [{ type: 'text', text: textContent || '' }], // Always provide parts array
+      // Fallback to textContent if content is empty but it shouldn't be
+      content: textContent || '', 
+      // Ensure ChatMessage has the full parts structure for multi-modal rendering
+      parts,
       reasoning,
       toolInvocations,
+      createdAt: message.createdAt,
     } as ChatMessage);
 
     return chatMessages;

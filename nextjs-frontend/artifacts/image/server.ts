@@ -7,39 +7,52 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
   onCreateDocument: async ({ title, dataStream }) => {
     let draftContent = '';
 
-    const { image } = await experimental_generateImage({
-      model: myProvider.imageModel('small-model'),
-      prompt: title,
-      n: 1,
-    });
+    try {
+      // Use DALL-E 3 for high quality scientific image generation
+      const { image } = await experimental_generateImage({
+        model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
+        prompt: title,
+        n: 1,
+      });
 
-    draftContent = image.base64;
+      draftContent = image.base64;
 
-    dataStream.write({
-      type: 'data-imageDelta',
-      data: image.base64,
-      transient: true,
-    });
+      dataStream.write({
+        type: 'data-imageDelta',
+        data: image.base64,
+        transient: true,
+      });
+    } catch (error) {
+      console.error('Image generation failed:', error);
+      // Return placeholder on error
+      draftContent = '';
+    }
 
     return draftContent;
   },
   onUpdateDocument: async ({ description, dataStream }) => {
     let draftContent = '';
 
-    const { image } = await experimental_generateImage({
-      model: myProvider.imageModel('small-model'),
-      prompt: description,
-      n: 1,
-    });
+    try {
+      const { image } = await experimental_generateImage({
+        model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
+        prompt: description,
+        n: 1,
+      });
 
-    draftContent = image.base64;
+      draftContent = image.base64;
 
-    dataStream.write({
-      type: 'data-imageDelta',
-      data: image.base64,
-      transient: true,
-    });
+      dataStream.write({
+        type: 'data-imageDelta',
+        data: image.base64,
+        transient: true,
+      });
+    } catch (error) {
+      console.error('Image update failed:', error);
+      draftContent = '';
+    }
 
     return draftContent;
   },
 });
+

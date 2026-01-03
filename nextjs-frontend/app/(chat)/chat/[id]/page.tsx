@@ -11,6 +11,11 @@ import { convertToUIMessages } from '@/lib/utils';
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
+  
+  if (id === 'new') {
+    redirect('/chat');
+  }
+
   const chat = await getChatById({ id });
 
   if (!chat) {

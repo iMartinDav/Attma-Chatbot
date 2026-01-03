@@ -27,8 +27,9 @@ export const postRequestBodySchema = z.object({
     message: "id must be 'new' or a valid UUID"
   }),
   message: messageSchema,
-  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
+  selectedChatModel: z.string(),
   selectedVisibilityType: z.enum(['public', 'private']),
+  selectedAgentId: z.string().optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

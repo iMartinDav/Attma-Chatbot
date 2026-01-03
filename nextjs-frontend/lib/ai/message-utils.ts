@@ -97,3 +97,32 @@ export function isMessageEmpty(message: SafeMessage): boolean {
   
   return !text.trim() && files.length === 0 && !reasoning.trim();
 }
+
+// Extract source parts/annotations
+export function getMessageSources(message: SafeMessage): Array<{url: string, title?: string}> {
+  if (hasPartsStructure(message)) {
+    // Check for source parts (AI SDK v6 standard)
+    const sourceParts = message.parts
+      .filter((part: any) => part.type === 'source')
+      .map((part: any) => ({
+        url: part.source.url,
+        title: part.source.title
+      }));
+      
+    if (sourceParts.length > 0) return sourceParts;
+    
+    // Check for tool results that contain sources (legacy/custom implementation)
+    // specific to our web_search tool output format
+    const toolResults = message.parts
+      .filter((part: any) => part.type === 'tool-result' && part.toolName === 'web_search')
+      .flatMap((part: any) => part.result?.results || [])
+      .map((res: any) => ({
+        url: res.url,
+        title: res.title
+      }));
+      
+    if (toolResults.length > 0) return toolResults;
+  }
+  
+  return [];
+}

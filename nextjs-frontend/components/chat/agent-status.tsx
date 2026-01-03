@@ -1,0 +1,219 @@
+'use client';
+
+/**
+ * @fileoverview Agent Status Component
+ * 
+ * A beautiful, animated status indicator that shows what the AI agent
+ * is currently doing - which tools it's using, what model is selected, etc.
+ */
+
+import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    BookOpenIcon,
+    BrainIcon,
+    CodeIcon,
+    Loader2Icon,
+    SearchIcon,
+    SparklesIcon
+} from 'lucide-react';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface AgentStatusProps {
+  isActive: boolean;
+  currentAction?: string;
+  currentTool?: string;
+  model?: string;
+  step?: number;
+  totalSteps?: number;
+  className?: string;
+}
+
+// ============================================================================
+// Icon Mapping
+// ============================================================================
+
+const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'pubmed_search': SearchIcon,
+  'semantic_scholar': BookOpenIcon,
+  'gene_lookup': SparklesIcon,
+  'firecrawl_search': SearchIcon,
+  'create_code_artifact': CodeIcon,
+  'default': BrainIcon,
+};
+
+const getToolIcon = (tool: string) => {
+  return TOOL_ICONS[tool] || TOOL_ICONS.default;
+};
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function AgentStatus({
+  isActive,
+  currentAction,
+  currentTool,
+  model,
+  step,
+  totalSteps,
+  className,
+}: AgentStatusProps) {
+  if (!isActive) return null;
+
+  const ToolIcon = currentTool ? getToolIcon(currentTool) : BrainIcon;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-full',
+          'bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-teal-500/10',
+          'border border-purple-500/20',
+          'backdrop-blur-sm',
+          'text-xs text-muted-foreground',
+          className
+        )}
+      >
+        {/* Animated Icon */}
+        <div className="relative">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-0"
+          >
+            <div className="h-4 w-4 rounded-full border border-purple-500/30 border-t-purple-500" />
+          </motion.div>
+          <ToolIcon className="h-3 w-3 text-purple-400" />
+        </div>
+
+        {/* Status Text */}
+        <span className="font-medium">
+          {currentAction || (currentTool ? `Using ${formatToolName(currentTool)}...` : 'Thinking...')}
+        </span>
+
+        {/* Step Counter */}
+        {step !== undefined && totalSteps !== undefined && (
+          <span className="text-muted-foreground/60 ml-1">
+            Step {step}/{totalSteps}
+          </span>
+        )}
+
+        {/* Model Badge */}
+        {model && (
+          <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300">
+            {formatModelName(model)}
+          </span>
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+function formatToolName(tool: string): string {
+  const names: Record<string, string> = {
+    'pubmed_search': 'PubMed Search',
+    'semantic_scholar': 'Semantic Scholar',
+    'gene_lookup': 'Gene Lookup',
+    'firecrawl_search': 'Web Search',
+    'create_code_artifact': 'Code Generation',
+  };
+  return names[tool] || tool;
+}
+
+function formatModelName(model: string): string {
+  const names: Record<string, string> = {
+    'gpt-4o-mini': 'Fast',
+    'gpt-4o': 'Advanced',
+    'o3-mini': 'Reasoning',
+    'chat-model': 'Standard',
+    'chat-model-standard': 'Advanced',
+    'chat-model-reasoning': 'Reasoning',
+  };
+  return names[model] || model;
+}
+
+// ============================================================================
+// Agent Action List (for showing tool execution history)
+// ============================================================================
+
+interface AgentAction {
+  id: string;
+  tool: string;
+  status: 'running' | 'complete' | 'error';
+  result?: string;
+  duration?: number;
+}
+
+interface AgentActionsProps {
+  actions: AgentAction[];
+  className?: string;
+}
+
+export function AgentActions({ actions, className }: AgentActionsProps) {
+  if (actions.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className={cn(
+        'flex flex-col gap-1 px-3 py-2 rounded-lg',
+        'bg-muted/30 border border-muted',
+        'text-xs',
+        className
+      )}
+    >
+      {actions.map((action, index) => {
+        const Icon = getToolIcon(action.tool);
+        return (
+          <motion.div
+            key={action.id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="flex items-center gap-2"
+          >
+            {action.status === 'running' ? (
+              <Loader2Icon className="h-3 w-3 animate-spin text-blue-400" />
+            ) : action.status === 'complete' ? (
+              <Icon className="h-3 w-3 text-green-400" />
+            ) : (
+              <Icon className="h-3 w-3 text-red-400" />
+            )}
+            <span className={cn(
+              action.status === 'running' && 'text-blue-300',
+              action.status === 'complete' && 'text-muted-foreground',
+              action.status === 'error' && 'text-red-400',
+            )}>
+              {formatToolName(action.tool)}
+            </span>
+            {action.duration && (
+              <span className="text-muted-foreground/50 ml-auto">
+                {action.duration}ms
+              </span>
+            )}
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// Default Export
+// ============================================================================
+
+export default AgentStatus;

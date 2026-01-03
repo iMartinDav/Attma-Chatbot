@@ -1,19 +1,21 @@
 'use client';
 
+import { PdfViewer } from '@/artifacts/pdf/client';
 import { useArtifact } from '@/hooks/use-artifact';
 import type { Document } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import {
-  memo,
-  type MouseEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
+    memo,
+    type MouseEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
 } from 'react';
 import useSWR from 'swr';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from '../icons';
+import { TextShimmer } from '../ui/text-shimmer';
 import type { ArtifactKind, UIArtifact } from './artifact';
 import { CodeEditor } from './code-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
@@ -121,9 +123,13 @@ const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
     <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-center justify-between dark:bg-muted h-[57px] dark:border-zinc-700 border-b-0">
       <div className="flex flex-row items-center gap-3">
         <div className="text-muted-foreground">
-          <div className="animate-pulse rounded-md size-4 bg-muted-foreground/20" />
+          <div className="animate-spin">
+            <LoaderIcon />
+          </div>
         </div>
-        <div className="animate-pulse rounded-lg h-4 bg-muted-foreground/20 w-24" />
+        <TextShimmer className="text-sm font-medium">
+          {`Generating ${artifactKind?.toUpperCase() || 'DOCUMENT'}...`}
+        </TextShimmer>
       </div>
       <div>
         <FullscreenIcon />
@@ -156,7 +162,7 @@ const PureHitboxLayer = ({
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
-      setArtifact((artifact) =>
+      setArtifact((artifact: UIArtifact) =>
         artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
           : {
@@ -241,7 +247,8 @@ const DocumentContent = ({ document }: { document: Document }) => {
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
       'p-4 sm:px-14 sm:py-16': document.kind === 'text',
-      'p-0': document.kind === 'code',
+      'p-0': document.kind === 'code' || document.kind === 'pdf',
+      'overflow-hidden': document.kind === 'pdf',
     },
   );
 
@@ -278,6 +285,15 @@ const DocumentContent = ({ document }: { document: Document }) => {
           currentVersionIndex={0}
           status={artifact.status}
           isInline={true}
+        />
+      ) : document.kind === 'pdf' ? (
+        <PdfViewer
+          title={document.title}
+          content={document.content ?? ''}
+          status={artifact.status as any}
+          isInline={true}
+          isCurrentVersion={true}
+          currentVersionIndex={0}
         />
       ) : null}
     </div>

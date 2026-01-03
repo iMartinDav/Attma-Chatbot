@@ -1,44 +1,19 @@
 'use client';
 
-import { ReactNode, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-import {
-  CheckCircleFillIcon,
-  ChevronDownIcon,
-  GlobeIcon,
-  LockIcon,
-} from '../icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import {
+    GhostIcon
+} from '../icons';
 
 export type VisibilityType = 'private' | 'public';
-
-const visibilities: Array<{
-  id: VisibilityType;
-  label: string;
-  description: string;
-  icon: ReactNode;
-}> = [
-  {
-    id: 'private',
-    label: 'Private',
-    description: 'Only you can access this chat',
-    icon: <LockIcon />,
-  },
-  {
-    id: 'public',
-    label: 'Public',
-    description: 'Anyone with the link can access this chat',
-    icon: <GlobeIcon />,
-  },
-];
 
 export function VisibilitySelector({
   chatId,
@@ -48,65 +23,36 @@ export function VisibilitySelector({
   chatId: string;
   selectedVisibilityType: VisibilityType;
 } & React.ComponentProps<typeof Button>) {
-  const [open, setOpen] = useState(false);
-
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId,
     initialVisibility: selectedVisibilityType,
   });
 
-  const selectedVisibility = useMemo(
-    () => visibilities.find((visibility) => visibility.id === visibilityType),
-    [visibilityType],
-  );
+  const toggleVisibility = () => {
+    setVisibilityType(visibilityType === 'private' ? 'public' : 'private');
+  };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        asChild
-        className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
-        )}
-      >
+    <Tooltip>
+      <TooltipTrigger asChild>
         <Button
           variant="ghost"
-          className="hidden md:flex md:px-2 md:h-[34px] opacity-50 hover:opacity-100 transition-all duration-200 hover:bg-accent/10 gap-2"
+          onClick={toggleVisibility}
+          className={cn(
+            'hidden md:flex md:px-3 md:h-[32px] transition-all duration-200 gap-2 text-sm font-medium rounded-full',
+            visibilityType === 'private' 
+              ? 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:text-purple-300' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/20',
+            className,
+          )}
         >
-          {selectedVisibility?.icon}
-          {selectedVisibility?.label}
-          <ChevronDownIcon />
+          <GhostIcon className="size-4" />
+          <span>Private</span>
         </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        align="start"
-        className="min-w-[300px] bg-background/70 backdrop-blur-md border-border/40"
-      >
-        {visibilities.map((visibility) => (
-          <DropdownMenuItem
-            key={visibility.id}
-            onSelect={() => {
-              setVisibilityType(visibility.id);
-              setOpen(false);
-            }}
-            className="gap-4 group/item flex flex-row justify-between items-center hover:bg-accent/10 transition-all duration-200"
-            data-active={visibility.id === visibilityType}
-          >
-            <div className="flex flex-col gap-1 items-start">
-              {visibility.label}
-              {visibility.description && (
-                <div className="text-xs text-muted-foreground">
-                  {visibility.description}
-                </div>
-              )}
-            </div>
-            <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-              <CheckCircleFillIcon />
-            </div>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </TooltipTrigger>
+      <TooltipContent>
+        {visibilityType === 'private' ? 'Switch to Default Chat' : 'Switch to Private Chat'}
+      </TooltipContent>
+    </Tooltip>
   );
 }

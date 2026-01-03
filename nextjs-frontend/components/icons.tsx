@@ -560,7 +560,7 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
+export const ArrowUpIcon = ({ size = 16, className }: { size?: number; className?: string }) => {
   return (
     <svg
       height={size}
@@ -568,6 +568,7 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      className={className}
       aria-labelledby="arrowUpIconTitle"
     >
       <title id="arrowUpIconTitle">Arrow Up</title>
@@ -893,7 +894,7 @@ export const ThumbDownIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
+export const ChevronDownIcon = ({ size = 16, className }: { size?: number, className?: string }) => (
   <svg
     height={size}
     strokeLinejoin="round"
@@ -901,6 +902,7 @@ export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
     width={size}
     style={{ color: 'currentcolor' }}
     aria-labelledby="chevronDownIconTitle"
+    className={className}
   >
     <title id="chevronDownIconTitle">Chevron Down</title>
     <path
@@ -912,12 +914,13 @@ export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
+export const SparklesIcon = ({ size = 16, className }: { size?: number, className?: string }) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
+    className={className}
     style={{ color: 'currentcolor' }}
     aria-labelledby="sparklesIconTitle"
   >
@@ -958,7 +961,7 @@ export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
+export const GlobeIcon = ({ size = 16, className }: { size?: number; className?: string }) => {
   return (
     <svg
       height={size}
@@ -967,6 +970,7 @@ export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
       width={size}
       style={{ color: 'currentcolor' }}
       aria-labelledby="globeIconTitle"
+      className={className}
     >
       <title id="globeIconTitle">Globe</title>
       <path
@@ -1663,3 +1667,140 @@ export const SecurityLockIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+// ============================================================================
+// Agent Icons - Centralized icon management
+// ============================================================================
+
+export const AgentAutoIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.3L3.1 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 20.9l1.9-5.8a2 2 0 0 1 1.3-1.3l5.8-1.9-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+  </svg>
+);
+
+export const AgentGeneralIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="10" x="3" y="11" rx="2" />
+    <circle cx="12" cy="5" r="2" />
+    <path d="M12 7v4" />
+    <line x1="8" x2="8" y1="16" y2="16" />
+    <line x1="16" x2="16" y1="16" y2="16" />
+  </svg>
+);
+
+export const AgentBioinformaticsIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 2a4 4 0 0 0-4 4v12a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/>
+    <path d="M8 8h8M8 12h8M8 16h8"/>
+  </svg>
+);
+
+export const AgentSingleCellIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"/>
+    <circle cx="12" cy="12" r="4"/>
+    <circle cx="12" cy="12" r="1"/>
+  </svg>
+);
+
+export const AgentVariantIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M2 12h4l3-9 6 18 3-9h4"/>
+  </svg>
+);
+
+export const AgentPathwayIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="6" cy="6" r="3"/>
+    <circle cx="18" cy="6" r="3"/>
+    <circle cx="6" cy="18" r="3"/>
+    <circle cx="18" cy="18" r="3"/>
+    <path d="M6 9v6M18 9v6M9 6h6M9 18h6"/>
+  </svg>
+);
+
+export const ChevronDownSmallIcon = ({ className = "w-3 h-3" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 12 12" fill="none">
+    <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+export const CheckmarkIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+
+
+// ============================================================================
+// Sidebar & Navigation Icons
+// ============================================================================
+
+export const NewChatIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
+  </svg>
+);
+
+export const SearchIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <path d="M21 21l-4.35-4.35"/>
+  </svg>
+);
+
+export const BrainIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+  </svg>
+);
+
+export const SidebarToggleIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <path d="M9 3v18"/>
+  </svg>
+);
+
+
+
+export const ChevronUpIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m18 15-6-6-6 6"/>
+  </svg>
+);
+
+export const LogOutIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" x2="9" y1="12" y2="12"/>
+  </svg>
+);
+
+export const ClockIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+export const MessageSquareIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+);
+
+export const GhostIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 10h.01" />
+    <path d="M15 10h.01" />
+    <path d="M20 20.36V10a8 8 0 1 0-16 0v10.36a1 1 0 0 0 1.55.83l2.87-1.72 2.76 1.66a1 1 0 0 0 1.02 0l2.76-1.66 2.88 1.72a1 1 0 0 0 1.55-.83z" />
+  </svg>
+);
+
+

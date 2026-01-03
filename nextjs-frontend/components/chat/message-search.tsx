@@ -7,7 +7,7 @@ import {
 import { generateUUID } from '@/lib/utils';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { GlobeIcon, LoaderIcon } from '../icons';
 import { Button } from '../ui/button';
@@ -128,28 +128,55 @@ export function MessageSearch({
   chatId,
 }: MessageSearchProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [activeChatId, setActiveChatId] = useState<string | undefined>(chatId);
+
+  // Update activeChatId if the prop changes
+  useEffect(() => {
+    setActiveChatId(chatId);
+  }, [chatId]);
 
   /**
    * Saves search messages to the database with proper date handling
    */
   const saveSearchMessage = async (
     message: SearchMessage,
-  ): Promise<boolean> => {
-    if (!chatId) return false;
+  ): Promise<string | undefined> => {
+    const currentId = activeChatId || chatId;
+    if (!currentId) return undefined;
 
     try {
-      // Format the message with properly serialized date
+      // Format the message - keep parts if available for rich database content
+      // Include reasoning and annotations as specialized parts for persistence
+      const messageParts = Array.isArray(message.parts) ? [...message.parts] : [];
+      
+      // Add reasoning as a part if it exists
+      if (message.reasoningText && !messageParts.some(p => p.type === 'reasoning')) {
+        messageParts.push({ type: 'reasoning', reasoningText: message.reasoningText });
+      }
+      
+      // Add annotations as source parts if they exist
+      if (Array.isArray(message.annotations)) {
+        for (const annotation of message.annotations) {
+          if (annotation.type === 'url_citation' && annotation.url_citation) {
+            messageParts.push({
+              type: 'source',
+              source: {
+                url: annotation.url_citation.url,
+                title: annotation.url_citation.title,
+              }
+            });
+          }
+        }
+      }
+
       const formattedMessage = {
         id: message.id,
         role: message.role,
-        content: message.parts?.filter(p => p.type === 'text').map(p => p.text).join(' ') || '',
+        content: messageParts.length > 0 ? messageParts : (message.content || ''),
         createdAt:
           message.createdAt instanceof Date
             ? message.createdAt.toISOString()
             : new Date().toISOString(),
-        sourceType: message.sourceType,
-        reasoningText: message.reasoningText,
-        annotations: message.annotations,
       };
 
       // Use search API (not chat API) for saving search messages
@@ -157,7 +184,7 @@ export function MessageSearch({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: chatId,
+          id: currentId,
           messages: [formattedMessage],
           saveOnly: true,
         }),
@@ -166,20 +193,23 @@ export function MessageSearch({
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Failed to save search message:', errorText);
-        return false;
+        return undefined;
       }
+      
       // If server minted a new id (when client had "new" or invalid), adopt it
       try {
         const data = await response.json();
         if (data?.id && typeof window !== 'undefined') {
           // Update URL in place so subsequent saves use the valid id
           window.history.replaceState({}, '', `/chat/${data.id}`);
+          setActiveChatId(data.id);
+          return data.id;
         }
       } catch {}
-      return true;
+      return currentId;
     } catch (error) {
       console.error('Error saving search message:', error);
-      return false;
+      return undefined;
     }
   };
 
@@ -201,12 +231,8 @@ export function MessageSearch({
       const { userMessage, pendingMessage } = createSearchMessages(query);
 
       // Save user message to database first - this creates the chat with proper title
-      if (chatId) {
-        const saved = await saveSearchMessage(userMessage);
-        if (!saved) {
-          console.warn('Failed to save user search message, continuing anyway');
-        }
-      }
+      // Capture the ID (might be minted by server) for the assistant response save
+      const usedId = await saveSearchMessage(userMessage);
 
       // Update UI with user message and pending indicator
       setMessages((prevMessages) => [
@@ -317,11 +343,12 @@ export function MessageSearch({
   const SearchButton = memo(function SearchButton() {
     return (
       <Button
-        className={`rounded-full p-1.5 h-fit border transition-colors ${
+        className={cx(
+          "rounded-full size-8 p-0 flex items-center justify-center border transition-all duration-300",
           isSearchMode
-            ? 'bg-blue-500 text-white border-blue-600'
-            : 'dark:border-zinc-600'
-        }`}
+            ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20"
+            : "dark:border-zinc-800 bg-transparent hover:bg-muted"
+        )}
         onClick={(event) => {
           event.preventDefault();
           setIsSearchMode(!isSearchMode);
@@ -340,10 +367,10 @@ export function MessageSearch({
               ease: 'linear',
             }}
           >
-            <LoaderIcon size={14} />
+            <LoaderIcon size={18} />
           </motion.div>
         ) : (
-          <GlobeIcon size={14} />
+          <GlobeIcon size={18} />
         )}
       </Button>
     );
