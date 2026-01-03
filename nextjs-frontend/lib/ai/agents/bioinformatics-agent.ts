@@ -1,24 +1,8 @@
 /**
- * @fileoverview Bioinformatics AI Agent
- * 
- * This module defines specialized AI agents for bioinformatics analysis
- * using the OpenAI Agents SDK. Agents can:
- * - Perform complex multi-step analyses
- * - Hand off to specialized sub-agents
- * - Use guardrails for input validation
- * 
- * Architecture:
- * - BioinformaticsAgent: Main orchestrator agent
- * - SingleCellAgent: Specialist for scRNA-seq
- * - VariantAnalysisAgent: Specialist for genomic variants
- * - PathwayAnalysisAgent: Specialist for pathway enrichment
+ * Bioinformatics AI Agent - Specialized agents for bio data analysis
  */
 
 import { Agent } from '@openai/agents';
-
-// ============================================================================
-// Agent Instructions (System Prompts)
-// ============================================================================
 
 const BIOINFORMATICS_AGENT_INSTRUCTIONS = `You are Attma, an advanced AI Bioinformatician designed for cutting-edge biological data analysis.
 
@@ -163,10 +147,6 @@ export const pathwayAnalysisAgent = new Agent({
   instructions: PATHWAY_ANALYSIS_AGENT_INSTRUCTIONS,
 });
 
-// ============================================================================
-// Agent Registry
-// ============================================================================
-
 export interface AgentConfig {
   id: string;
   name: string;
@@ -176,9 +156,7 @@ export interface AgentConfig {
   specializations: string[];
 }
 
-/**
- * Registry of all available agents
- */
+/** Registry of all available agents */
 export const AGENT_REGISTRY: Record<string, AgentConfig> = {
   'bioinformatics': {
     id: 'bioinformatics',

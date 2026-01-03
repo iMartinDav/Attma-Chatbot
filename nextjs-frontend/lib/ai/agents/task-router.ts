@@ -1,20 +1,11 @@
 /**
- * @fileoverview Intelligent Task Router
- * 
- * Analyzes user prompts to detect task type and domain,
- * enabling automatic model and tool selection.
+ * Task Router - Analyzes prompts to detect task type and domain
+ * for automatic model and tool selection.
  */
 
 import type { AgentDomain, ModelSelection, ModelTier, TaskCategory } from './types';
 
-// ============================================================================
-// Keyword Patterns
-// ============================================================================
-
-/**
- * Keywords that indicate specific task types
- * Ordered by specificity - more specific patterns first
- */
+/** Keywords indicating specific task types (ordered by specificity) */
 const TASK_PATTERNS: Record<TaskCategory, RegExp[]> = {
   research: [
     /search\s+(pubmed|literature|papers?)/i,
@@ -79,12 +70,10 @@ const TASK_PATTERNS: Record<TaskCategory, RegExp[]> = {
     /^explain\s+briefly/i,
     /quick\s+question/i,
   ],
-  general: [], // Fallback - no specific patterns
+  general: [],
 };
 
-/**
- * Domain-specific keywords for specialist agent routing
- */
+/** Domain-specific keywords for specialist routing */
 const DOMAIN_PATTERNS: Record<AgentDomain, RegExp[]> = {
   single_cell: [
     /single[\s-]?cell/i,
@@ -111,16 +100,10 @@ const DOMAIN_PATTERNS: Record<AgentDomain, RegExp[]> = {
     /binding\s+site|domain/i,
     /3d\s+structure|conformation/i,
   ],
-  general: [], // Default
+  general: [],
 };
 
-// ============================================================================
-// Model Configuration
-// ============================================================================
-
-/**
- * Model tier configurations
- */
+/** Model tier configurations */
 const MODEL_TIER_CONFIG: Record<ModelTier, { modelKey: string; description: string }> = {
   fast: {
     modelKey: 'chat-model',
@@ -140,9 +123,7 @@ const MODEL_TIER_CONFIG: Record<ModelTier, { modelKey: string; description: stri
   },
 };
 
-/**
- * Task to model tier mapping
- */
+/** Task to model tier mapping */
 const TASK_MODEL_MAP: Record<TaskCategory, ModelTier> = {
   quick_answer: 'fast',
   code_generation: 'standard',
@@ -156,9 +137,7 @@ const TASK_MODEL_MAP: Record<TaskCategory, ModelTier> = {
   general: 'fast',
 };
 
-/**
- * Suggested tools for each task type
- */
+/** Suggested tools for each task type */
 const TASK_TOOLS_MAP: Record<TaskCategory, string[]> = {
   research: ['pubmed_search', 'firecrawl_search', 'semantic_scholar'],
   code_generation: ['createDocument'],
@@ -172,13 +151,7 @@ const TASK_TOOLS_MAP: Record<TaskCategory, string[]> = {
   general: ['pubmed_search', 'gene_lookup'],
 };
 
-// ============================================================================
-// Detection Functions
-// ============================================================================
-
-/**
- * Detects the task category from a user prompt
- */
+/** Detects the task category from a user prompt */
 export function detectTaskCategory(query: string): TaskCategory {
   // Check patterns in priority order (most specific first)
   const priorityOrder: TaskCategory[] = [
@@ -203,9 +176,7 @@ export function detectTaskCategory(query: string): TaskCategory {
   return 'general';
 }
 
-/**
- * Detects the specialist domain from a user prompt
- */
+/** Detects the specialist domain from a user prompt */
 export function detectAgentDomain(query: string): AgentDomain {
   const priorityOrder: AgentDomain[] = [
     'single_cell',
@@ -224,9 +195,7 @@ export function detectAgentDomain(query: string): AgentDomain {
   return 'general';
 }
 
-/**
- * Check if the message contains file attachments
- */
+/** Check if message contains file attachments */
 export function hasFileAttachment(message: unknown): boolean {
   if (!message || typeof message !== 'object') return false;
   
@@ -236,19 +205,7 @@ export function hasFileAttachment(message: unknown): boolean {
   ) ?? false;
 }
 
-// ============================================================================
-// Main Router
-// ============================================================================
-
-/**
- * Routes a query to the optimal model and configuration
- * 
- * @example
- * ```typescript
- * const selection = routeToOptimalModel("Search PubMed for CRISPR papers");
- * // Returns: { tier: 'standard', modelKey: 'chat-model-standard', ... }
- * ```
- */
+/** Routes a query to the optimal model and configuration */
 export function routeToOptimalModel(
   query: string,
   options?: {
@@ -295,16 +252,12 @@ export function routeToOptimalModel(
   };
 }
 
-/**
- * Gets suggested tools for a task category
- */
+/** Gets suggested tools for a task category */
 export function getSuggestedTools(category: TaskCategory): string[] {
   return TASK_TOOLS_MAP[category] || [];
 }
 
-/**
- * Get the domain for specialist agent instructions
- */
+/** Get domain specialist instructions */
 export function getDomainInstructions(domain: AgentDomain): string {
   const instructions: Record<AgentDomain, string> = {
     single_cell: `

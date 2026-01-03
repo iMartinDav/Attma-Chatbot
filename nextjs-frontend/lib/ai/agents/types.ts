@@ -1,18 +1,8 @@
 /**
- * @fileoverview Core Types for the Bioinformatics Agent System
- * 
- * This module defines the foundational types for our agentic AI system,
- * following a clean architecture with proper abstraction.
+ * Core types for the Bioinformatics Agent System
  */
 
-// ============================================================================
-// Task Types & Detection
-// ============================================================================
-
-/**
- * Categories of tasks the agent can perform.
- * Each task type maps to optimal model and tool configurations.
- */
+/** Task categories the agent can perform */
 export type TaskCategory = 
   | 'quick_answer'      // Simple questions, definitions
   | 'code_generation'   // Python/R code for analysis
@@ -25,23 +15,15 @@ export type TaskCategory =
   | 'pathway_analysis'  // Pathway enrichment, GO terms
   | 'general';          // Default fallback
 
-/**
- * Specialist agent domains
- */
+/** Specialist agent domains */
 export type AgentDomain = 
-  | 'general'           // General bioinformatics
-  | 'single_cell'       // scRNA-seq analysis
-  | 'variant'           // Variant calling, GWAS
-  | 'pathway'           // Pathway/GO analysis
-  | 'structural';       // Protein structure
+  | 'general'
+  | 'single_cell'
+  | 'variant'
+  | 'pathway'
+  | 'structural';
 
-// ============================================================================
-// Model Configuration
-// ============================================================================
-
-/**
- * Model tier based on capability and cost
- */
+/** Model tier based on capability and cost */
 export type ModelTier = 'fast' | 'standard' | 'advanced' | 'reasoning';
 
 /**
@@ -54,13 +36,7 @@ export interface ModelSelection {
   suggestedTools: string[];
 }
 
-// ============================================================================
-// Agent Step Information
-// ============================================================================
-
-/**
- * Information passed to each agent step
- */
+/** Information passed to each agent step */
 export interface AgentStepInfo {
   stepNumber: number;
   totalSteps: number;
@@ -79,13 +55,7 @@ export interface AgentState {
   error?: string;
 }
 
-// ============================================================================
-// Tool Types
-// ============================================================================
-
-/**
- * Tool execution result with metadata
- */
+/** Tool execution result with metadata */
 export interface ToolResult<T = unknown> {
   success: boolean;
   data?: T;
@@ -108,13 +78,7 @@ export interface Citation {
   year?: number;
 }
 
-// ============================================================================
-// RAG Types
-// ============================================================================
-
-/**
- * Embedding document types
- */
+/** Embedding document types */
 export type EmbeddingType = 
   | 'paper'       // Scientific paper
   | 'gene'        // Gene information
@@ -133,13 +97,7 @@ export interface VectorSearchResult {
   metadata: Record<string, unknown>;
 }
 
-// ============================================================================
-// Self-Verification Types
-// ============================================================================
-
-/**
- * Verification step in self-verifying agent pattern
- */
+/** Verification step in self-verifying agent pattern */
 export interface VerificationStep {
   type: 'generate' | 'critique' | 'validate' | 'fix';
   input: string;
