@@ -1,22 +1,11 @@
 /**
- * @fileoverview OpenAI Built-in Tools Configuration
- * 
- * This module provides a centralized configuration for OpenAI's built-in tools:
- * - Web Search: Real-time web search with source citations
- * - Image Generation: AI-powered image creation
- * - Code Interpreter: Python code execution
- * - File Search: Vector-based document search
- * 
- * These tools are provider-defined and run on OpenAI's infrastructure.
+ * OpenAI Built-in Tools Configuration
+ * Web Search, Image Generation, Code Interpreter, File Search
  */
 
 import { openai } from '@ai-sdk/openai';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
 
 export interface WebSearchConfig {
   enabled: boolean;
@@ -49,10 +38,6 @@ export interface ToolsConfig {
   codeInterpreter?: Partial<CodeInterpreterConfig>;
 }
 
-// ============================================================================
-// Default Configurations
-// ============================================================================
-
 const DEFAULT_WEB_SEARCH_CONFIG: WebSearchConfig = {
   enabled: true,
   searchContextSize: 'medium',
@@ -69,13 +54,7 @@ const DEFAULT_CODE_INTERPRETER_CONFIG: CodeInterpreterConfig = {
   enabled: true,
 };
 
-// ============================================================================
-// Tool Factories
-// ============================================================================
-
-/**
- * Creates the OpenAI web search tool with optional configuration
- */
+/** Creates OpenAI web search tool */
 export function createWebSearchTool(config?: Partial<WebSearchConfig>) {
   const mergedConfig = { ...DEFAULT_WEB_SEARCH_CONFIG, ...config };
   
@@ -88,9 +67,7 @@ export function createWebSearchTool(config?: Partial<WebSearchConfig>) {
   });
 }
 
-/**
- * Creates the OpenAI image generation tool with optional configuration
- */
+/** Creates OpenAI image generation tool */
 export function createImageGenerationTool(config?: Partial<ImageGenerationConfig>) {
   const mergedConfig = { ...DEFAULT_IMAGE_GENERATION_CONFIG, ...config };
   
@@ -103,9 +80,7 @@ export function createImageGenerationTool(config?: Partial<ImageGenerationConfig
   });
 }
 
-/**
- * Creates the OpenAI code interpreter tool with optional configuration
- */
+/** Creates OpenAI code interpreter tool */
 export function createCodeInterpreterTool(config?: Partial<CodeInterpreterConfig>) {
   const mergedConfig = { ...DEFAULT_CODE_INTERPRETER_CONFIG, ...config };
   
@@ -118,22 +93,7 @@ export function createCodeInterpreterTool(config?: Partial<CodeInterpreterConfig
   });
 }
 
-// ============================================================================
-// Unified Tool Builder
-// ============================================================================
-
-/**
- * Builds a tools object with all configured OpenAI built-in tools
- * 
- * @example
- * ```typescript
- * const tools = buildOpenAITools({
- *   webSearch: { searchContextSize: 'high' },
- *   imageGeneration: { quality: 'high' },
- *   codeInterpreter: { enabled: true },
- * });
- * ```
- */
+/** Builds tools object with all configured OpenAI built-in tools */
 export function buildOpenAITools(config?: ToolsConfig): Record<string, ReturnType<typeof openai.tools.webSearch>> {
   const tools: Record<string, ReturnType<typeof openai.tools.webSearch>> = {};
   
@@ -155,13 +115,7 @@ export function buildOpenAITools(config?: ToolsConfig): Record<string, ReturnTyp
   return tools;
 }
 
-// ============================================================================
-// Custom Bioinformatics Tools
-// ============================================================================
-
-/**
- * PubMed search tool for finding scientific publications
- */
+/** PubMed search tool for finding scientific publications */
 export const pubmedSearchTool = tool({
   description: 'Search PubMed for scientific publications on a topic. Use this for finding recent research papers, protocols, and scientific literature.',
   inputSchema: z.object({
@@ -211,9 +165,7 @@ export const pubmedSearchTool = tool({
   },
 });
 
-/**
- * Gene lookup tool for retrieving gene information
- */
+/** Gene lookup tool for retrieving gene information */
 export const geneLookupTool = tool({
   description: 'Look up information about a gene including its function, aliases, and associated pathways.',
   inputSchema: z.object({
@@ -256,25 +208,12 @@ export const geneLookupTool = tool({
   },
 });
 
-// ============================================================================
-// Tool Collections
-// ============================================================================
-
-/**
- * Collection of all bioinformatics-specific tools
- */
 export const bioinformaticsTools = {
   pubmed_search: pubmedSearchTool,
   gene_lookup: geneLookupTool,
 };
 
-/**
- * Get all available tools for a chat session
- * 
- * @param includeOpenAITools - Whether to include OpenAI built-in tools
- * @param includeBioTools - Whether to include bioinformatics tools
- * @param openAIConfig - Configuration for OpenAI tools
- */
+/** Get all available tools for a chat session */
 export function getAllTools(
   options: {
     includeOpenAITools?: boolean;
