@@ -74,8 +74,12 @@ async function handleDirectSearchRequest(query: string, options: any = {}) {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || 'No results found';
+    let content = data.choices?.[0]?.message?.content || 'No results found';
     const annotations = data.choices?.[0]?.message?.annotations || [];
+
+    // Clean any raw JSON data blocks that may be appended to the content
+    // OpenAI gpt-4o-search sometimes includes structured data in the response text
+    content = cleanSearchContent(content);
 
     return Response.json({ success: true, content, annotations });
   } catch (error) {
@@ -91,17 +95,55 @@ async function handleDirectSearchRequest(query: string, options: any = {}) {
   }
 }
 
+/**
+ * Removes trailing JSON data blocks from search responses
+ */
+function cleanSearchContent(content: string): string {
+  if (!content || typeof content !== 'string') return content;
+  
+  const jsonPatterns = [
+    /\n?\s*\{\s*["']?success["']?\s*:/i,
+    /\n?\s*\{\s*["']?data["']?\s*:\s*\[/i,
+    /\n?\s*```json\s*\n?\{/i,
+    /\n?\s*```\s*\n?\{/i,
+  ];
+  
+  for (const pattern of jsonPatterns) {
+    const match = content.match(pattern);
+    if (match?.index !== undefined && match.index > content.length * 0.6) {
+      content = content.substring(0, match.index).trim();
+    }
+  }
+  
+  const codeBlockMatch = content.match(/```(?:json)?\s*\n?\{[\s\S]*$/);
+  if (codeBlockMatch?.index !== undefined && codeBlockMatch.index > content.length * 0.5) {
+    content = content.substring(0, codeBlockMatch.index).trim();
+  }
+  
+  return content;
+}
+
 async function createSearchChat(userId: string, message: UIMessageLike, chatId: string) {
-  const partsText = Array.isArray(message.parts)
-    ? message.parts.filter((p) => p.type === 'text' && p.text).map((p) => p.text).join(' ')
-    : '';
-  const baseText = (partsText || message.content || 'Search query').trim();
+  let baseText = 'Search query';
+  
+  if (Array.isArray(message.parts)) {
+    baseText = message.parts.filter((p) => p.type === 'text' && p.text).map((p) => p.text).join(' ');
+  } else if (typeof message.content === 'string') {
+    baseText = message.content;
+  } else if (Array.isArray(message.content)) {
+    // If content is already the parts array saved by client
+    baseText = (message.content as any[]).filter((p: any) => p.type === 'text' && p.text).map((p: any) => p.text).join(' ');
+  }
+
+  baseText = baseText.trim() || 'Search query';
   let title = `Search: ${baseText.substring(0, 50)}${baseText.length > 50 ? '...' : ''}`;
 
   try {
     const generatedTitle = await generateTitleFromUserMessage({ message: message as any });
     if (generatedTitle && generatedTitle.length > 3) title = generatedTitle;
-  } catch {}
+  } catch (err) {
+    console.error('Title generation failed, using fallback:', err);
+  }
 
   await saveChat({ id: chatId, userId, title });
   return await getChatById({ id: chatId });

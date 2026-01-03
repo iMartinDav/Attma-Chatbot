@@ -326,7 +326,7 @@ function PureArtifact({
                   artifactStatus={artifact.status}
                 />
 
-                <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
+                <form className="flex flex-row gap-2 relative items-end w-full px-3 pb-3">
                   <MultimodalInput
                     chatId={chatId}
                     input={input}
@@ -337,7 +337,7 @@ function PureArtifact({
                     setAttachments={setAttachments}
                     messages={messages}
                     sendMessage={sendMessage}
-                    className="bg-background dark:bg-muted"
+                    className="!bg-transparent !border-0 !shadow-none"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
                     isFullSize={false}

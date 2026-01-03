@@ -2,8 +2,6 @@
 
 import type { Attachment } from '@/lib/types';
 import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
 import type React from 'react';
 import {
   memo,
@@ -11,26 +9,45 @@ import {
   useEffect,
   useRef,
   useState,
-  type ChangeEvent,
   type Dispatch,
   type SetStateAction,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
-import { getMessageText } from '@/lib/ai/message-utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from '../icons';
-import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
+import { AgentSelector } from './agent-selector';
+import { AttachmentsButton, SendButton, StopButton } from './input-action-buttons';
 import { MessageSearch, type SearchMessage } from './message-search';
+import { ModelSelector } from './model-selector';
 import { PreviewAttachment } from './preview-attachment';
-import { SuggestedActions } from './suggested-actions';
 import type { VisibilityType } from './visibility-selector';
 
 type Message = SearchMessage;
+
+export interface MultimodalInputProps {
+  chatId: string;
+  input: string;
+  setInput: Dispatch<SetStateAction<string>>;
+  status: 'ready' | 'submitted' | 'processing';
+  stop: () => void;
+  attachments: Attachment[];
+  setAttachments: Dispatch<SetStateAction<Attachment[]>>;
+  messages: Message[];
+  setMessages: Dispatch<SetStateAction<Message[]>>;
+  sendMessage: (message: any) => void;
+  className?: string;
+  isFullSize: boolean;
+  selectedVisibilityType?: VisibilityType;
+  placeholder?: string;
+  selectedModelId?: string;
+  selectedAgentId?: string;
+  onAgentSelect?: (agentId: string) => void;
+}
 
 function PureMultimodalInput({
   chatId,
@@ -46,54 +63,30 @@ function PureMultimodalInput({
   className,
   isFullSize,
   selectedVisibilityType,
-}: {
-  chatId: string;
-  input: string;
-  setInput: Dispatch<SetStateAction<string>>;
-  status: 'ready' | 'submitted' | 'processing';
-  stop: () => void;
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<Message>;
-  setMessages: Dispatch<SetStateAction<Array<Message>>>;
-  sendMessage: (message: any) => void;
-  className?: string;
-  isFullSize: boolean;
-  selectedVisibilityType?: VisibilityType;
-}) {
-  // Refs and state management
+  placeholder,
+  selectedModelId,
+  selectedAgentId,
+  onAgentSelect,
+}: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { width } = useWindowSize();
+
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    'input',
-    '',
-  );
   const [bioflowTaskId, setBioflowTaskId] = useState<string | null>(null);
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage('input', '');
+
   const bioflowStatus = useBioflowTaskStatus(bioflowTaskId ?? undefined);
-
-  // Scroll to bottom functionality - create a custom implementation for now
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const scrollToBottom = useCallback(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  }, []);
-
-  // Check if loading based on status
   const isLoading = status === 'submitted' || status === 'processing';
 
-  // Auto-scroll when status changes to submitted
-  useEffect(() => {
-    if (status === 'submitted') {
-      scrollToBottom();
-    }
-  }, [status, scrollToBottom]);
+  // File upload hook
+  const { uploadQueue, handleFileChange, handleFileDrop } = useFileUpload(
+    setAttachments,
+    { onBioflowTaskCreated: setBioflowTaskId }
+  );
 
-  /**
-   * Adjusts textarea height based on content
-   */
+  // Textarea height management
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -101,41 +94,33 @@ function PureMultimodalInput({
     }
   }, []);
 
-  /**
-   * Resets textarea to default height
-   */
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = '98px';
     }
   }, []);
 
-  // Initialize textarea with saved input
+  // Initialize with saved input
   useEffect(() => {
     if (textareaRef.current) {
-      const domValue = textareaRef.current.value;
-      const finalValue = domValue || localStorageInput || '';
+      const finalValue = textareaRef.current.value || localStorageInput || '';
       setInput(finalValue);
       adjustHeight();
     }
   }, [adjustHeight, localStorageInput, setInput]);
 
-  // Save input to localStorage
+  // Persist input to localStorage
   useEffect(() => {
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
-  // Input change handler
-  const handleInput = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInput(event.target.value);
-      adjustHeight();
-    },
-    [setInput, adjustHeight],
-  );
+  // Input handler
+  const handleInput = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value);
+    adjustHeight();
+  }, [setInput, adjustHeight]);
 
-  // Initialize search functionality
+  // Search functionality
   const { handleSearch, SearchButton } = MessageSearch({
     isSearchMode,
     isSearching,
@@ -148,595 +133,166 @@ function PureMultimodalInput({
     chatId,
   });
 
-  /**
-   * Submit handler for both normal chat and search
-   */
+  // Form submission
   const submitForm = useCallback(() => {
-    // Update URL with chat ID
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    // Handle search mode
     if (isSearchMode) {
       const queryText = input.trim();
       if (!queryText) {
         toast.error('Please enter a search query');
         return;
       }
-
-      // Reset inputs
       setInput('');
       setLocalStorageInput('');
       resetHeight();
-
-      // Use specialized search handler
       handleSearch(queryText);
       return;
     }
 
-    // Normal chat flow using v5 sendMessage with parts structure
     sendMessage({
       role: 'user',
       parts: [
-        ...attachments.map((attachment) => ({
+        ...attachments.map(attachment => ({
           type: 'file' as const,
           url: attachment.url,
           filename: attachment.name,
           mediaType: attachment.contentType,
         })),
-        {
-          type: 'text' as const,
-          text: input,
-        },
+        { type: 'text' as const, text: input },
       ],
     });
 
-    // Reset inputs and UI
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
     setInput('');
 
-    // Focus on input after sending
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
   }, [
-    chatId,
-    handleSearch,
-    input,
-    isSearchMode,
-    resetHeight,
-    setAttachments,
-    setInput,
-    setLocalStorageInput,
-    width,
-    attachments,
-    sendMessage,
+    chatId, handleSearch, input, isSearchMode, resetHeight, setAttachments,
+    setInput, setLocalStorageInput, width, attachments, sendMessage,
   ]);
 
-  /**
-   * File upload handler for different file types
-   * @returns A properly typed Attachment object or undefined if upload fails
-   */
-  const uploadFile = useCallback(
-    async (file: File): Promise<Attachment | undefined> => {
-      const formData = new FormData();
-      formData.append('file', file);
+  // Attachment deletion
+  const handleDeleteAttachment = useCallback((attachment: Attachment) => {
+    setAttachments(current => current.filter(a => a.url !== attachment.url));
+  }, [setAttachments]);
 
-      // Determine appropriate upload endpoint based on file type
-      let uploadUrl = '/api/files/upload';
-
-      // Check for bioinformatics file types
-      const bioinformaticsExtensions = [
-        '.fastq',
-        '.bam',
-        '.vcf',
-        '.mtx',
-        '.h5ad',
-        '.h5',
-        '.hdf5',
-        '.dgz', // Added .dgz explicitly
-      ];
-
-      // Additional supported formats for bioflow
-      const documentExtensions = ['.csv', '.tsv'];
-
-      const fileExtension = file.name
-        .substring(file.name.lastIndexOf('.'))
-        .toLowerCase();
-
-      // File type detection
-      const isZipFile =
-        file.type === 'application/zip' || file.name.endsWith('.zip');
-      const isGzipFile =
-        file.type === 'application/gzip' ||
-        file.name.endsWith('.gz') ||
-        file.name.endsWith('.tgz');
-      const isTarFile = file.name.endsWith('.tar');
-      const isBioinformaticsFile = bioinformaticsExtensions.some((ext) =>
-        file.name.toLowerCase().endsWith(ext),
-      );
-      const isDocumentFile = documentExtensions.some((ext) =>
-        file.name.toLowerCase().endsWith(ext),
-      );
-      const isPdfFile =
-        file.type === 'application/pdf' ||
-        file.name.toLowerCase().endsWith('.pdf');
-
-      // Enhanced text file detection - more thorough checking
-      const isTextFile =
-        file.type === 'text/plain' ||
-        file.name.toLowerCase().endsWith('.txt') ||
-        file.type === 'text/markdown' ||
-        file.name.toLowerCase().endsWith('.md') ||
-        file.type === 'text/csv' ||
-        file.name.toLowerCase().endsWith('.text');
-
-      // File size in megabytes
-      const fileSizeMB = file.size / (1024 * 1024);
-      const isLargeFile = fileSizeMB > 5;
-
-      // Handle specific file types
-      if (file.type.startsWith('image/')) {
-        uploadUrl = '/api/files/upload/image';
-      } else if (isPdfFile && fileSizeMB <= 10) {
-        uploadUrl = '/api/files/upload/pdf';
-      } else if (isTextFile && fileSizeMB <= 25) {
-        uploadUrl = '/api/files/upload/text';
-        console.log(
-          'Uploading text file to dedicated text endpoint:',
-          file.name,
-        );
-      } else if (
-        isZipFile ||
-        isGzipFile ||
-        isTarFile ||
-        isBioinformaticsFile ||
-        (isPdfFile && fileSizeMB > 10) || // Large PDFs go to bioflow
-        (isTextFile && fileSizeMB > 25) || // Large text files go to bioflow
-        isDocumentFile ||
-        isLargeFile
-      ) {
-        uploadUrl = '/api/files/upload/bioflow/upload';
-
-        // Check file size limits for bioflow uploads - warn if possibly too large
-        if (fileSizeMB > 200) {
-          toast.warning(
-            `Very large file (${fileSizeMB.toFixed(1)}MB). The server might reject it.`,
-          );
-        } else if (isLargeFile) {
-          toast.info(
-            `Large file detected (${fileSizeMB.toFixed(1)}MB). Processing may take longer.`,
-          );
-        }
-
-        // Add descriptive file type information to help users understand processing
-        if (isPdfFile) {
-          toast.info('Processing PDF through the bioflow pipeline');
-        } else if (isTextFile) {
-          toast.info('Processing text file through the bioflow pipeline');
-        } else if (file.name.toLowerCase().endsWith('.dgz')) {
-          toast.info('Processing Cell Ranger Loupe file (.dgz)');
-        }
-
-        // Add metadata to formData to help the backend process the file correctly
-        formData.append('fileType', fileExtension);
-        formData.append(
-          'isCompressed',
-          String(isZipFile || isGzipFile || isTarFile),
-        );
-        formData.append('needsProcessing', 'true');
-        formData.append('fileSizeMB', fileSizeMB.toString());
-      }
-
-      // Track analytics for uploads
-      try {
-        // Optional: Add analytics tracking here
-        console.debug(
-          `Upload initiated: ${file.name} (${fileSizeMB.toFixed(2)}MB) to ${uploadUrl}`,
-        );
-      } catch (analyticsError) {
-        // Non-critical error, just log it
-        console.warn('Failed to track upload analytics:', analyticsError);
-      }
-
-      // Implement upload with retry logic
-      const MAX_RETRIES = 2;
-      let retries = 0;
-
-      while (retries <= MAX_RETRIES) {
-        try {
-          // Set appropriate timeout based on file size
-          const timeoutMs = isLargeFile
-            ? Math.min(300000, Math.max(120000, fileSizeMB * 2000))
-            : // 2 seconds per MB, min 2min, max 5min
-              30000; // 30 seconds for small files
-
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-          const response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal,
-            credentials: 'include', // Include auth credentials
-          });
-
-          // Clear the timeout since the request completed
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // If this is a bioflow upload, capture the task_id for polling
-            if (uploadUrl.includes('bioflow') && data.backendTask?.task_id) {
-              setBioflowTaskId(data.backendTask.task_id);
-
-              // Log successful bioflow job submission
-              console.debug(
-                `Bioflow task created: ${data.backendTask.task_id}`,
-              );
-            }
-
-            // Show appropriate success message
-            toast.success(`File "${file.name}" uploaded successfully`);
-
-            return {
-              url: data.url,
-              name: data.pathname || file.name,
-              contentType: data.contentType || file.type,
-            };
-          }
-
-          // Handle specific error cases with user-friendly messages
-          if (response.status === 413) {
-            toast.error(
-              `File is too large (${fileSizeMB.toFixed(1)}MB). Maximum allowed size is 200MB.`,
-            );
-            return undefined;
-          }
-
-          if (response.status === 401) {
-            toast.error(
-              'Session expired. Please refresh the page and try again.',
-            );
-            return undefined;
-          }
-
-          if (response.status === 500) {
-            // Extract detailed error information
-            try {
-              const errorData = await response.json();
-              const errorMessage =
-                errorData.detail || errorData.error || 'Unknown server error';
-              console.error('Server error details:', errorData);
-
-              // If we have retries left, try again
-              if (retries < MAX_RETRIES) {
-                retries++;
-                toast.info(
-                  `Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`,
-                );
-                // Exponential backoff: 1s, 2s, 4s...
-                await new Promise((resolve) =>
-                  setTimeout(resolve, 1000 * 2 ** (retries - 1)),
-                );
-                continue;
-              }
-
-              toast.error(`Server error: ${errorMessage}`);
-            } catch (jsonError) {
-              toast.error(
-                `Server error processing ${file.name}. The file might be corrupted or in an unsupported format.`,
-              );
-            }
-            return undefined;
-          }
-
-          // Handle other error cases
-          try {
-            const errorData = await response.json();
-            toast.error(
-              errorData.detail ||
-                errorData.error ||
-                `Failed to upload file (${response.status})`,
-            );
-          } catch (jsonError) {
-            toast.error(`Error (${response.status}): Failed to upload file`);
-          }
-
-          // Don't retry on client errors (4xx)
-          if (response.status >= 400 && response.status < 500) {
-            return undefined;
-          }
-
-          // For other errors, retry if we haven't exceeded MAX_RETRIES
-          if (retries < MAX_RETRIES) {
-            retries++;
-            toast.info(
-              `Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`,
-            );
-            // Exponential backoff: 1s, 2s, 4s...
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** (retries - 1)),
-            );
-            continue;
-          }
-
-          return undefined;
-        } catch (error) {
-          // Clear any timeout if it exists
-
-          // Handle specific abort errors
-          if (
-            typeof error === 'object' &&
-            error !== null &&
-            'name' in error &&
-            (error as { name?: unknown }).name === 'AbortError'
-          ) {
-            toast.error(
-              `Upload timed out for "${file.name}" (${fileSizeMB.toFixed(1)}MB). Try a smaller file or check your connection.`,
-            );
-            return undefined;
-          }
-
-          // For network errors, retry if possible
-          if (retries < MAX_RETRIES) {
-            retries++;
-            toast.info(
-              `Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`,
-            );
-            // Exponential backoff: 1s, 2s, 4s...
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** (retries - 1)),
-            );
-            continue;
-          }
-
-          console.error('Upload error:', error);
-          toast.error(
-            `Failed to upload ${file.name}. Please check your connection and try again.`,
-          );
-          return undefined;
-        }
-      }
-
-      // If we've exhausted all retries
-      console.error(`Upload failed after ${MAX_RETRIES} retries:`, file.name);
-      return undefined;
-    },
-    [],
-  );
-
-  /**
-   * Handles file selection from input
-   */
-  const handleFileChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(event.target.files || []);
-
-      // Show upload queue in UI
-      setUploadQueue(files.map((file) => file.name));
-
-      try {
-        // Upload all files in parallel
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-
-        // Filter out undefined values and ensure type safety
-        const successfullyUploadedAttachments: Array<Attachment> =
-          uploadedAttachments.filter(
-            (attachment: Attachment | undefined): attachment is Attachment =>
-              attachment !== undefined,
-          );
-
-        // Add new attachments to existing ones
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
-      } catch (error) {
-        console.error('Error uploading files:', error);
-      } finally {
-        setUploadQueue([]);
-      }
-    },
-    [setAttachments, uploadFile],
-  );
-
-  /**
-   * Handles files dropped onto the input area
-   */
-  const handleFileDrop = useCallback(
-    async (files: FileList) => {
-      const fileArray = Array.from(files);
-
-      // Show upload queue in UI
-      setUploadQueue(fileArray.map((file) => file.name));
-
-      try {
-        // Upload all files in parallel
-        const uploadPromises = fileArray.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-
-        // Filter out undefined values and ensure type safety
-        const successfullyUploadedAttachments: Array<Attachment> =
-          uploadedAttachments.filter(
-            (attachment: Attachment | undefined): attachment is Attachment =>
-              attachment !== undefined,
-          );
-
-        // Add new attachments to existing ones
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
-      } catch (error) {
-        console.error('Error uploading files:', error);
-      } finally {
-        setUploadQueue([]);
-      }
-    },
-    [setAttachments, uploadFile],
-  );
-
-  /**
-   * Remove an attachment from the list
-   */
-  const handleDeleteAttachment = useCallback(
-    (attachment: Attachment) => {
-      setAttachments((currentAttachments) =>
-        currentAttachments.filter((a) => a.url !== attachment.url),
-      );
-    },
-    [setAttachments],
-  );
-
-  // Render the input component
   return (
     <div
-      className={`relative w-full flex flex-col items-center gap-4 ${isFullSize ? 'h-full' : 'max-w-4xl mx-auto'}`}
+      className={cx(
+        "relative w-full flex flex-col items-center gap-4",
+        isFullSize ? "h-full" : "max-w-4xl mx-auto"
+      )}
     >
-      {/* Scroll to bottom button */}
-      <AnimatePresence>
-        {!isAtBottom && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute left-1/2 bottom-28 -translate-x-1/2 z-50"
-          >
-            <Button
-              data-testid="scroll-to-bottom-button"
-              className="rounded-full"
-              size="icon"
-              variant="outline"
-              onClick={(event) => {
-                event.preventDefault();
-                scrollToBottom();
-              }}
-            >
-              <ArrowDown />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Suggested actions for empty chat */}
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 &&
-        selectedVisibilityType && (
-          <SuggestedActions
-            chatId={chatId}
-            append={async (message) => {
-              // Convert to v5 format and use sendMessage
-              sendMessage({
-                role: 'user',
-                parts: [
-                  {
-                    type: 'text' as const,
-                    text: getMessageText(message),
-                  },
-                ],
-              });
-              return Promise.resolve('');
-            }}
-          />
-        )}
-
-      <div className={`w-full ${isFullSize ? 'h-full' : 'max-w-2xl relative'}`}>
-        {/* Attachment previews */}
-        {(attachments.length > 0 || uploadQueue.length > 0) && (
-          <div className="flex flex-row gap-2 overflow-x-scroll items-end mb-4">
-            {attachments.map((attachment, index) => (
-              <PreviewAttachment
-                key={attachment.url || `attachment-${index}`}
-                attachment={attachment}
-                onDelete={handleDeleteAttachment as any}
-              />
-            ))}
-
-            {uploadQueue.map((filename, index) => (
-              <PreviewAttachment
-                key={`upload-${index}-${filename}`}
-                attachment={{
-                  url: '',
-                  name: filename,
-                  contentType: '',
-                }}
-                isUploading={true}
-              />
-            ))}
+      {/* Private Mode Indicator */}
+      {selectedVisibilityType === 'private' && (
+        <div className="absolute -top-6 left-0 right-0 flex items-center justify-center">
+          <div className="text-[10px] uppercase tracking-wider font-medium text-purple-500/70 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500/50 animate-pulse" />
+            Private Session — Not Saved
           </div>
-        )}
-
-        {/* Input area with drag and drop */}
-        <DragAndDrop onDrop={handleFileDrop} isFullSize={isFullSize}>
-          <Textarea
-            data-testid="multimodal-input"
-            ref={textareaRef}
-            placeholder={isSearchMode ? 'Search with Attma...' : 'Send a message...'}
-            value={input}
-            onChange={handleInput}
-            className={cx(
-              'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 w-full',
-              className,
-              isSearchMode && 'border-2 border-attma-logo',
-            )}
-            rows={2}
-            autoFocus
-            suppressHydrationWarning={true}
-            onKeyDown={(event) => {
-              // Submit on Enter (without Shift)
-              if (
-                event.key === 'Enter' &&
-                !event.shiftKey &&
-                !event.nativeEvent.isComposing
-              ) {
-                event.preventDefault();
-
-                if (status !== 'ready') {
-                  toast.error(
-                    'Please wait for the model to finish its response!',
-                  );
-                } else {
-                  submitForm();
-                }
-              }
-
-              // Exit search mode on Escape
-              if (event.key === 'Escape' && isSearchMode) {
-                setIsSearchMode(false);
-              }
-            }}
-          />
-        </DragAndDrop>
-
-        {/* Attachment and search buttons */}
-        <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-          <AttachmentsButton
-            fileInputRef={fileInputRef}
-            isLoading={isLoading || isSearching}
-          />
-          <SearchButton />
         </div>
+      )}
 
-        {/* Send or stop button */}
-        <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-          {status === 'submitted' ? (
-            <StopButton stop={stop} setMessages={setMessages} />
-          ) : (
-            <SendButton
-              input={input}
-              submitForm={submitForm}
-              uploadQueue={uploadQueue}
-              isSearchMode={isSearchMode}
+      {/* Attachment Previews */}
+      {(attachments.length > 0 || uploadQueue.length > 0) && (
+        <div className="flex flex-row gap-2 overflow-x-auto items-end w-full pb-2 px-1">
+          {attachments.map(attachment => (
+            <PreviewAttachment
+              key={attachment.url}
+              attachment={attachment}
+              onDelete={handleDeleteAttachment}
             />
-          )}
+          ))}
+          {uploadQueue.map(filename => (
+            <PreviewAttachment
+              key={filename}
+              attachment={{ url: '', name: filename, contentType: '' }}
+              isUploading
+            />
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Main Input Pill */}
+      <DragAndDrop onDrop={handleFileDrop} isFullSize={isFullSize}>
+        <div className={cx(
+          "relative flex flex-col w-full transition-all duration-300 ease-in-out",
+          "rounded-[32px] border shadow-sm group bg-background/50 backdrop-blur-md",
+          selectedVisibilityType === 'private'
+            ? "border-purple-500/30 dark:border-purple-500/40 focus-within:ring-2 focus-within:ring-purple-500/10"
+            : "border-zinc-200/80 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5"
+        )}>
+          <div className={cx("w-full", input.length > 0 && "pb-14")}>
+            <Textarea
+              data-testid="multimodal-input"
+              ref={textareaRef}
+              placeholder={placeholder || (isSearchMode ? 'Search with Attma...' : 'Send a message...')}
+              value={input}
+              onChange={handleInput}
+              className={cx(
+                'w-full min-h-[44px] max-h-[450px] resize-none bg-transparent border-0 shadow-none',
+                'focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-12',
+                'text-base md:text-[15px] leading-[1.6] placeholder:text-muted-foreground/40',
+                'font-normal transition-all',
+                className,
+              )}
+              rows={1}
+              autoFocus
+              suppressHydrationWarning
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  if (status !== 'ready') {
+                    toast.error('Please wait for the model to finish its response!');
+                  } else {
+                    submitForm();
+                  }
+                }
+                if (event.key === 'Escape' && isSearchMode) setIsSearchMode(false);
+              }}
+            />
+          </div>
+
+          {/* Bottom-anchored action buttons */}
+          <div className="absolute left-2.5 bottom-2.5 flex items-center">
+            <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading || isSearching} />
+          </div>
+
+          <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1.5">
+            <div className={cx(
+              "flex items-center gap-1.5 transition-all duration-300",
+              input.length > 0 ? "opacity-100" : "opacity-0 translate-x-4 pointer-events-none"
+            )}>
+              <SearchButton />
+              <div className="h-4 w-px bg-border/40 mx-0.5" />
+              {onAgentSelect && (
+                <AgentSelector currentAgentId={selectedAgentId} onAgentSelect={onAgentSelect} />
+              )}
+              {selectedModelId && (
+                <div className="hidden sm:block">
+                  <ModelSelector selectedModelId={selectedModelId} triggerType="pill" />
+                </div>
+              )}
+            </div>
+
+            {status === 'submitted' ? (
+              <StopButton stop={stop} setMessages={setMessages} />
+            ) : (
+              <SendButton
+                input={input}
+                submitForm={submitForm}
+                uploadQueue={uploadQueue}
+                isSearchMode={isSearchMode}
+              />
+            )}
+          </div>
+        </div>
+      </DragAndDrop>
 
       {/* Hidden file input */}
       <input
@@ -748,131 +304,24 @@ function PureMultimodalInput({
         tabIndex={-1}
       />
 
-      {/* Bioflow status panel - only show if a bioflow task is active */}
+      {/* Bioflow Task Status */}
       {bioflowTaskId && (
-        <div className="mt-2">
-          {bioflowStatus.isLoading && <div>Processing file...</div>}
-          {bioflowStatus.status === 'completed' && (
-            <div>Analysis complete! {/* Add result link if available */}</div>
-          )}
-          {bioflowStatus.status === 'failed' && (
-            <div>Error: {bioflowStatus.error}</div>
-          )}
+        <div className="mt-2 text-xs font-medium text-primary animate-pulse">
+          Processing: {bioflowStatus?.status || 'Initializing...'}
         </div>
       )}
     </div>
   );
 }
 
-// Optimize rendering with memoization
 export const MultimodalInput = memo(
   PureMultimodalInput,
   (prevProps, nextProps) => {
-    // Only re-render when these props change
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-      return false;
+    if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
+    if (prevProps.selectedAgentId !== nextProps.selectedAgentId) return false;
     return true;
   },
 );
-
-/**
- * Button for adding attachments
- */
-function PureAttachmentsButton({
-  fileInputRef,
-  isLoading,
-}: {
-  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  isLoading: boolean;
-}) {
-  return (
-    <Button
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 dark:hover:bg-attma-logo hover:bg-zinc-200"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={isLoading}
-      variant="ghost"
-      aria-label="Add attachment"
-      title="Add attachment"
-    >
-      <PaperclipIcon size={14} />
-    </Button>
-  );
-}
-
-const AttachmentsButton = memo(PureAttachmentsButton);
-
-/**
- * Button for stopping generation
- */
-function PureStopButton({
-  stop,
-  setMessages,
-}: {
-  stop: () => void;
-  setMessages: Dispatch<SetStateAction<Array<Message>>>;
-}) {
-  return (
-    <Button
-      data-testid="stop-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
-      onClick={(event) => {
-        event.preventDefault();
-        stop();
-        // Just call setMessages with current messages, no sanitization needed for v5
-        setMessages((messages) => messages);
-      }}
-      aria-label="Stop generating"
-      title="Stop generating"
-    >
-      <StopIcon size={14} />
-    </Button>
-  );
-}
-
-const StopButton = memo(PureStopButton);
-
-/**
- * Button for sending messages
- */
-function PureSendButton({
-  submitForm,
-  input,
-  uploadQueue,
-  isSearchMode,
-}: {
-  submitForm: () => void;
-  input: string;
-  uploadQueue: Array<string>;
-  isSearchMode: boolean;
-}) {
-  const buttonType = isSearchMode ? 'Search' : 'Send message';
-
-  return (
-    <Button
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
-      onClick={(event) => {
-        event.preventDefault();
-        submitForm();
-      }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
-      aria-label={buttonType}
-      title={buttonType}
-    >
-      <ArrowUpIcon size={14} />
-    </Button>
-  );
-}
-
-const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
-  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
-    return false;
-  if (prevProps.input !== nextProps.input) return false;
-  if (prevProps.isSearchMode !== nextProps.isSearchMode) return false;
-  return true;
-});

@@ -1,93 +1,252 @@
 'use client';
 
-import type { User } from 'next-auth';
+import { User } from 'next-auth';
+import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { PlusIcon } from '@/components/icons';
+import { SearchDialog } from '@/components/chat/search-dialog';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
-import { SidebarUserNav } from '@/components/chat/sidebar-user-nav';
-import { SidebarToggle } from '@/components/chat/sidebar-toggle';
-import { Button } from '@/components/ui/button';
+import {
+  BrainIcon,
+  ChevronUpIcon,
+  LogOutIcon,
+  NewChatIcon,
+  SearchIcon,
+  SidebarToggleIcon,
+} from '@/components/icons';
+import { ThemeSwitcher } from '@/components/theme-switcher';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { UserAvatar } from '@/components/user-avatar';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
-  const { setOpenMobile, open } = useSidebar();
-  const isMobile = useIsMobile();
+  const { setOpenMobile, toggleSidebar, state } = useSidebar();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [logoHovered, setLogoHovered] = useState(false);
 
-  // Function to handle new chat creation
-  const handleNewChat = () => {
-    setOpenMobile(false);
-    router.push('/chat');
-    router.refresh();
+  const isCollapsed = state === 'collapsed';
+
+  const handleCollapsedClick = () => {
+    if (isCollapsed) {
+      toggleSidebar();
+    }
   };
-
+  
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
-      <SidebarHeader>
-        <SidebarMenu>
-          <div className="flex flex-row justify-between items-center px-1">
-            <Link
-              href="/chat"
-              onClick={() => {
-                setOpenMobile(false);
-              }}
-              className="flex flex-row gap-3 items-center"
-            >
-              <span className="text-lg font-semibold px-2 py-1 hover:bg-muted/40 rounded-md cursor-pointer transition-colors">
-                History
-              </span>
-            </Link>
+    <>
+      <Sidebar 
+        collapsible="icon" 
+        className={`bg-background transition-all duration-200 ${
+          isCollapsed 
+            ? 'border-r-2 border-border/40 hover:border-border/60 cursor-pointer' 
+            : 'border-r border-border/10'
+        }`}
+        onClick={handleCollapsedClick}
+      >
+        {/* Header */}
+        <SidebarHeader className={`h-14 px-2 flex flex-row items-center relative z-20 ${isCollapsed ? 'justify-center' : 'justify-start'}`}>
+          <Tooltip open={isCollapsed ? undefined : false}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={toggleSidebar}
+                onMouseEnter={() => setLogoHovered(true)}
+                onMouseLeave={() => setLogoHovered(false)}
+                className={`relative flex items-center w-10 h-10 rounded-lg hover:bg-muted/60 transition-all duration-200 ${isCollapsed ? 'justify-center mx-auto' : 'justify-start'}`}
+              >
+                {/* Logo - fades out on hover */}
+                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-0' : 'opacity-100'}`}>
+                  <img src="/images/logo.png" alt="Attma" className="w-7 h-7 hidden dark:block"/>
+                  <img src="/images/attma-logo.webp" alt="Attma" className="w-7 h-7 block dark:hidden"/>
+                </div>
+                {/* Toggle icon - fades in on hover */}
+                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-100' : 'opacity-0'}`}>
+                  <SidebarToggleIcon />
+                </div>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {isCollapsed ? 'Open sidebar' : 'Close sidebar'}
+            </TooltipContent>
+          </Tooltip>
+        </SidebarHeader>
 
-            <div className="flex items-center">
-              {/* Show toggle button in sidebar when it's open */}
-              {open && !isMobile && <SidebarToggle showInSidebar={true} />}
+        {/* Content */}
+        <SidebarContent className="px-2 relative z-20">
+          <SidebarMenu className="gap-1">
+            {/* New Chat */}
+            <SidebarMenuItem>
+              <Tooltip open={isCollapsed ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (!isCollapsed) {
+                        setOpenMobile(false);
+                        router.push('/chat');
+                        router.refresh();
+                      }
+                    }}
+                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+                  >
+                    <NewChatIcon />
+                    {!isCollapsed && <span className="text-sm">New chat</span>}
+                  </button>
+                </TooltipTrigger>
+                {isCollapsed && <TooltipContent side="right">New chat</TooltipContent>}
+              </Tooltip>
+            </SidebarMenuItem>
 
-              {/* Always show new chat button */}
-              {isMobile ? (
-                <Button
-                  variant="ghost"
-                  type="button"
-                  className="p-2 h-fit"
-                  onClick={handleNewChat}
-                  aria-label="New Chat"
-                >
-                  <PlusIcon />
-                </Button>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      type="button"
-                      className="p-2 h-fit"
-                      onClick={handleNewChat}
-                      aria-label="New Chat"
+            {/* Search */}
+            <SidebarMenuItem>
+              <Tooltip open={isCollapsed ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (!isCollapsed) {
+                        setSearchOpen(true);
+                      }
+                    }}
+                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+                  >
+                    <SearchIcon />
+                    {!isCollapsed && (
+                      <span className="text-sm flex-1 flex items-center justify-between">
+                        Search chats
+                        <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">⌘K</kbd>
+                      </span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                {isCollapsed && <TooltipContent side="right">Search (⌘K)</TooltipContent>}
+              </Tooltip>
+            </SidebarMenuItem>
+
+            {/* Agents */}
+            <SidebarMenuItem>
+              <Tooltip open={isCollapsed ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (!isCollapsed) {
+                        router.push('/chat?agent=bioinformatics');
+                        router.refresh();
+                      }
+                    }}
+                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+                  >
+                    <BrainIcon />
+                    {!isCollapsed && <span className="text-sm">Agents</span>}
+                  </button>
+                </TooltipTrigger>
+                {isCollapsed && <TooltipContent side="right">Agents</TooltipContent>}
+              </Tooltip>
+            </SidebarMenuItem>
+          </SidebarMenu>
+
+          {/* Chat History - only when expanded */}
+          {!isCollapsed && (
+            <SidebarGroup className="mt-4">
+              <div className="px-3 text-xs font-medium text-muted-foreground/60 mb-2">Your chats</div>
+              <SidebarHistory user={user} />
+            </SidebarGroup>
+          )}
+        </SidebarContent>
+
+        {/* Footer - User Avatar with Dropdown Menu */}
+        <SidebarFooter className="px-2 pb-3 relative z-20">
+          {user && (
+            <DropdownMenu>
+              <Tooltip open={isCollapsed ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-3 w-full rounded-lg hover:bg-muted/60 transition-colors ${
+                        isCollapsed 
+                          ? 'justify-center h-10 w-10 mx-auto p-0' 
+                          : 'h-14 px-3'
+                      }`}
                     >
-                      <PlusIcon />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent align="end">New Chat</TooltipContent>
-                </Tooltip>
+                      <UserAvatar
+                        email={user.email ?? ''}
+                        name={user.name}
+                        image={user.image}
+                        size={isCollapsed ? 32 : 36}
+                        className="shrink-0"
+                        showBorder={true}
+                      />
+                      {!isCollapsed && (
+                        <>
+                          <div className="flex-1 text-left overflow-hidden">
+                            <div className="text-sm font-medium truncate">
+                              {user.name || user.email?.split('@')[0] || 'User'}
+                            </div>
+                            {user.email && (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </div>
+                            )}
+                          </div>
+                          <ChevronUpIcon />
+                        </>
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right">
+                    {user.name || user.email?.split('@')[0] || 'Account'}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+              
+              {/* Dropdown Content - only when expanded */}
+              {!isCollapsed && (
+                <DropdownMenuContent
+                  side="top"
+                  align="start"
+                  sideOffset={8}
+                  className="min-w-[200px] p-1"
+                >
+                  {/* Theme Switcher */}
+                  <DropdownMenuItem className="p-0 focus:bg-transparent hover:bg-transparent">
+                    <ThemeSwitcher />
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="my-1" />
+                  
+                  {/* Sign Out */}
+                  <DropdownMenuItem
+                    onClick={() => signOut({ redirectTo: '/' })}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOutIcon />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
               )}
-            </div>
-          </div>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarHistory user={user} />
-      </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
-    </Sidebar>
+            </DropdownMenu>
+          )}
+        </SidebarFooter>
+      </Sidebar>
+      
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+    </>
   );
 }

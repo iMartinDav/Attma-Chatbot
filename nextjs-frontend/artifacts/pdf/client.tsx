@@ -1,15 +1,16 @@
 import { Artifact } from '@/components/chat/create-artifact';
 import {
-  DownloadIcon,
-  FileIcon,
-  LoaderIcon,
-  RedoIcon,
-  UndoIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
+    DownloadIcon,
+    FileIcon,
+    LoaderIcon,
+    RedoIcon,
+    UndoIcon,
+    ZoomInIcon,
+    ZoomOutIcon,
 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TextShimmer } from '@/components/ui/text-shimmer';
 import { cn } from '@/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -257,76 +258,82 @@ const PdfControls: React.FC<PdfControlsProps> = ({
           controlsVisible ? 'opacity-100' : 'opacity-50 hover:opacity-100',
         )}
       >
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="h-5 w-px bg-border/50" />
+        <div className="flex items-center gap-3 sm:gap-6">
+          <div className="h-6 w-px bg-border/40" />
 
           {/* Page Navigation */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 w-8 rounded-full hover:bg-background/80 transition-colors"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-background/80 transition-all active:scale-95"
               onClick={goToPrevPage}
               disabled={pageNumber <= 1}
               title="Previous page"
             >
-              <ChevronLeftIcon size={16} />
+              <ChevronLeftIcon size={20} />
             </Button>
-            <span className="text-xs font-mono">
-              {pageNumber} / {numPages || '?'}
-            </span>
+            <div className="flex items-center gap-1.5 px-2 min-w-[70px] justify-center">
+              <span className="text-sm font-semibold tabular-nums">
+                {pageNumber}
+              </span>
+              <span className="text-xs text-muted-foreground">/</span>
+              <span className="text-sm font-medium text-muted-foreground tabular-nums">
+                {numPages || '?'}
+              </span>
+            </div>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 w-8 rounded-full hover:bg-background/80 transition-colors"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-background/80 transition-all active:scale-95"
               onClick={goToNextPage}
               disabled={pageNumber >= (numPages || 1)}
               title="Next page"
             >
-              <ChevronRightIcon size={16} />
+              <ChevronRightIcon size={20} />
             </Button>
           </div>
 
-          <div className="h-5 w-px bg-border/50" />
+          <div className="h-6 w-px bg-border/40" />
 
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 w-8 rounded-full hover:bg-background/80 transition-colors"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-background/80 transition-all active:scale-95"
               onClick={handleZoomOut}
               disabled={scale <= 0.5}
               title="Zoom out"
             >
-              <ZoomOutIcon size={16} />
+              <ZoomOutIcon size={20} />
             </Button>
-            <span className="text-xs font-mono w-10 text-center">
+            <span className="text-xs font-bold w-12 text-center tabular-nums bg-muted/50 py-1 rounded-md">
               {Math.round(scale * 100)}%
             </span>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 w-8 rounded-full hover:bg-background/80 transition-colors"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-background/80 transition-all active:scale-95"
               onClick={handleZoomIn}
               disabled={scale >= 2}
               title="Zoom in"
             >
-              <ZoomInIcon size={16} />
+              <ZoomInIcon size={20} />
             </Button>
           </div>
 
-          <div className="h-5 w-px bg-border/50" />
+          <div className="h-6 w-px bg-border/40" />
 
           {/* Download Button */}
           <Button
-            variant="secondary"
+            variant="default"
             size="sm"
             onClick={handleDownload}
-            className="h-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors px-3 sm:px-4"
+            className="h-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-95 px-5 flex items-center gap-2"
           >
-            <DownloadIcon size={16} />
-            <span className="text-sm font-medium">Download</span>
+            <DownloadIcon size={18} />
+            <span className="text-sm font-bold tracking-tight">Export</span>
           </Button>
         </div>
       </div>
@@ -334,16 +341,18 @@ const PdfControls: React.FC<PdfControlsProps> = ({
   );
 };
 
-const LoadingView = () => (
+const LoadingView = ({ artifactKind }: { artifactKind: string }) => (
   <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-xs shadow-xl ring-1 ring-border/10 rounded-xl">
-    <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
-      <div className="animate-spin mb-4">
-        <LoaderIcon size={32} />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+      <div className="animate-spin mb-6 p-2 bg-primary/10 rounded-full text-primary">
+        <LoaderIcon size={40} />
       </div>
-      <span className="text-lg font-medium">Generating PDF...</span>
-      <span className="text-sm text-muted-foreground mt-2">
-        This may take a moment
-      </span>
+      <TextShimmer className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+        {`Generating ${artifactKind.toUpperCase()}...`}
+      </TextShimmer>
+      <p className="text-muted-foreground mt-3 max-w-xs leading-relaxed">
+        Our AI is crafting your document with precision. This may take a moment.
+      </p>
     </div>
   </Card>
 );
@@ -351,21 +360,31 @@ const LoadingView = () => (
 const ErrorView = ({ error }: { error: string }) => (
   <Card className="mx-auto w-full max-w-4xl bg-background/40 backdrop-blur-xs shadow-xl ring-1 ring-border/10 rounded-xl">
     <div className="flex flex-col items-center justify-center min-h-[60vh] bg-red-50 dark:bg-red-900/20 rounded-lg p-6">
+      <div className="mb-4 text-red-500">
+        <FileIcon size={48} />
+      </div>
       <span className="text-red-600 dark:text-red-400 text-lg font-medium">
         Error Loading PDF
       </span>
-      <span className="text-red-600 dark:text-red-400 mt-2 text-center">
+      <p className="text-red-600 dark:text-red-400 mt-2 text-center max-w-sm">
         {error}
-      </span>
+      </p>
+      <Button 
+        variant="outline" 
+        className="mt-6 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/40"
+        onClick={() => window.location.reload()}
+      >
+        Try Again
+      </Button>
     </div>
   </Card>
 );
 
-const PdfViewer: React.FC<PdfViewerProps> = ({
+export const PdfViewer: React.FC<PdfViewerProps> = ({
   content,
   title,
   status,
-  isInline = false, // Keep the default value here
+  isInline = false,
   currentVersionIndex,
   isCurrentVersion,
   handleVersionChange,
@@ -375,8 +394,37 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
   const pdfHeight = useDynamicHeight();
   const pdfControls = usePdfControls(pdfData, numPages, content, title);
 
-  if (isLoading) return <LoadingView />;
+  if (isLoading) {
+    if (isInline) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-muted/30">
+          <div className="animate-spin mb-4 text-primary">
+            <LoaderIcon size={24} />
+          </div>
+          <TextShimmer className="text-sm font-medium">Generating PDF...</TextShimmer>
+        </div>
+      );
+    }
+    return <LoadingView artifactKind="pdf" />;
+  }
+  
   if (error) return <ErrorView error={error} />;
+
+  if (isInline) {
+    return (
+      <div className="flex flex-col h-full w-full overflow-hidden bg-background/50 pointer-events-none rounded-b-xl">
+        <div className="w-full grow overflow-hidden bg-transparent rounded-b-xl">
+          {pdfData && (
+            <iframe
+              src={`${pdfData}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+              className="w-full h-full border-0 rounded-b-xl"
+              title="PDF Preview"
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card
@@ -400,13 +448,13 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
         }}
       />
       <div
-        className="w-full bg-gray-100 dark:bg-gray-900/50 grow overflow-hidden"
+        className="w-full bg-zinc-100 dark:bg-zinc-950 grow overflow-hidden"
         style={{ height: pdfHeight }}
       >
         {pdfData && (
           <iframe
             ref={pdfControls.iframeRef}
-            src={`${pdfData}#page=${pdfControls.pageNumber}`}
+            src={`${pdfData}#page=${pdfControls.pageNumber}&toolbar=0&navpanes=0&scrollbar=0`}
             className="w-full border-0 transition-transform duration-300"
             style={{
               transform: `scale(${pdfControls.scale})`,

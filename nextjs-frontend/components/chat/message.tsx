@@ -17,32 +17,24 @@ import { DocumentPreview } from './document-preview';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
-import { MessageReasoning } from './message-reasoning';
 import { SearchingMessage, type SearchMessage } from './message-search';
 import { PreviewAttachment } from './preview-attachment';
-import { SourceLinks } from './source-links';
 import { Weather } from './weather';
 
-// AI SDK v5 utilities
+// New components
+import { ReasoningBlock } from './reasoning-block';
+import { SourcePanel, type Source } from './source-citations';
+
+// AI SDK utilities
 import {
-  getMessageFiles,
-  getMessageReasoning,
-  getMessageText
+    getMessageFiles,
+    getMessageReasoning,
+    getMessageSources,
+    getMessageText
 } from '@/lib/ai/message-utils';
 
 // Extended message type that includes sourceType and custom properties
 type Message = SearchMessage;
-
-// Define a more specific type for the url_citation annotation
-interface UrlCitation {
-  type: string;
-  url_citation?: {
-    url: string;
-    title?: string;
-    start_index?: number;
-    end_index?: number;
-  };
-}
 
 const PurePreviewMessage = ({
   chatId,
@@ -70,14 +62,12 @@ const PurePreviewMessage = ({
   const [displayedContent, setDisplayedContent] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
 
-  // Create a wrapper function that matches the expected regenerate signature
-  const wrappedRegenerate = async (options?: { messageId?: string }) => {
-    await regenerate();
-  };
+  // Extract source citations via helper
+  const sources = useMemo(() => getMessageSources(message), [message]);
 
-  // Extract source links from annotations with proper type checking
-  const sourceLinks = useMemo(() => {
-    if (!message.annotations || message.sourceType !== 'web-search') return [];
+  // Extract source links from annotations (legacy fallback)
+  const legacySources = useMemo(() => {
+    if (!message.annotations || message.sourceType !== 'web-search' || sources.length > 0) return [];
 
     try {
       return Array.isArray(message.annotations)
@@ -100,32 +90,19 @@ const PurePreviewMessage = ({
               if (url && typeof url === 'string') {
                 return {
                   url,
-                  title: title || getHostnameFromUrl(url),
+                  title: title,
                 };
               }
               return null;
             })
-            .filter(
-              (link): link is { url: string; title: string } =>
-                link !== null &&
-                typeof link.url === 'string' &&
-                link.url.startsWith('http'),
-            )
+            .filter((link) => link !== null && typeof link.url === 'string') as Source[]
         : [];
     } catch (err) {
       return [];
     }
-  }, [message.annotations, message.sourceType]);
-
-  // Helper function to extract hostname from URL
-  function getHostnameFromUrl(url: string): string {
-    try {
-      const hostname = new URL(url).hostname.replace(/^www\./, '');
-      return hostname;
-    } catch (e) {
-      return 'Source';
-    }
-  }
+  }, [message.annotations, message.sourceType, sources.length]);
+  
+  const allSources = useMemo(() => [...sources, ...legacySources], [sources, legacySources]);
 
   // Handle typing animation effect for search messages
   useEffect(() => {
@@ -217,7 +194,7 @@ const PurePreviewMessage = ({
               <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
                 <div className="translate-y-px">
                   {/* Show a different icon for search results */}
-                  {message.sourceType === 'web-search' ? (
+                  {message.sourceType === 'web-search' || allSources.length > 0 ? (
                     <GlobeIcon size={14} />
                   ) : (
                     <SparklesIcon size={14} />
@@ -226,7 +203,12 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            <div className="flex flex-col gap-4 w-full">
+            <div className="flex flex-col gap-4 w-full min-w-0">
+              {/* Display Sources Panel if available */}
+              {allSources.length > 0 && message.role === 'assistant' && (
+                <SourcePanel sources={allSources} className="mb-2" />
+              )}
+              
               {/* Handle v5 UIMessage file parts and v4 experimental_attachments */}
               {(() => {
                 const fileParts = getMessageFiles(message);
@@ -244,7 +226,7 @@ const PurePreviewMessage = ({
                         }}
                       />
                     ))}
-                    {v4Attachments.map((attachment, index) => (
+                    {v4Attachments.map((attachment, index: number) => (
                       <PreviewAttachment
                         key={attachment.url || `attachment-${index}`}
                         attachment={attachment}
@@ -254,26 +236,22 @@ const PurePreviewMessage = ({
                 ) : null;
               })()}
 
+              {/* Display Reasoning Block */}
               {getMessageReasoning(message) && (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  reasoningText={getMessageReasoning(message)}
+                <ReasoningBlock
+                  reasoning={getMessageReasoning(message)}
+                  isStreaming={isLoading && message.id === 'latest'} // Heuristic for streaming
                 />
               )}
 
               {/* Handle v5 UIMessage parts structure */}
-              {(message as any).parts?.map((part: any, index: number) => {
+              {Array.isArray((message as any).parts) && (message as any).parts.map((part: any, index: number) => {
                 const { type } = part;
                 const key = `message-${message.id}-part-${index}`;
 
-                if (type === 'reasoning') {
-                  return (
-                    <MessageReasoning
-                      key={key}
-                      isLoading={isLoading}
-                      reasoningText={part.text}
-                    />
-                  );
+                // Skip reasoning & source parts as they are handled separately above/below
+                if (type === 'reasoning' || type === 'source') {
+                  return null;
                 }
 
                 if (type === 'text') {
@@ -360,6 +338,12 @@ const PurePreviewMessage = ({
                       </div>
                     );
                   }
+                }
+
+                // Handle tool results from web search to avoid raw JSON dump (if not caught by legacySources)
+                // We want to suppress specific tool results that are already visualized
+                if (type === 'tool-result' && part.toolName === 'web_search') {
+                  return null; // Don't show raw JSON for web search, it's in the SourcePanel
                 }
 
                 // Handle tool calls in v5 format
@@ -501,23 +485,31 @@ const PurePreviewMessage = ({
                       );
                     }
                   }
+                  
+                  // NEW: Handle additional tools
+                  
+                  // Image Generation
+                  if (toolName === 'image_generation') {
+                    if (state === 'result') {
+                       // Images are typically returned as blobs or URLs in the result
+                       // For now, we rely on the message attachments logic above if it returns urls
+                       return (
+                         <div key={toolCallId} className="p-2 bg-muted rounded-md text-sm">
+                           Image generated
+                         </div>
+                       );
+                    }
+                    return (
+                       <div key={toolCallId} className="flex items-center gap-2 text-sm text-muted-foreground p-2">
+                         <SparklesIcon size={14} className="animate-pulse" />
+                         Generating image...
+                       </div>
+                    );
+                  }
                 }
 
                 return null;
               })}
-
-              {/* Only display source links if they exist and we're in web-search mode */}
-              {message.sourceType === 'web-search' &&
-                sourceLinks.length > 0 && (
-                  <motion.div
-                    className="pl-12 mt-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <SourceLinks sources={sourceLinks} />
-                  </motion.div>
-                )}
 
               {message.toolInvocations &&
                 message.toolInvocations.length > 0 && (
@@ -525,6 +517,9 @@ const PurePreviewMessage = ({
                     {message.toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } =
                         toolInvocation;
+                      
+                      // Skip web_search tool results from this view since they're in the panel
+                      if (toolName === 'web_search' || toolName === 'pubmed_search') return null;
 
                       if (state === 'result') {
                         const { result } = toolInvocation;
@@ -551,7 +546,9 @@ const PurePreviewMessage = ({
                                 isReadonly={isReadonly}
                               />
                             ) : (
-                              <pre>{JSON.stringify(result, null, 2)}</pre>
+                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                                {JSON.stringify(result, null, 2)}
+                              </pre>
                             )}
                           </div>
                         );
@@ -582,7 +579,12 @@ const PurePreviewMessage = ({
                               args={args}
                               isReadonly={isReadonly}
                             />
-                          ) : null}
+                          ) : (
+                            // Generic tool call display
+                            <div className="text-xs font-mono bg-muted/50 p-2 rounded">
+                              Tool: {toolName}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

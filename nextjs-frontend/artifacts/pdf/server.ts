@@ -308,12 +308,11 @@ class APADocumentRenderer {
     x: number,
     y: number,
     options: TextOptionsLight = {},
+    maxWidth?: number,
   ): { height: number } {
     try {
-      const lines = this.doc.splitTextToSize(
-        text,
-        this.contentWidth, // Use full content width for splitting
-      );
+      const splitWidth = maxWidth || this.contentWidth;
+      const lines = this.doc.splitTextToSize(text, splitWidth);
       this.doc.text(lines, x, y, options);
       return {
         height:
@@ -438,12 +437,15 @@ class APADocumentRenderer {
 
     // Draw header content with reduced padding
     headers.forEach((header, i) => {
+      const colWidth = columnWidths[i];
       this.renderText(
         header,
         currentX + cellPadding,
         this.yPosition + cellPadding + 2,
+        {},
+        colWidth - cellPadding * 2,
       );
-      currentX += columnWidths[i];
+      currentX += colWidth;
     });
 
     this.yPosition += rowHeight;
@@ -463,12 +465,15 @@ class APADocumentRenderer {
       currentX = startX;
       row.forEach((cell, i) => {
         if (i < columnWidths.length) {
+          const colWidth = columnWidths[i];
           this.renderText(
             cell,
             currentX + cellPadding,
             this.yPosition + cellPadding + 1,
+            {},
+            colWidth - cellPadding * 2,
           ); // Adjusted vertical position
-          currentX += columnWidths[i];
+          currentX += colWidth;
         }
       });
 
@@ -501,32 +506,42 @@ class APADocumentRenderer {
     const columnCount = headers.length;
     if (columnCount === 0) return [];
 
-    // Analyze content length in each column
-    const contentLengths: number[] = Array(columnCount).fill(0);
+    // Analyze content width in each column
+    const columnWidthsPixel: number[] = Array(columnCount).fill(0);
 
-    // Calculate content length using for...of
+    // Use current font settings to measure widths
+    this.applyTextStyle('tableHeader');
     for (const [i, header] of headers.entries()) {
-      contentLengths[i] = Math.max(contentLengths[i], header.length);
+      columnWidthsPixel[i] = Math.max(
+        columnWidthsPixel[i],
+        this.doc.getTextWidth(header),
+      );
     }
 
+    this.applyTextStyle('tableCell');
     for (const row of rows) {
       for (const [i, cell] of row.entries()) {
-        if (i < contentLengths.length) {
-          contentLengths[i] = Math.max(contentLengths[i], cell.length);
+        if (i < columnWidthsPixel.length) {
+          columnWidthsPixel[i] = Math.max(
+            columnWidthsPixel[i],
+            this.doc.getTextWidth(cell),
+          );
         }
       }
     }
 
     // Calculate proportional widths
-    const totalContentLength = contentLengths.reduce(
-      (sum, len) => sum + len,
+    const totalContentWidth = columnWidthsPixel.reduce(
+      (sum, w) => sum + w,
       0,
     );
     const minColumnWidth = 30;
 
-    let columnWidths = contentLengths.map((length) => {
+    let columnWidths = columnWidthsPixel.map((pixelWidth) => {
       const proportion =
-        totalContentLength > 0 ? length / totalContentLength : 1 / columnCount;
+        totalContentWidth > 0
+          ? pixelWidth / totalContentWidth
+          : 1 / columnCount;
       return Math.max(this.contentWidth * proportion, minColumnWidth);
     });
 
