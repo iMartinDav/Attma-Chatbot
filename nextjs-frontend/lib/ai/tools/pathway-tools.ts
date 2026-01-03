@@ -1,20 +1,12 @@
 /**
- * @fileoverview Pathway Analysis Tools
- * 
- * Tools for pathway analysis, GO enrichment, and KEGG/Reactome lookups.
+ * Pathway Analysis Tools - KEGG, Reactome, GO enrichment, STRING
  */
 
 import { tool } from 'ai';
 import { z } from 'zod';
 import type { ToolResult } from '../agents/types';
 
-// ============================================================================
-// KEGG Pathway Search
-// ============================================================================
-
-/**
- * Search KEGG pathways by gene or keyword
- */
+/** Search KEGG pathways by gene or keyword */
 export const keggPathwaySearchTool = tool({
   description: `Search KEGG pathways for genes or keywords. Use for:
     - Finding pathways containing a specific gene
@@ -87,13 +79,7 @@ interface KEGGPathway {
   organism: string;
 }
 
-// ============================================================================
-// Reactome Pathway Search
-// ============================================================================
-
-/**
- * Search Reactome pathways
- */
+/** Search Reactome pathways */
 export const reactomePathwaySearchTool = tool({
   description: `Search Reactome pathways - comprehensive biological pathway database. Use for:
     - Finding metabolic, signaling, and disease pathways
@@ -169,13 +155,7 @@ interface ReactomePathway {
   url: string;
 }
 
-// ============================================================================
-// GO Term Enrichment
-// ============================================================================
-
-/**
- * Perform GO term analysis on a gene list
- */
+/** Perform GO term analysis on a gene list */
 export const goEnrichmentTool = tool({
   description: `Perform Gene Ontology (GO) enrichment analysis. Use for:
     - Finding enriched biological processes in a gene list
@@ -283,13 +263,7 @@ function detectOntology(goId: string): 'BP' | 'MF' | 'CC' | 'Unknown' {
   return 'Unknown';
 }
 
-// ============================================================================
-// STRING Protein Interaction
-// ============================================================================
-
-/**
- * Search STRING database for protein-protein interactions
- */
+/** Search STRING database for protein-protein interactions */
 export const stringInteractionTool = tool({
   description: `Search STRING database for protein-protein interactions. Use for:
     - Finding protein interaction partners
@@ -362,10 +336,6 @@ interface STRINGInteraction {
   textminingScore?: number;
   coexpressionScore?: number;
 }
-
-// ============================================================================
-// Export All Pathway Tools
-// ============================================================================
 
 export const pathwayTools = {
   kegg_pathway_search: keggPathwaySearchTool,
