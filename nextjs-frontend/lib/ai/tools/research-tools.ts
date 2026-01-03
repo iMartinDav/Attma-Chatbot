@@ -1,8 +1,6 @@
 /**
- * @fileoverview Research Tools - PubMed, Semantic Scholar, Firecrawl
- * 
- * Tools for searching scientific literature with API key rotation
- * and proper citation formatting.
+ * Research Tools - PubMed, Semantic Scholar, Firecrawl, Gene Lookup
+ * with API key rotation and citation formatting.
  */
 
 import { tool } from 'ai';
@@ -10,13 +8,7 @@ import { z } from 'zod';
 import type { ToolResult } from '../agents/types';
 import { getApiKey, recordApiUsage } from './api-key-manager';
 
-// ============================================================================
-// PubMed Search Tool (Enhanced)
-// ============================================================================
-
-/**
- * Enhanced PubMed search with date filtering and abstract retrieval
- */
+/** Enhanced PubMed search with date filtering and abstract retrieval */
 export const pubmedSearchTool = tool({
   description: `Search PubMed for scientific publications. Use this for:
     - Finding recent research papers
@@ -147,13 +139,7 @@ function parseAbstracts(text: string, ids: string[]): Record<string, string> {
   return abstracts;
 }
 
-// ============================================================================
-// Semantic Scholar Search Tool
-// ============================================================================
-
-/**
- * Search Semantic Scholar for papers with citations and influences
- */
+/** Search Semantic Scholar for papers with citations */
 export const semanticScholarTool = tool({
   description: `Search Semantic Scholar for academic papers with citation data. Use for:
     - Finding highly cited papers
@@ -231,13 +217,7 @@ interface SemanticScholarResult {
   url?: string;
 }
 
-// ============================================================================
-// Firecrawl Web Search Tool
-// ============================================================================
-
-/**
- * Search the web using Firecrawl for scientific content
- */
+/** Search the web using Firecrawl for scientific content */
 export const firecrawlSearchTool = tool({
   description: `Search the web for scientific content using Firecrawl. Use for:
     - Finding protocols and methods
@@ -322,13 +302,7 @@ interface FirecrawlResult {
   content: string;
 }
 
-// ============================================================================
-// Gene Lookup Tool (Enhanced)
-// ============================================================================
-
-/**
- * Enhanced gene lookup with multiple databases
- */
+/** Enhanced gene lookup with multiple databases */
 export const geneLookupTool = tool({
   description: `Look up comprehensive information about a gene. Includes:
     - Gene function and description
@@ -435,10 +409,6 @@ interface GeneInfo {
   };
   diseases?: Array<{ name: string; source: string }>;
 }
-
-// ============================================================================
-// Export All Research Tools
-// ============================================================================
 
 export const researchTools = {
   pubmed_search: pubmedSearchTool,
