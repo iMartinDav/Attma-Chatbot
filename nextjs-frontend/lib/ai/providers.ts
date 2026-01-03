@@ -1,29 +1,10 @@
 /**
- * @fileoverview AI Provider Configuration
- * 
- * This module provides a centralized configuration for all AI providers and models.
- * It follows a layered architecture pattern for maximum flexibility and testability.
- * 
- * Architecture:
- * - ModelRegistry: Defines available models and their capabilities
- * - ProviderFactory: Creates provider instances with proper configuration
- * - CustomProvider: Aggregates all models into a unified interface
+ * AI Provider Configuration
+ * Centralized configuration for all AI providers and models.
  */
 
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-import {
-    customProvider,
-    extractReasoningMiddleware,
-    wrapLanguageModel
-} from 'ai';
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-/**
- * Model capability flags
- */
+import { customProvider, extractReasoningMiddleware, wrapLanguageModel } from 'ai';
 export interface ModelCapabilities {
   chat: boolean;
   tools: boolean;
@@ -34,9 +15,6 @@ export interface ModelCapabilities {
   codeInterpreter: boolean;
 }
 
-/**
- * Model configuration
- */
 export interface ModelConfig {
   id: string;
   name: string;
@@ -49,9 +27,6 @@ export interface ModelConfig {
   isReasoning?: boolean;
 }
 
-/**
- * OpenAI provider options for streamText/generateText
- */
 export interface OpenAIProviderConfig {
   reasoningSummary?: 'auto' | 'detailed';
   reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh';
@@ -59,16 +34,8 @@ export interface OpenAIProviderConfig {
   searchContextSize?: 'low' | 'medium' | 'high';
 }
 
-// ============================================================================
-// Model Registry
-// ============================================================================
-
-/**
- * Registry of all available models with their configurations
- * Updated for 2025 with latest OpenAI models
- */
+/** Available models with configurations */
 export const MODEL_REGISTRY: Record<string, ModelConfig> = {
-  // ========== GPT-5 Series (Latest) ==========
   'gpt-5': {
     id: 'gpt-5',
     name: 'GPT-5',
@@ -232,28 +199,12 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
   },
 } as const;
 
-// ============================================================================
-// Provider Factory
-// ============================================================================
-
-/**
- * Creates a language model instance with optional reasoning middleware
- * 
- * Per official AI SDK docs (https://ai-sdk.dev/cookbook/guides/gpt-5):
- * - Use openai('gpt-5') for Responses API (default, recommended)
- * - Use openai.responses('gpt-5') for explicit Responses API with reasoning
- * - Use openai.chat('gpt-5') for Chat Completions API (legacy)
- * 
- * Set USE_CHAT_API=true to use legacy Chat Completions API if Responses API fails.
- */
+/** Creates a language model with optional reasoning middleware */
 function createLanguageModel(modelId: string) {
   const config = MODEL_REGISTRY[modelId];
   const useChatAPI = process.env.USE_CHAT_API === 'true';
-  
-  // Use Responses API (default) or Chat Completions API (fallback)
   const baseModel = useChatAPI ? openai.chat(modelId) : openai(modelId);
 
-  // Apply reasoning middleware for reasoning models
   if (config?.isReasoning) {
     return wrapLanguageModel({
       model: baseModel,
@@ -264,87 +215,48 @@ function createLanguageModel(modelId: string) {
   return baseModel;
 }
 
-// ============================================================================
-// Custom Provider Export
-// ============================================================================
-
-/**
- * Main AI provider with all configured models
- * 
- * API Selection:
- * - Responses API (default): Requires org verification, supports GPT-5, o3, web search, etc.
- * - Chat Completions API (USE_CHAT_API=true): Works without verification, uses GPT-4o
- * 
- * Model Selection:
- * - With Responses API: gpt-5-mini, gpt-5, o3-mini, o3
- * - With Chat Completions API: gpt-4o-mini, gpt-4o, o3-mini, o3
- */
 const USE_FALLBACK = process.env.USE_FALLBACK_MODEL === 'true';
 const USE_CHAT_API = process.env.USE_CHAT_API === 'true';
-
-// Select best model based on API being used
 const FAST_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : (USE_CHAT_API ? 'gpt-4o-mini' : 'gpt-5-mini');
 const ADVANCED_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : (USE_CHAT_API ? 'gpt-4o' : 'gpt-5');
 const UTILITY_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : (USE_CHAT_API ? 'gpt-4o-mini' : 'gpt-5-nano');
 
 export const myProvider = customProvider({
   languageModels: {
-    // ========== Primary Chat Models ==========
     'chat-model': createLanguageModel(FAST_MODEL),
     'chat-model-standard': createLanguageModel(ADVANCED_MODEL),
     'chat-model-advanced': createLanguageModel(ADVANCED_MODEL),
-    
-    // ========== Specialized Models ==========
     'chat-model-codex': createLanguageModel(ADVANCED_MODEL),
     'chat-model-research': createLanguageModel(ADVANCED_MODEL),
-    
-    // ========== Reasoning Models ==========
     'chat-model-reasoning': createLanguageModel(USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3-mini'),
     'chat-model-reasoning-advanced': createLanguageModel(USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3'),
-    
-    // ========== Utility Models ==========
     'title-model': createLanguageModel(UTILITY_MODEL),
     'artifact-model': createLanguageModel(ADVANCED_MODEL),
-    
-    // ========== Legacy Aliases ==========
     'chat-model-small': createLanguageModel(FAST_MODEL),
     'chat-model-large': createLanguageModel(ADVANCED_MODEL),
   },
-  
   imageModels: {
     'image-model': openai.image('gpt-image-1'),
     'image-model-dalle': openai.image('dall-e-3'),
   },
 });
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Get model configuration by internal ID
- * Returns the actual model based on API configuration
- */
+/** Get model configuration by internal ID */
 export function getModelConfig(internalId: string): ModelConfig | undefined {
   const useChatAPI = process.env.USE_CHAT_API === 'true';
   const useFallback = process.env.USE_FALLBACK_MODEL === 'true';
   
-  // Determine which model to use based on config
   const fastModel = useFallback ? 'gpt-3.5-turbo' : (useChatAPI ? 'gpt-4o-mini' : 'gpt-5-mini');
   const advancedModel = useFallback ? 'gpt-3.5-turbo' : (useChatAPI ? 'gpt-4o' : 'gpt-5');
   
   const modelIdMap: Record<string, string> = {
-    // Primary mappings
     'chat-model': fastModel,
     'chat-model-standard': advancedModel,
     'chat-model-advanced': advancedModel,
-    // Specialized mappings
     'chat-model-codex': advancedModel,
     'chat-model-research': advancedModel,
-    // Reasoning mappings
     'chat-model-reasoning': useFallback ? 'gpt-3.5-turbo' : 'o3-mini',
     'chat-model-reasoning-advanced': useFallback ? 'gpt-3.5-turbo' : 'o3',
-    // Legacy mappings
     'chat-model-small': fastModel,
     'chat-model-large': advancedModel,
   };
@@ -352,9 +264,7 @@ export function getModelConfig(internalId: string): ModelConfig | undefined {
   return MODEL_REGISTRY[modelIdMap[internalId] ?? internalId];
 }
 
-/**
- * Get default provider options for a model
- */
+/** Get default provider options for a model */
 export function getDefaultProviderOptions(
   modelId: string,
   overrides?: Partial<OpenAIProviderConfig>
@@ -380,9 +290,7 @@ export function getDefaultProviderOptions(
   };
 }
 
-/**
- * Check if a model supports a specific capability
- */
+/** Check if a model supports a specific capability */
 export function modelSupports(
   modelId: string,
   capability: keyof ModelCapabilities
@@ -391,9 +299,7 @@ export function modelSupports(
   return config?.capabilities[capability] ?? false;
 }
 
-/**
- * Get all models that support a specific capability
- */
+/** Get all models that support a capability */
 export function getModelsWithCapability(
   capability: keyof ModelCapabilities
 ): ModelConfig[] {
@@ -402,9 +308,7 @@ export function getModelsWithCapability(
   );
 }
 
-/**
- * Get the default model ID
- */
+/** Get the default model ID */
 export function getDefaultModelId(): string {
   const defaultModel = Object.values(MODEL_REGISTRY).find(m => m.isDefault);
   return defaultModel?.id ?? 'gpt-4o-mini';
