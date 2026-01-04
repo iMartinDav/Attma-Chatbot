@@ -1,14 +1,6 @@
 /**
- * @fileoverview Self-Verifying Agent Pattern
- * 
- * Implements the Generate → Critique → Fix → Validate pattern
- * for high-accuracy bioinformatics responses.
- * 
- * Pattern:
- * 1. Generator (fast model) creates initial answer
- * 2. Critic (strong model) reviews for accuracy
- * 3. Validator (tools) checks facts
- * 4. Fixer (strong model) corrects if needed
+ * Self-Verifying Agent Pattern
+ * Generate → Critique → Fix → Validate for high-accuracy responses.
  */
 
 import { openai } from '@ai-sdk/openai';
@@ -16,10 +8,6 @@ import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 
 import type { ValidationResult, VerificationStep } from './types';
-
-// ============================================================================
-// Validation Schemas
-// ============================================================================
 
 const CritiqueSchema = z.object({
   overallQuality: z.number().min(1).max(10).describe('Overall quality score 1-10'),
@@ -42,13 +30,7 @@ const CritiqueSchema = z.object({
 
 type Critique = z.infer<typeof CritiqueSchema>;
 
-// ============================================================================
-// Verification Tools
-// ============================================================================
-
-/**
- * Validate a gene claim against MyGene.info
- */
+/** Validate a gene claim against MyGene.info */
 async function validateGeneClaim(
   geneSymbol: string,
   claim: string
@@ -97,9 +79,7 @@ async function validateGeneClaim(
   }
 }
 
-/**
- * Validate a claim against PubMed
- */
+/** Validate a claim against PubMed */
 async function validatePaperClaim(
   claim: string,
   searchTerms: string
@@ -153,36 +133,7 @@ async function validatePaperClaim(
   }
 }
 
-// ============================================================================
-// Self-Verification Pipeline
-// ============================================================================
-
-export interface VerificationOptions {
-  query: string;
-  initialAnswer: string;
-  enableValidation?: boolean;
-  maxRevisions?: number;
-}
-
-export interface VerificationResult {
-  finalAnswer: string;
-  steps: VerificationStep[];
-  wasRevised: boolean;
-  confidence: number;
-  validations: ValidationResult[];
-}
-
-/**
- * Run the full self-verification pipeline
- * 
- * @example
- * ```typescript
- * const result = await verifySelfAnswer({
- *   query: "What is the function of TP53?",
- *   initialAnswer: "TP53 is a tumor suppressor gene...",
- * });
- * ```
- */
+/** Run the full self-verification pipeline */
 export async function verifySelfAnswer(
   options: VerificationOptions
 ): Promise<VerificationResult> {
@@ -265,13 +216,22 @@ export async function verifySelfAnswer(
   };
 }
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
+export interface VerificationOptions {
+  query: string;
+  initialAnswer: string;
+  enableValidation?: boolean;
+  maxRevisions?: number;
+}
 
-/**
- * Generate a critique of an answer using a strong model
- */
+export interface VerificationResult {
+  finalAnswer: string;
+  steps: VerificationStep[];
+  wasRevised: boolean;
+  confidence: number;
+  validations: ValidationResult[];
+}
+
+/** Generate a critique of an answer */
 async function critiqueAnswer(query: string, answer: string): Promise<Critique> {
   const result = await generateObject({
     model: openai.chat('gpt-4o'),
@@ -295,9 +255,7 @@ Identify specific claims that should be verified against databases.`,
   return result.object;
 }
 
-/**
- * Fix an answer based on critique and validation results
- */
+/** Fix an answer based on critique and validation results */
 async function fixAnswer(
   query: string,
   originalAnswer: string,
@@ -335,9 +293,7 @@ Provide a corrected answer that:
   return result.text;
 }
 
-/**
- * Calculate overall confidence score
- */
+/** Calculate overall confidence score */
 function calculateConfidence(
   critique: Critique,
   validations: ValidationResult[],
