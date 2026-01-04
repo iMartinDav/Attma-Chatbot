@@ -1,10 +1,7 @@
 'use client';
 
 /**
- * @fileoverview Agent Status Component
- * 
- * A beautiful, animated status indicator that shows what the AI agent
- * is currently doing - which tools it's using, what model is selected, etc.
+ * Agent Status Component - Shows current AI agent activity
  */
 
 import { cn } from '@/lib/utils';
@@ -18,10 +15,6 @@ import {
     SparklesIcon
 } from 'lucide-react';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export interface AgentStatusProps {
   isActive: boolean;
   currentAction?: string;
@@ -31,10 +24,6 @@ export interface AgentStatusProps {
   totalSteps?: number;
   className?: string;
 }
-
-// ============================================================================
-// Icon Mapping
-// ============================================================================
 
 const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   'pubmed_search': SearchIcon,
@@ -48,10 +37,6 @@ const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 const getToolIcon = (tool: string) => {
   return TOOL_ICONS[tool] || TOOL_ICONS.default;
 };
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export function AgentStatus({
   isActive,
@@ -117,10 +102,6 @@ export function AgentStatus({
   );
 }
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
 function formatToolName(tool: string): string {
   const names: Record<string, string> = {
     'pubmed_search': 'PubMed Search',
@@ -143,10 +124,6 @@ function formatModelName(model: string): string {
   };
   return names[model] || model;
 }
-
-// ============================================================================
-// Agent Action List (for showing tool execution history)
-// ============================================================================
 
 interface AgentAction {
   id: string;
@@ -211,9 +188,5 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
     </motion.div>
   );
 }
-
-// ============================================================================
-// Default Export
-// ============================================================================
 
 export default AgentStatus;

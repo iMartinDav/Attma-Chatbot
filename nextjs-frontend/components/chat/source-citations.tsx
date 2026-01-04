@@ -1,14 +1,5 @@
 /**
- * @fileoverview Source Citation Components
- * 
- * Displays web search sources and citations in a clean, interactive format
- * inspired by Perplexity AI's source display.
- * 
- * Features:
- * - Compact source chips for inline display
- * - Expandable source panel with details
- * - Favicon fetching for visual recognition
- * - Hover previews with metadata
+ * Source Citation Components - Displays search sources and citations
  */
 
 'use client';
@@ -17,10 +8,6 @@ import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ExternalLink, Globe, Link2 } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
-
-// ============================================================================
-// Types
-// ============================================================================
 
 export interface Source {
   url: string;
@@ -40,13 +27,6 @@ export interface SourcePanelProps {
   defaultExpanded?: boolean;
 }
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Extracts the hostname from a URL
- */
 function getHostname(url: string): string {
   try {
     return new URL(url).hostname.replace('www.', '');
@@ -74,10 +54,6 @@ function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 3) + '...';
 }
-
-// ============================================================================
-// Source Chip Component
-// ============================================================================
 
 function PureSourceChip({ source, index, className }: SourceChipProps) {
   const hostname = useMemo(() => getHostname(source.url), [source.url]);
@@ -134,10 +110,6 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
 }
 
 export const SourceChip = memo(PureSourceChip);
-
-// ============================================================================
-// Source Panel Component
-// ============================================================================
 
 function PureSourcePanel({ 
   sources, 
@@ -236,10 +208,6 @@ function PureSourcePanel({
 
 export const SourcePanel = memo(PureSourcePanel);
 
-// ============================================================================
-// Source List Item (for expanded view)
-// ============================================================================
-
 function SourceListItem({ source, index }: { source: Source; index: number }) {
   const hostname = getHostname(source.url);
   const faviconUrl = getFaviconUrl(source.url);
@@ -295,10 +263,6 @@ function SourceListItem({ source, index }: { source: Source; index: number }) {
   );
 }
 
-// ============================================================================
-// Inline Sources (for use within message text)
-// ============================================================================
-
 export interface InlineSourcesProps {
   sources: Source[];
   className?: string;
@@ -319,10 +283,6 @@ function PureInlineSources({ sources, className }: InlineSourcesProps) {
 }
 
 export const InlineSources = memo(PureInlineSources);
-
-// ============================================================================
-// Re-exports
-// ============================================================================
 
 export type { SourceChipProps as SourceChipPropsType, SourcePanelProps as SourcePanelPropsType };
 
