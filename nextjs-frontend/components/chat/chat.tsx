@@ -6,7 +6,7 @@ import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import type { Vote } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { fetcher, fetchWithErrorHandlers, generateUUID, getChatUrl } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import type { Session } from 'next-auth';
@@ -134,8 +134,7 @@ export function Chat({
         parts: [{ type: 'text', text: query }],
       });
       setHasAppendedQuery(true);
-      const newUrl = projectParam ? `/chat/${id}?project=${projectParam}` : `/chat/${id}`;
-      window.history.replaceState({}, '', newUrl);
+      window.history.replaceState({}, '', getChatUrl(id, projectParam));
     }
   }, [query, sendMessage, hasAppendedQuery, id, projectParam]);
 

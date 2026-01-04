@@ -4,7 +4,7 @@ import {
     createSearchMessages,
     executeWebSearch,
 } from '@/lib/ai/tools/search-function';
-import { generateUUID } from '@/lib/utils';
+import { generateUUID, getChatUrl } from '@/lib/utils';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
@@ -204,8 +204,7 @@ export function MessageSearch({
           // Preserve project param if present
           const currentParams = new URLSearchParams(window.location.search);
           const projectId = currentParams.get('project');
-          const newUrl = projectId ? `/chat/${data.id}?project=${projectId}` : `/chat/${data.id}`;
-          window.history.replaceState({}, '', newUrl);
+          window.history.replaceState({}, '', getChatUrl(data.id, projectId));
           setActiveChatId(data.id);
           return data.id;
         }

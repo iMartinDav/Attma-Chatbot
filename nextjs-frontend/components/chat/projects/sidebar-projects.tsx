@@ -15,7 +15,7 @@ import {
 import { SidebarMenuItem } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Chat, Project } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { fetcher, getChatUrl } from '@/lib/utils';
 import { ProjectDialog } from './project-dialog';
 
 interface SidebarProjectsProps {
@@ -330,7 +330,7 @@ function ProjectItem({
                 chats.map((chat) => (
                   <button
                     key={chat.id}
-                    onClick={() => router.push(`/chat/${chat.id}?project=${project.id}`)}
+                    onClick={() => router.push(getChatUrl(chat.id, project.id))}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-all ${
                       currentChatId === chat.id
                         ? 'bg-primary/10 text-primary'
