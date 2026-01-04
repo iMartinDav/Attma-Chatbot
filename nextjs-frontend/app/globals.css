@@ -258,6 +258,8 @@
 
     /* Mobile viewport adjustment - fixes iOS address bar issues */
     --app-height: 100dvh;
+    --keyboard-offset: 0px;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 
     /* Typography system - centralized variable definitions */
     --font-family-base:
