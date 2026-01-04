@@ -71,7 +71,8 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
       codeInterpreter: true,
     },
   },
-  // ========== O-Series (Reasoning Models) ==========
+
+  // Reasoning Models
   'o3': {
     id: 'o3',
     name: 'o3',
@@ -108,7 +109,8 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
       codeInterpreter: true,
     },
   },
-  // ========== Specialized Models ==========
+
+  // Specialized Models
   'gpt-5-codex': {
     id: 'gpt-5-codex',
     name: 'GPT-5 Codex',
@@ -144,7 +146,8 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
       codeInterpreter: false,
     },
   },
-  // ========== GPT-4 Series (Legacy but Stable) ==========
+
+  // Legacy Models
   'gpt-4o-mini': {
     id: 'gpt-4o-mini',
     name: 'GPT-4o Mini',
@@ -179,7 +182,8 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
       codeInterpreter: true,
     },
   },
-  // ========== Fallback (For Unverified Accounts) ==========
+
+  // Fallback
   'gpt-3.5-turbo': {
     id: 'gpt-3.5-turbo',
     name: 'GPT-3.5 Turbo (Fallback)',
