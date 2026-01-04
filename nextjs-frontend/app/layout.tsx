@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import { Toaster } from 'sonner';
-import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '@/components/theme-provider';
+import type { Metadata } from 'next';
+import { SessionProvider } from 'next-auth/react';
+import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   maximumScale: 1, // Disable auto-zoom on mobile Safari
+  interactiveWidget: 'resizes-content', // Modern approach for resizing viewport with virtual keyboard
 };
 
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';

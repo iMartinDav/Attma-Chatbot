@@ -69,22 +69,11 @@ export function useScrollToBottom<T extends HTMLElement>() {
             behavior: prefersReducedMotion ? 'auto' : 'smooth',
             block: 'end',
           });
-          // No extra nudge to avoid overshooting under the composer
         });
       }
     });
     ro.observe(container);
     ro.observe(end);
-
-    // MutationObserver as a fallback for environments without ResizeObserver
-    const mo = new MutationObserver(() => {
-      if (state.isNearBottom || bottomDistance() <= Math.max(getComposerHeight() + 48, 96)) {
-        schedule(() => {
-          end.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'end' });
-        });
-      }
-    });
-    mo.observe(container, { childList: true, subtree: true, characterData: true });
 
     // Scroll to bottom on mount to avoid content hidden behind input
     schedule(() => {
@@ -95,7 +84,6 @@ export function useScrollToBottom<T extends HTMLElement>() {
       container.removeEventListener('scroll', onScroll);
       if (io) io.disconnect();
       ro.disconnect();
-      mo.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [prefersReducedMotion]);
@@ -105,7 +93,6 @@ export function useScrollToBottom<T extends HTMLElement>() {
   return Object.assign([containerRef, endRef] as const, {
     containerRef,
     endRef,
-    // Add dummy functions to satisfy legacy useMessages if needed
     scrollToBottom: (behavior: ScrollBehavior = 'smooth') => {
       endRef.current?.scrollIntoView({ behavior });
     },
