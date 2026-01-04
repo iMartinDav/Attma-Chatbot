@@ -1,8 +1,5 @@
 /**
- * @fileoverview Attma Bioinformatics Agent
- * 
- * The main agent class that orchestrates tool usage, model selection,
- * and multi-step reasoning for bioinformatics tasks.
+ * Attma Bioinformatics Agent - Orchestrates tools and model selection
  */
 
 import { openai } from '@ai-sdk/openai';
@@ -25,13 +22,6 @@ import {
 } from './task-router';
 import type { AgentDomain, AgentState, TaskCategory } from './types';
 
-// ============================================================================
-// Agent Configuration
-// ============================================================================
-
-/**
- * Base system prompt for Attma
- */
 const BASE_INSTRUCTIONS = `You are Attma, an advanced AI Bioinformatician designed for cutting-edge biological data analysis.
 
 ## Core Expertise
@@ -62,13 +52,7 @@ When solving complex problems:
 4. Validate conclusions
 5. Provide actionable recommendations`;
 
-// ============================================================================
-// Model Selection
-// ============================================================================
-
-/**
- * Get the appropriate model based on task and step
- */
+/** Get the appropriate model based on task and step */
 function getModelForStep(
   taskCategory: TaskCategory,
   stepNumber: number,
@@ -90,13 +74,7 @@ function getModelForStep(
   return modelMap[selection.modelKey] || 'gpt-4o-mini';
 }
 
-// ============================================================================
-// Agent Tools
-// ============================================================================
-
-/**
- * Create the full tool set for the agent
- */
+/** Create the full tool set for the agent */
 function createAgentTools(): ToolSet {
   return {
     ...researchTools,
@@ -123,30 +101,7 @@ function createAgentTools(): ToolSet {
   };
 }
 
-// ============================================================================
-// Agent Execution
-// ============================================================================
-
-export interface AgentExecutionOptions {
-  messages: UIMessage[];
-  selectedModelId?: string;
-  selectedAgentId?: string;
-  maxSteps?: number;
-  onStateChange?: (state: AgentState) => void;
-}
-
-/**
- * Execute the bioinformatics agent
- * 
- * @example
- * ```typescript
- * const result = await executeAgent({
- *   messages: userMessages,
- *   maxSteps: 10,
- * });
- * return result.toUIMessageStreamResponse();
- * ```
- */
+/** Execute the bioinformatics agent */
 export async function executeAgent(options: AgentExecutionOptions) {
   const { 
     messages, 
@@ -236,13 +191,15 @@ function extractMessageText(message: UIMessage): string {
   return '';
 }
 
-// ============================================================================
-// Agent State Management
-// ============================================================================
+export interface AgentExecutionOptions {
+  messages: UIMessage[];
+  selectedModelId?: string;
+  selectedAgentId?: string;
+  maxSteps?: number;
+  onStateChange?: (state: AgentState) => void;
+}
 
-/**
- * Create initial agent state
- */
+/** Create initial agent state */
 export function createInitialAgentState(): AgentState {
   return {
     isProcessing: false,
@@ -251,17 +208,11 @@ export function createInitialAgentState(): AgentState {
   };
 }
 
-// ============================================================================
-// Export
-// ============================================================================
-
 export {
     createAgentTools, detectAgentDomain, detectTaskCategory, getDomainInstructions, routeToOptimalModel
 };
 
-/**
- * Helper to convert UI messages to AI SDK CoreMessage format
- */
+/** Helper to convert UI messages to AI SDK CoreMessage format */
 function convertToModelMessages(messages: UIMessage[]) {
   return messages.map(m => ({
     role: m.role as 'user' | 'assistant' | 'system',

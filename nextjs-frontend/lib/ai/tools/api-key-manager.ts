@@ -1,13 +1,6 @@
 /**
- * @fileoverview API Key Manager with Rotation
- * 
- * Manages multiple API keys for rate-limited services,
- * implementing automatic rotation and health tracking.
+ * API Key Manager - Rotation and health tracking for rate-limited services.
  */
-
-// ============================================================================
-// Types
-// ============================================================================
 
 interface ApiKeyConfig {
   key: string;
@@ -24,24 +17,7 @@ interface KeyState {
   lastError?: string;
 }
 
-// ============================================================================
-// API Key Manager Class
-// ============================================================================
-
-/**
- * Manages API key rotation for rate-limited services
- * 
- * @example
- * ```typescript
- * const pubmedKeys = new ApiKeyManager('pubmed', [
- *   { key: 'key1', name: 'Primary' },
- *   { key: 'key2', name: 'Secondary' },
- * ]);
- * 
- * const key = pubmedKeys.getKey();
- * await pubmedKeys.recordUsage(key);
- * ```
- */
+/** Manages API key rotation for rate-limited services */
 export class ApiKeyManager {
   private serviceName: string;
   private keys: Map<string, KeyState> = new Map();
@@ -161,14 +137,7 @@ export class ApiKeyManager {
   }
 }
 
-// ============================================================================
-// Service-Specific Key Managers
-// ============================================================================
-
-/**
- * PubMed API key manager
- * Default: 3 requests/second without key, 10/second with key
- */
+/** PubMed API key manager */
 export const pubmedKeyManager = new ApiKeyManager('pubmed', [
   {
     key: process.env.NCBI_API_KEY || '',
@@ -187,9 +156,7 @@ export const pubmedKeyManager = new ApiKeyManager('pubmed', [
   },
 ].filter(c => c.key !== '' || c.name.includes('Fallback') || c.name.includes('No Key')));
 
-/**
- * Firecrawl API key manager
- */
+/** Firecrawl API key manager */
 export const firecrawlKeyManager = new ApiKeyManager('firecrawl', [
   {
     key: process.env.FIRECRAWL_API_KEY || '',
@@ -198,9 +165,7 @@ export const firecrawlKeyManager = new ApiKeyManager('firecrawl', [
   },
 ]);
 
-/**
- * Semantic Scholar API key manager (free tier)
- */
+/** Semantic Scholar API key manager */
 export const semanticScholarKeyManager = new ApiKeyManager('semantic_scholar', [
   {
     key: process.env.SEMANTIC_SCHOLAR_API_KEY || '',
@@ -214,13 +179,7 @@ export const semanticScholarKeyManager = new ApiKeyManager('semantic_scholar', [
   },
 ]);
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Get API key for a service with automatic rotation
- */
+/** Get API key for a service with automatic rotation */
 export function getApiKey(service: 'pubmed' | 'firecrawl' | 'semantic_scholar'): string | undefined {
   switch (service) {
     case 'pubmed':
@@ -234,9 +193,7 @@ export function getApiKey(service: 'pubmed' | 'firecrawl' | 'semantic_scholar'):
   }
 }
 
-/**
- * Record API usage for rate tracking
- */
+/** Record API usage for rate tracking */
 export function recordApiUsage(
   service: 'pubmed' | 'firecrawl' | 'semantic_scholar',
   key: string,
