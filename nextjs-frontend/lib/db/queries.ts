@@ -12,11 +12,13 @@ import {
     document,
     type Message,
     message,
+    project,
+    type Project,
     type Suggestion,
     suggestion,
     user,
     type User,
-    vote,
+    vote
 } from './schema';
 
 // Optionally, if not using email/pass login, you can
@@ -549,6 +551,128 @@ export async function getMessageCountByUserId({
     return result[0]?.count || 0;
   } catch (error) {
     console.error('Failed to get message count by user ID', error);
+    throw error;
+  }
+}
+
+export async function getProjectsByUserId({ userId }: { userId: string }): Promise<Project[]> {
+  try {
+    return await db
+      .select()
+      .from(project)
+      .where(eq(project.userId, userId))
+      .orderBy(desc(project.createdAt));
+  } catch (error) {
+    console.error('Failed to get projects by user ID', error);
+    throw error;
+  }
+}
+
+export async function getProjectById({ id }: { id: string }): Promise<Project | null> {
+  try {
+    const [result] = await db.select().from(project).where(eq(project.id, id));
+    return result || null;
+  } catch (error) {
+    console.error('Failed to get project by ID', error);
+    throw error;
+  }
+}
+
+export async function createProject({
+  userId,
+  name,
+  description,
+  emoji = '📁',
+}: {
+  userId: string;
+  name: string;
+  description?: string;
+  emoji?: string;
+}): Promise<Project> {
+  try {
+    const [result] = await db
+      .insert(project)
+      .values({
+        userId,
+        name,
+        description,
+        emoji,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return result;
+  } catch (error) {
+    console.error('Failed to create project', error);
+    throw error;
+  }
+}
+
+export async function updateProject({
+  id,
+  name,
+  description,
+  emoji,
+}: {
+  id: string;
+  name?: string;
+  description?: string;
+  emoji?: string;
+}): Promise<Project | null> {
+  try {
+    const updates: Partial<{ name: string; description: string; emoji: string; updatedAt: Date }> = {
+      updatedAt: new Date(),
+    };
+    if (name !== undefined) updates.name = name;
+    if (description !== undefined) updates.description = description;
+    if (emoji !== undefined) updates.emoji = emoji;
+
+    const [result] = await db
+      .update(project)
+      .set(updates)
+      .where(eq(project.id, id))
+      .returning();
+    return result || null;
+  } catch (error) {
+    console.error('Failed to update project', error);
+    throw error;
+  }
+}
+
+export async function deleteProject({ id }: { id: string }): Promise<void> {
+  try {
+    await db.update(chat).set({ projectId: null }).where(eq(chat.projectId, id));
+    await db.delete(project).where(eq(project.id, id));
+  } catch (error) {
+    console.error('Failed to delete project', error);
+    throw error;
+  }
+}
+
+export async function updateChatProject({
+  chatId,
+  projectId,
+}: {
+  chatId: string;
+  projectId: string | null;
+}): Promise<void> {
+  try {
+    await db.update(chat).set({ projectId }).where(eq(chat.id, chatId));
+  } catch (error) {
+    console.error('Failed to update chat project', error);
+    throw error;
+  }
+}
+
+export async function getChatsByProjectId({ projectId }: { projectId: string }) {
+  try {
+    return await db
+      .select()
+      .from(chat)
+      .where(eq(chat.projectId, projectId))
+      .orderBy(desc(chat.createdAt));
+  } catch (error) {
+    console.error('Failed to get chats by project ID', error);
     throw error;
   }
 }

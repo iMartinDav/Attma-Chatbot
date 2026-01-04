@@ -1,24 +1,37 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import {
-  pgTable,
-  varchar,
-  timestamp,
-  json,
-  uuid,
-  text,
-  primaryKey,
-  foreignKey,
-  boolean,
+    boolean,
+    foreignKey,
+    json,
+    pgTable,
+    primaryKey,
+    text,
+    timestamp,
+    uuid,
+    varchar,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
-  // Remove name and image fields as they don't exist in the database
 });
 
 export type User = InferSelectModel<typeof user>;
+
+export const project = pgTable('Project', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull(),
+  description: text('description'),
+  emoji: varchar('emoji', { length: 10 }).default('📁'),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Project = InferSelectModel<typeof project>;
 
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -27,6 +40,7 @@ export const chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
+  projectId: uuid('projectId').references(() => project.id, { onDelete: 'set null' }),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
