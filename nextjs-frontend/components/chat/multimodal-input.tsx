@@ -3,6 +3,7 @@
 import type { Attachment } from '@/lib/types';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import type React from 'react';
 import {
     memo,
@@ -50,6 +51,7 @@ export interface MultimodalInputProps {
   selectedModelId?: string;
   selectedAgentId?: string;
   onAgentSelect?: (agentId: string) => void;
+  onChatIdChange?: (chatId: string) => void;
 }
 
 function PureMultimodalInput({
@@ -70,10 +72,13 @@ function PureMultimodalInput({
   selectedModelId,
   selectedAgentId,
   onAgentSelect,
+  onChatIdChange,
 }: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { width } = useWindowSize();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
@@ -146,7 +151,16 @@ function PureMultimodalInput({
 
   // Form submission
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
+    let targetChatId = chatId;
+
+    if (chatId === 'new') {
+      const newId = crypto.randomUUID();
+      targetChatId = newId;
+      onChatIdChange?.(newId);
+    }
+
+    const newUrl = projectId ? `/chat/${targetChatId}?project=${projectId}` : `/chat/${targetChatId}`;
+    window.history.replaceState({}, '', newUrl);
 
     if (isSearchMode) {
       const queryText = input.trim();

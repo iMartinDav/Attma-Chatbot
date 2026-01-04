@@ -161,7 +161,8 @@ export async function POST(request: Request) {
       message, 
       selectedChatModel, 
       selectedVisibilityType,
-      selectedAgentId 
+      selectedAgentId,
+      projectId,
     }: PostRequestBody & { selectedAgentId?: string } = parseResult.data;
 
     // ... (rest of authentication and chat ID setup)
@@ -303,6 +304,7 @@ export async function POST(request: Request) {
                     title: title,
                     userId: session.user.id,
                     visibility: selectedVisibilityType as VisibilityType,
+                    projectId: projectId || null,
                   });
                 }
 

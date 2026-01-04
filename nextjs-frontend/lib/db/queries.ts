@@ -107,11 +107,13 @@ export async function saveChat({
   userId,
   title,
   visibility = 'private',
+  projectId,
 }: {
   id: string;
   userId: string;
   title: string;
   visibility?: 'public' | 'private';
+  projectId?: string | null;
 }) {
   try {
     return await db.insert(chat).values({
@@ -120,6 +122,7 @@ export async function saveChat({
       title,
       userId,
       visibility,
+      projectId: projectId || null,
     });
   } catch (error) {
     console.error('Failed to save chat to database');

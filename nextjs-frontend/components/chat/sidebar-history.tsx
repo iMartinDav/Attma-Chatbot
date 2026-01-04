@@ -298,7 +298,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           <SidebarMenu>
             {history &&
               (() => {
-                const groupedChats = groupChatsByDate(history);
+                // Filter out chats that belong to a project (they show under the project)
+                const unassignedChats = history.filter((chat: any) => !chat.projectId);
+                const groupedChats = groupChatsByDate(unassignedChats);
 
                 return (
                   <>

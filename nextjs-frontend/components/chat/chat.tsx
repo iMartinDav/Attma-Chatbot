@@ -17,11 +17,11 @@ import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
 import { Artifact } from './artifact';
 import { ChatHeader } from './chat-header';
+import { ChatSuggestions } from './chat-suggestions';
 import { useDataStream } from './data-stream-provider';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { getChatHistoryPaginationKey } from './sidebar-history';
-import { ChatSuggestions } from './chat-suggestions';
 import type { VisibilityType } from './visibility-selector';
 
 export function Chat({
@@ -49,18 +49,27 @@ export function Chat({
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
   const [input, setInput] = useState<string>('');
+  const [activeChatId, setActiveChatId] = useState(id);
+
+  useEffect(() => {
+    setActiveChatId(id);
+  }, [id]);
 
   // Use ref for dynamic values in v5 transport
   const visibilityTypeRef = useRef(visibilityType);
   visibilityTypeRef.current = visibilityType;
 
-  // Read agent from URL
+  // Read agent and project from URL
   const searchParams = useSearchParams();
   const agentParam = searchParams.get('agent');
+  const projectParam = searchParams.get('project');
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(agentParam || undefined);
   
   const selectedAgentIdRef = useRef(selectedAgentId);
   selectedAgentIdRef.current = selectedAgentId;
+  
+  const projectIdRef = useRef(projectParam);
+  projectIdRef.current = projectParam;
 
   useEffect(() => {
     if (agentParam) {
@@ -84,14 +93,15 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
       fetch: fetchWithErrorHandlers,
-      prepareSendMessagesRequest({ messages, id, body }: any) {
+      prepareSendMessagesRequest({ messages, id: hookId, body }: any) {
         return {
           body: {
-            id,
+            id: activeChatId,
             message: messages.at(-1),
             selectedChatModel: initialChatModel,
             selectedVisibilityType: visibilityTypeRef.current,
-            selectedAgentId: selectedAgentIdRef.current, // Use ref here
+            selectedAgentId: selectedAgentIdRef.current,
+            projectId: projectIdRef.current,
             ...body,
           },
         };
@@ -102,6 +112,10 @@ export function Chat({
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
+      // Also refresh project chats if this chat belongs to a project
+      if (projectParam) {
+        mutate(`/api/projects/${projectParam}/chats`);
+      }
     },
     onError: (error) => {
       if (error instanceof ChatSDKError) {
@@ -120,9 +134,10 @@ export function Chat({
         parts: [{ type: 'text', text: query }],
       });
       setHasAppendedQuery(true);
-      window.history.replaceState({}, '', `/chat/${id}`);
+      const newUrl = projectParam ? `/chat/${id}?project=${projectParam}` : `/chat/${id}`;
+      window.history.replaceState({}, '', newUrl);
     }
-  }, [query, sendMessage, hasAppendedQuery, id]);
+  }, [query, sendMessage, hasAppendedQuery, id, projectParam]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -156,7 +171,7 @@ export function Chat({
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
-          chatId={id}
+          chatId={activeChatId}
           selectedModelId={initialChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
@@ -204,7 +219,8 @@ export function Chat({
                     <form className="w-full">
                       {!isReadonly && (
                         <MultimodalInput
-                          chatId={id}
+                          chatId={activeChatId}
+                          onChatIdChange={setActiveChatId}
                           input={input}
                           setInput={setInput}
                           status={status === 'streaming' ? 'processing' : status === 'error' ? 'ready' : 'ready'}
@@ -235,7 +251,7 @@ export function Chat({
         ) : (
           <>
             <Messages
-              chatId={id}
+              chatId={activeChatId}
               votes={votes}
               messages={messages as any}
               setMessages={setMessages as any}
@@ -249,7 +265,8 @@ export function Chat({
             <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
               {!isReadonly && (
                 <MultimodalInput
-                  chatId={id}
+                  chatId={activeChatId}
+                  onChatIdChange={setActiveChatId}
                   input={input}
                   setInput={setInput}
                   status={status === 'streaming' ? 'processing' : status === 'error' ? 'ready' : 'ready'}
@@ -272,7 +289,7 @@ export function Chat({
       </div>
 
       <Artifact
-        chatId={id}
+        chatId={activeChatId}
         input={input}
         setInput={setInput}
         status={status}
