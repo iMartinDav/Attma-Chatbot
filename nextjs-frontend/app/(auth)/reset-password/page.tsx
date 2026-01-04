@@ -1,12 +1,12 @@
 'use client';
 
+import { PasswordInput } from '@/components/auth/password-input';
+import { SubmitButton } from '@/components/ui/submit-button';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState, useTransition, useEffect, Suspense } from 'react';
 import type { FormEvent } from 'react';
+import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { PasswordInput } from '@/components/auth/password-input';
-import { SubmitButton } from '@/components/submit-button';
 
 // Loading component to show while suspense is active
 function LoadingState() {

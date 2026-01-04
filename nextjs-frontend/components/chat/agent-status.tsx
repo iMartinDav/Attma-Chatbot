@@ -10,6 +10,8 @@ import {
     BookOpenIcon,
     BrainIcon,
     CodeIcon,
+    FileIcon,
+    ImageIcon,
     Loader2Icon,
     SearchIcon,
     SparklesIcon
@@ -31,6 +33,8 @@ const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   'gene_lookup': SparklesIcon,
   'firecrawl_search': SearchIcon,
   'create_code_artifact': CodeIcon,
+  'image_generation': ImageIcon,
+  'createDocument': FileIcon,
   'default': BrainIcon,
 };
 
@@ -109,6 +113,8 @@ function formatToolName(tool: string): string {
     'gene_lookup': 'Gene Lookup',
     'firecrawl_search': 'Web Search',
     'create_code_artifact': 'Code Generation',
+    'image_generation': 'Generating Image',
+    'createDocument': 'Creating Document',
   };
   return names[tool] || tool;
 }

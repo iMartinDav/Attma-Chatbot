@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useArtifact } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from '../icons';
+import { TextShimmer } from '../ui/text-shimmer';
 import type { ArtifactKind } from './artifact';
 
 const getActionText = (
@@ -141,16 +142,18 @@ function PureDocumentToolCall({
           ) : null}
         </div>
 
-        <div className="text-left">
-          {`${getActionText(type, 'present')} ${
-            type === 'create' && 'title' in args && args.title
-              ? `"${args.title}"`
-              : type === 'update' && 'description' in args
-                ? `"${args.description}"`
-                : type === 'request-suggestions'
-                  ? 'for document'
-                  : ''
-          }`}
+        <div className="text-left font-medium">
+          <TextShimmer className="text-sm">
+            {`${getActionText(type, 'present')} ${
+              type === 'create' && 'title' in args && args.title
+                ? `"${args.title}"`
+                : type === 'update' && 'description' in args
+                  ? `"${args.description}"`
+                  : type === 'request-suggestions'
+                    ? 'for document'
+                    : ''
+            }`}
+          </TextShimmer>
         </div>
       </div>
 

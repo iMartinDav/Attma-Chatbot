@@ -21,7 +21,7 @@ import { useDataStream } from './data-stream-provider';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { getChatHistoryPaginationKey } from './sidebar-history';
-import { SuggestionChips } from './suggestion-chips';
+import { ChatSuggestions } from './chat-suggestions';
 import type { VisibilityType } from './visibility-selector';
 
 export function Chat({
@@ -189,8 +189,8 @@ export function Chat({
               </div>
 
               {/* Suggestion Chips to promote Agent features */}
-              <SuggestionChips 
-                onSelect={(text) => {
+              <ChatSuggestions 
+                onSelect={(text: string) => {
                   setInput(text);
                   // Optional: auto-focus input
                   const textarea = document.querySelector('textarea');

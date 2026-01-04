@@ -1,16 +1,14 @@
+import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { ChatRequestOptions, UIMessage } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
 import { SparklesIcon } from '../icons';
-import { useScrollToBottom } from '../use-scroll-to-bottom';
 import { PreviewMessage, ThinkingMessage } from './message';
-import { MessageReasoning } from './message-reasoning';
 import { SearchMessage } from './message-search';
 
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
-import { ChatOverview } from './overview';
 
 interface MessagesProps {
   chatId: string;
@@ -56,7 +54,11 @@ function PureMessages({
           'calc(var(--composer-height, 120px) + env(safe-area-inset-bottom))',
       }}
     >
-      {messages.length === 0 && <ChatOverview />}
+      {messages.length === 0 && (
+        <div className="flex-1 flex flex-col justify-center items-center">
+          {/* Empty state handles are now in chat.tsx */}
+        </div>
+      )}
 
       <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto px-4">
         {messages.map((message, index) => (
@@ -120,10 +122,10 @@ const ReasoningThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <MessageReasoning
-            isLoading={true}
-            reasoningText=""
-          />
+          <div className="flex items-center gap-2 text-primary/70 animate-pulse text-xs">
+            <SparklesIcon size={12} />
+            <span>Thinking...</span>
+          </div>
         </div>
       </div>
     </motion.div>

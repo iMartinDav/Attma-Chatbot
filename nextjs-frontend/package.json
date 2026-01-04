@@ -4,6 +4,7 @@
   "private": true,
   "author": "Martin DAVILA <martin@attma.bio> (https://github.com/iMartinDav)",
   "license": "Apache-2.0",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",

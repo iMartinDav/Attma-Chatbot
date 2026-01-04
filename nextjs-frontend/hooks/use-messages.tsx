@@ -17,7 +17,7 @@ export function useMessages({
     scrollToBottom,
     onViewportEnter,
     onViewportLeave,
-  } = useScrollToBottom();
+  } = useScrollToBottom<HTMLDivElement>();
 
   const [hasSentMessage, setHasSentMessage] = useState(false);
 

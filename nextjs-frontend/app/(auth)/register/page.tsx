@@ -1,15 +1,15 @@
 'use client';
 
+import { EmailInput } from '@/components/auth/email-input';
+import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
+import { PasswordInput } from '@/components/auth/password-input';
+import { SubmitButton } from '@/components/ui/submit-button';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition, useRef } from 'react';
 import type { FormEvent } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { signIn } from 'next-auth/react';
-import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
-import { EmailInput } from '@/components/auth/email-input';
-import { PasswordInput } from '@/components/auth/password-input';
-import { SubmitButton } from '@/components/submit-button';
 
 export default function RegisterPage() {
   const router = useRouter();
