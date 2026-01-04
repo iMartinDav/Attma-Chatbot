@@ -8,41 +8,41 @@ import { useState } from 'react';
 import { SearchDialog } from '@/components/chat/search-dialog';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
 import {
-  BrainIcon,
-  ChevronUpIcon,
-  LogOutIcon,
-  NewChatIcon,
-  SearchIcon,
-  SidebarToggleIcon,
+    BrainIcon,
+    ChevronUpIcon,
+    LogOutIcon,
+    NewChatIcon,
+    SearchIcon,
+    SidebarToggleIcon,
 } from '@/components/icons';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  useSidebar,
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserAvatar } from '@/components/user-avatar';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
-  const { setOpenMobile, toggleSidebar, state } = useSidebar();
+  const { setOpenMobile, toggleSidebar, state, isMobile } = useSidebar();
   const [searchOpen, setSearchOpen] = useState(false);
   const [logoHovered, setLogoHovered] = useState(false);
 
-  const isCollapsed = state === 'collapsed';
+  const isCollapsed = isMobile ? false : state === 'collapsed';
 
   const handleCollapsedClick = () => {
     if (isCollapsed) {

@@ -5,18 +5,19 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import type React from 'react';
 import {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
+    memo,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    type Dispatch,
+    type SetStateAction,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { useFileUpload } from '@/hooks/use-file-upload';
+import { useKeyboardVisibility } from '@/hooks/use-keyboard-visibility';
 import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
@@ -88,6 +89,8 @@ function PureMultimodalInput({
     { onBioflowTaskCreated: setBioflowTaskId }
   );
 
+  const { isKeyboardVisible, scrollInputIntoView } = useKeyboardVisibility();
+
   // Textarea height management
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -110,6 +113,12 @@ function PureMultimodalInput({
       adjustHeight();
     }
   }, [adjustHeight, localStorageInput, setInput]);
+
+  useEffect(() => {
+    if (isKeyboardVisible && textareaRef.current) {
+      scrollInputIntoView(textareaRef.current);
+    }
+  }, [isKeyboardVisible, scrollInputIntoView]);
 
   // Persist input to localStorage
   useEffect(() => {
