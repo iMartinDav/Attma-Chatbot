@@ -151,6 +151,13 @@ export function generateUUID(): string {
   });
 }
 
+export function getChatUrl(id: string, projectId?: string | null): string {
+  if (projectId) {
+    return `/chat/${id}?project=${projectId}`;
+  }
+  return `/chat/${id}`;
+}
+
 function addToolMessageToChat({
   toolMessage,
   messages,

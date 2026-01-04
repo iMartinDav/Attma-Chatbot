@@ -20,6 +20,7 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { useKeyboardVisibility } from '@/hooks/use-keyboard-visibility';
 import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
+import { getChatUrl } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
 import { Textarea } from '../ui/textarea';
@@ -159,8 +160,7 @@ function PureMultimodalInput({
       onChatIdChange?.(newId);
     }
 
-    const newUrl = projectId ? `/chat/${targetChatId}?project=${projectId}` : `/chat/${targetChatId}`;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState({}, '', getChatUrl(targetChatId, projectId));
 
     if (isSearchMode) {
       const queryText = input.trim();
