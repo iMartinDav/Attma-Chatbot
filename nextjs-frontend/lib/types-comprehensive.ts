@@ -1,14 +1,9 @@
 import type { ArtifactKind } from '@/components/chat/artifact';
-// import type { ToolInvocation } from 'ai'; // Not available in AI SDK v5
 import { z } from 'zod';
 import type { Suggestion } from './db/schema';
 import type { Locale } from './internationalization/config';
 
-// =============================================================================
-// EXISTING TYPES - Internationalization and Components
-// =============================================================================
-
-// Dictionary interfaces
+// Internationalization types
 export interface MetaDictionary {
   title: string;
   description: string;
@@ -203,10 +198,7 @@ export interface ContactFormProps {
   };
 }
 
-// =============================================================================
-// EXISTING CHAT TYPES - Keep current functionality
-// =============================================================================
-
+// Chat types
 export type DataPart = { type: 'append-message'; message: string };
 
 export const messageMetadataSchema = z.object({
@@ -221,11 +213,7 @@ export interface Attachment {
   contentType: string;
 }
 
-// =============================================================================
-// AI SDK V5 COMPATIBLE TYPES - Updated for v5
-// =============================================================================
-
-// AI SDK v5 Tool definitions - updated for new parameter format
+// AI SDK V5 types
 export interface ChatToolsV5 {
   createDocument: {
     description: string;
