@@ -62,10 +62,6 @@ export function detectFileType(
   return 'unknown';
 }
 
-// ============================================================================
-// Image Analysis
-// ============================================================================
-
 /**
  * Analyze an image using GPT-4 Vision to extract scientific content
  * 
@@ -139,14 +135,7 @@ Respond in JSON format:
   }
 }
 
-// ============================================================================
-// PDF Processing
-// ============================================================================
-
-/**
- * Extract text from a PDF for context injection
- * Uses a simple approach - for production, consider pdf-parse or similar
- */
+/** Extract text from a PDF for context injection */
 export async function extractPdfText(
   base64Data: string,
   maxChars: number = 10000
@@ -250,13 +239,7 @@ Respond in JSON format.`,
   }
 }
 
-// ============================================================================
-// Bioinformatics Data File Processing
-// ============================================================================
-
-/**
- * Detect bioinformatics data type from file content
- */
+/** Detect bioinformatics data type from file content */
 export function detectBioDataType(content: string, filename: string): {
   type: 'expression_matrix' | 'vcf' | 'fasta' | 'bed' | 'generic_tabular' | 'unknown';
   details?: string;
@@ -299,14 +282,7 @@ export function detectBioDataType(content: string, filename: string): {
   return { type: 'unknown' };
 }
 
-// ============================================================================
-// Message Preparation with Files
-// ============================================================================
-
-/**
- * Prepare a message with file attachments for the AI SDK
- * Following best practices from https://ai-sdk.dev/docs/guides/multi-modal
- */
+/** Prepare a message with file attachments for AI SDK */
 export async function prepareMessageWithFiles(
   text: string,
   files: Array<{
@@ -359,10 +335,6 @@ export async function prepareMessageWithFiles(
   
   return parts;
 }
-
-// ============================================================================
-// Export
-// ============================================================================
 
 export const multiModalProcessor = {
   detectFileType,

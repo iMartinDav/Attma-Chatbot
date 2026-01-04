@@ -111,13 +111,7 @@ const PATHWAY_ANALYSIS_AGENT_INSTRUCTIONS = `You are a Pathway and Enrichment An
 - Provide normalized enrichment scores where applicable
 - Visualize results with dot plots or enrichment maps`;
 
-// ============================================================================
-// Agent Definitions
-// ============================================================================
-
-/**
- * Main bioinformatics orchestrator agent
- */
+/** Main bioinformatics orchestrator agent */
 export const bioinformaticsAgent = new Agent({
   name: 'Attma Bioinformatics Agent',
   instructions: BIOINFORMATICS_AGENT_INSTRUCTIONS,
@@ -192,13 +186,7 @@ export const AGENT_REGISTRY: Record<string, AgentConfig> = {
   },
 };
 
-// ============================================================================
-// Agent Selection Logic
-// ============================================================================
-
-/**
- * Keywords that trigger specialist agent selection
- */
+/** Keywords that trigger specialist agent selection */
 const AGENT_KEYWORDS: Record<string, string[]> = {
   'single-cell': [
     'single-cell', 'scRNA-seq', 'scanpy', 'seurat', 
