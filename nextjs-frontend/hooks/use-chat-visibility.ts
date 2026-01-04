@@ -16,8 +16,10 @@ export function useChatVisibility({
   const { mutate, cache } = useSWRConfig();
   const history: Array<Chat> = cache.get('/api/history')?.data;
 
+  const isNewChat = chatId === 'new';
+  
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
-    `${chatId}-visibility`,
+    isNewChat ? null : `${chatId}-visibility`,
     null,
     {
       fallbackData: initialVisibility,
@@ -25,11 +27,12 @@ export function useChatVisibility({
   );
 
   const visibilityType = useMemo(() => {
-    if (!history) return localVisibility;
+    if (isNewChat) return initialVisibility;
+    if (!history) return localVisibility ?? initialVisibility;
     const chat = history.find((chat) => chat.id === chatId);
-    if (!chat) return localVisibility;
+    if (!chat) return localVisibility ?? initialVisibility;
     return chat.visibility;
-  }, [history, chatId, localVisibility]);
+  }, [history, chatId, localVisibility, isNewChat, initialVisibility]);
 
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
