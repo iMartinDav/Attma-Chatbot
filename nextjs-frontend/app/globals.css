@@ -256,6 +256,9 @@
     --background-start-rgb: 214, 219, 220;
     --background-end-rgb: 255, 255, 255;
 
+    /* Mobile viewport adjustment - fixes iOS address bar issues */
+    --app-height: 100dvh;
+
     /* Typography system - centralized variable definitions */
     --font-family-base:
       'geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
