@@ -20,44 +20,44 @@
 import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
 import {
-  detectAgentDomain,
-  detectTaskCategory,
-  getDomainInstructions,
-  routeToOptimalModel,
+    detectAgentDomain,
+    detectTaskCategory,
+    getDomainInstructions,
+    routeToOptimalModel,
 } from '@/lib/ai/agents/task-router';
 import { multiModalProcessor } from '@/lib/ai/multimodal-processor';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
-  getDefaultProviderOptions,
-  getModelConfig,
-  modelSupports,
-  myProvider
+    getDefaultProviderOptions,
+    getModelConfig,
+    modelSupports,
+    myProvider
 } from '@/lib/ai/providers';
 import {
-  bioinformaticsTools,
-  buildOpenAITools,
-  pathwayTools,
-  researchTools,
+    bioinformaticsTools,
+    buildOpenAITools,
+    pathwayTools,
+    researchTools,
 } from '@/lib/ai/tools';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import {
-  deleteChatById,
-  getChatById,
-  getMessagesByChatId,
-  saveChat,
-  saveMessages
+    deleteChatById,
+    getChatById,
+    getMessagesByChatId,
+    saveChat,
+    saveMessages
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import {
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  stepCountIs,
-  streamText,
-  ToolSet
+    createUIMessageStream,
+    createUIMessageStreamResponse,
+    stepCountIs,
+    streamText,
+    ToolSet
 } from 'ai';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -81,10 +81,8 @@ import type { Session } from 'next-auth';
 function buildToolsForModel(modelId: string, session: Session, dataStream?: { write: (data: any) => void }) {
   const tools: Record<string, unknown> = {};
   
-  // Use provided dataStream or a no-op stub
   const streamWriter = dataStream || { write: () => {} };
 
-  // Always include custom tools - these need real dataStream for artifacts to work
   tools.getWeather = getWeather;
   tools.createDocument = createDocument({ session, dataStream: streamWriter as any }); 
   tools.updateDocument = updateDocument({ session, dataStream: streamWriter as any });
@@ -94,24 +92,19 @@ function buildToolsForModel(modelId: string, session: Session, dataStream?: { wr
   Object.assign(tools, pathwayTools);
   Object.assign(tools, bioinformaticsTools);
   
-  const useChatAPI = process.env.USE_CHAT_API === 'true';
+  if (modelSupports(modelId, 'webSearch')) {
+    const openaiTools = buildOpenAITools({
+      webSearch: { enabled: true, searchContextSize: 'high' },
+    });
+    Object.assign(tools, openaiTools);
+  }
   
-  if (!useChatAPI) {
-    if (modelSupports(modelId, 'webSearch')) {
-      const openaiTools = buildOpenAITools({
-        webSearch: { enabled: true, searchContextSize: 'high'
-        },
-      });
-      Object.assign(tools, openaiTools);
-    }
-    
-    if (modelSupports(modelId, 'imageGeneration')) {
-      Object.assign(tools, buildOpenAITools({ imageGeneration: { enabled: true, quality: 'medium' } }));
-    }
-    
-    if (modelSupports(modelId, 'codeInterpreter')) {
-      Object.assign(tools, buildOpenAITools({ codeInterpreter: { enabled: true } }));
-    }
+  if (modelSupports(modelId, 'imageGeneration')) {
+    Object.assign(tools, buildOpenAITools({ imageGeneration: { enabled: true, quality: 'medium' } }));
+  }
+  
+  if (modelSupports(modelId, 'codeInterpreter')) {
+    Object.assign(tools, buildOpenAITools({ codeInterpreter: { enabled: true } }));
   }
   
   return tools;
