@@ -2,6 +2,7 @@
 
 import type { Attachment } from '@/lib/types';
 import cx from 'classnames';
+import { AnimatePresence, motion } from 'framer-motion';
 import type React from 'react';
 import {
   memo,
@@ -21,6 +22,7 @@ import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
 import { Textarea } from '../ui/textarea';
 import { AgentSelector } from './agent-selector';
+import { AgentStatus } from './agent-status';
 import { AttachmentsButton, SendButton, StopButton } from './input-action-buttons';
 import { MessageSearch, type SearchMessage } from './message-search';
 import { ModelSelector } from './model-selector';
@@ -180,6 +182,12 @@ function PureMultimodalInput({
   const handleDeleteAttachment = useCallback((attachment: Attachment) => {
     setAttachments(current => current.filter(a => a.url !== attachment.url));
   }, [setAttachments]);
+  
+  // Determine active tool for status indication
+  const lastMessage = messages[messages.length - 1];
+  const activeTool = lastMessage?.role === 'assistant' && lastMessage.toolInvocations 
+    ? lastMessage.toolInvocations.find(ti => ti.state === 'call' || ti.state === 'partial-call')?.toolName 
+    : undefined;
 
   return (
     <div
@@ -217,6 +225,24 @@ function PureMultimodalInput({
           ))}
         </div>
       )}
+
+      {/* Agent Status Indicator */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="absolute -top-12 left-0 right-0 flex justify-center z-20 pointer-events-none"
+          >
+            <AgentStatus 
+               isActive={isLoading}
+               currentTool={activeTool}
+               model={selectedModelId}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Input Pill */}
       <DragAndDrop onDrop={handleFileDrop} isFullSize={isFullSize}>

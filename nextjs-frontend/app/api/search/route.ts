@@ -136,7 +136,7 @@ async function createSearchChat(userId: string, message: UIMessageLike, chatId: 
   }
 
   baseText = baseText.trim() || 'Search query';
-  let title = `Search: ${baseText.substring(0, 50)}${baseText.length > 50 ? '...' : ''}`;
+  let title = baseText.length > 60 ? `${baseText.substring(0, 60)}...` : baseText;
 
   try {
     const generatedTitle = await generateTitleFromUserMessage({ message: message as any });
@@ -213,7 +213,7 @@ export async function POST(request: Request) {
         if (userMessage) {
           await createSearchChat(session.user.id, userMessage, usedId);
         } else {
-          await saveChat({ id: usedId, userId: session.user.id, title: `Search ${new Date().toLocaleTimeString()}` });
+          await saveChat({ id: usedId, userId: session.user.id, title: `Research: ${new Date().toLocaleDateString()}` });
         }
       } else if (chat.userId !== session.user.id) {
         return new Response('Unauthorized', { status: 401 });

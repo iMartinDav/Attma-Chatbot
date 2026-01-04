@@ -1,4 +1,4 @@
-import type { CaseStudyItem } from '../types/component-types';
+import type { CaseStudyItem } from '../types';
 
 // Map case study IDs to their respective images
 export const CASE_STUDY_IMAGES: Record<string, string> = {

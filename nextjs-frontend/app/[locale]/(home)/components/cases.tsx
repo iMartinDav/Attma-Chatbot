@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DEFAULT_CASE_IMAGE } from '@/lib/constants/case-studies';
 import type { CasesProps } from '@/lib/types/component-types';
 import { prepareCaseStudies } from '@/lib/utils/case-helpers';
-import { DEFAULT_CASE_IMAGE } from '@/lib/constants/case-studies';
+import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { useMemo } from 'react';
 
 const Cases: React.FC<CasesProps> = ({ locale, dictionary = {} }) => {
   // Process data with our utility

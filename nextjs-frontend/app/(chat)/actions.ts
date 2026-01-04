@@ -8,9 +8,9 @@ import type { VisibilityType } from '@/components/chat/visibility-selector';
 import { chatModels } from '@/lib/ai/models';
 import { myProvider } from '@/lib/ai/providers';
 import {
-    deleteMessagesByChatIdAfterTimestamp,
-    getMessageById,
-    updateChatVisiblityById,
+  deleteMessagesByChatIdAfterTimestamp,
+  getMessageById,
+  updateChatVisiblityById,
 } from '@/lib/db/queries';
 
 export async function saveChatModelAsCookie(model: string) {
@@ -43,11 +43,12 @@ export async function generateTitleFromUserMessage({
   const { text: title } = await generateText({
     model: myProvider.languageModel(chatModels[0].id), // Use the first/primary chat model for title generation
     system: `
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - ensure it is not generic, but specific to the content of the message
+    - you will generate a short, descriptive title based on the user's first message
+    - if it is a search or research query, focus on the core topic (e.g., "CRISPR gene editing" instead of "Search for CRISPR")
+    - ensure it is not more than 60 characters long
+    - avoid generic titles like "New Chat", "Search", or dates
     - ensure it is in the same language as the first message
-    - do not use quotes or colons`,
+    - do not use quotes, colons, or generic prefixes`,
     prompt: messageText,
   });
 

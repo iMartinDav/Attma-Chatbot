@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { GlobeIcon, PencilEditIcon, SparklesIcon } from '../icons';
+import { GlobeIcon, LoaderIcon, PencilEditIcon, SparklesIcon } from '../icons';
 import { Button } from '../ui/button';
 import { TextShimmer } from '../ui/text-shimmer';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
@@ -501,8 +501,12 @@ const PurePreviewMessage = ({
                     }
                     return (
                        <div key={toolCallId} className="flex items-center gap-2 text-sm text-muted-foreground p-2">
-                         <SparklesIcon size={14} className="animate-pulse" />
-                         Generating image...
+                         <div className="animate-spin text-primary">
+                           <LoaderIcon size={14} />
+                         </div>
+                         <TextShimmer duration={4}>
+                           Generating image...
+                         </TextShimmer>
                        </div>
                     );
                   }
@@ -662,8 +666,8 @@ export const ThinkingMessage = () => {
 
         <div className="flex flex-col gap-2 w-full">
           <TextShimmer
-            duration={7}
-            className="flex flex-col gap-4 text-muted-foreground"
+            duration={5}
+            className="flex flex-col gap-4 text-muted-foreground font-medium"
           >
             Thinking...
           </TextShimmer>

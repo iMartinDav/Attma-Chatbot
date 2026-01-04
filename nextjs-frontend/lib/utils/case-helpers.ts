@@ -1,10 +1,10 @@
-import type { CaseStudyItem, CasesProps } from '../types/component-types';
 import {
-  CASE_STUDY_IMAGES,
-  DEFAULT_CASE_IMAGE,
-  DEFAULT_CASE_STUDIES,
-  DEFAULT_CASE_TEXT,
+    CASE_STUDY_IMAGES,
+    DEFAULT_CASE_IMAGE,
+    DEFAULT_CASE_STUDIES,
+    DEFAULT_CASE_TEXT,
 } from '../constants/case-studies';
+import type { CaseStudyItem, CasesProps } from '../types/component-types';
 
 /**
  * Resolves the image path for a case study

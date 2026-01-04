@@ -19,7 +19,6 @@
 
 import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
-import { selectAgent } from '@/lib/ai/agents';
 import {
   detectAgentDomain,
   detectTaskCategory,
@@ -76,7 +75,6 @@ const MODEL_KEY_MAP: Record<string, string> = {
   'o3-mini': 'chat-model-reasoning',
 } as const;
 
-import { AGENT_REGISTRY } from '@/lib/ai/agents';
 import type { Session } from 'next-auth';
 
 /** Build tool set based on model capabilities */
@@ -242,21 +240,26 @@ export async function POST(request: Request) {
     // Build tools
     const tools = buildToolsForModel(selectedChatModel, session);
 
-    // Agent selection
-    let agentConfig;
+    // Agent selection & instructions
+    let domain: any = 'general';
     if (selectedAgentId && selectedAgentId !== 'auto') {
-      const foundConfig = AGENT_REGISTRY[selectedAgentId];
-      agentConfig = foundConfig 
-        ? { id: selectedAgentId, name: foundConfig.name, agent: foundConfig.agent }
-        : selectAgent(userMessageText);
+      // Map UI IDs to AgentDomain
+      const idMap: Record<string, any> = {
+        'single-cell': 'single_cell',
+        'variant-analysis': 'variant',
+        'pathway-analysis': 'pathway',
+        'bioinformatics': 'general',
+      };
+      domain = idMap[selectedAgentId] || 'general';
     } else {
-      agentConfig = selectAgent(userMessageText);
+      domain = detectAgentDomain(userMessageText);
     }
     
+    const domainInstructions = getDomainInstructions(domain);
     let system = systemPrompt({ selectedChatModel });
     
-    if (agentConfig.id !== 'general' && agentConfig.agent?.instructions) {
-      system = `ACTING AS SPECIALIST: ${agentConfig.name}\n\n${agentConfig.agent.instructions}\n\n${system}`;
+    if (domain !== 'general') {
+      system = `ACTING AS SPECIALIST: ${domain.replace('_', ' ')}\n\n${domainInstructions}\n\n${system}`;
     }
 
     // Task detection for auto-model selection
@@ -281,11 +284,6 @@ export async function POST(request: Request) {
       finalModelKey = 'chat-model-standard';
     }
     
-    const domain = detectAgentDomain(userMessageText);
-    if (domain !== 'general') {
-      system = `${getDomainInstructions(domain)}\n\n${system}`;
-    }
-
     const maxSteps = detectedTask === 'research' ? 10 
       : detectedTask === 'reasoning' ? 8 : detectedTask === 'data_analysis' ? 6 : 5;
 

@@ -1,15 +1,15 @@
 import {
-  defaultLocale,
-  isValidLocale,
+    defaultLocale,
+    isValidLocale,
 } from '@/lib/internationalization/config';
 import { getDictionary } from '@/lib/internationalization/dictionaries';
-import { Hero } from './(home)/components/hero';
-import { Features } from './(home)/components/features';
+import type { HomePageDictionary } from '@/lib/types/component-types';
 import Cases from './(home)/components/cases';
 import { CTA } from './(home)/components/cta';
-import { Testimonials } from './(home)/components/testimonials';
+import { Features } from './(home)/components/features';
+import { Hero } from './(home)/components/hero';
 import { Stats } from './(home)/components/stats';
-import type { HomePageDictionary } from '@/lib/types/component-types';
+import { Testimonials } from './(home)/components/testimonials';
 
 // Define the props type according to Next.js App Router
 type Props = {

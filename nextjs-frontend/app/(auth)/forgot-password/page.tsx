@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import { useState, useTransition, useRef } from 'react';
-import type { FormEvent } from 'react';
-import { toast } from 'sonner';
 import { EmailInput } from '@/components/auth/email-input';
-import { SubmitButton } from '@/components/submit-button';
+import { SubmitButton } from '@/components/ui/submit-button';
+import Link from 'next/link';
+import type { FormEvent } from 'react';
+import { useRef, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 
 export default function ForgotPasswordPage() {
   const [isPending, startTransition] = useTransition();

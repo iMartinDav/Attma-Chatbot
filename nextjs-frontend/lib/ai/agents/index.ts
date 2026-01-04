@@ -23,6 +23,3 @@ export {
     type VerificationOptions,
     type VerificationResult
 } from './self-verification';
-
-// Legacy exports (for backward compatibility)
-export { AGENT_REGISTRY, selectAgent } from './bioinformatics-agent';

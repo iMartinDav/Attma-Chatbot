@@ -2,5 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "pnpm run build",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
-  "installCommand": "npm install -g pnpm && pnpm install"
+  "installCommand": "corepack enable && corepack pnpm install --frozen-lockfile"
 }

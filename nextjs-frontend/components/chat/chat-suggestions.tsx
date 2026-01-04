@@ -3,12 +3,12 @@
 import { motion } from 'framer-motion';
 import { AgentBioinformaticsIcon, AgentPathwayIcon, AgentSingleCellIcon, PaperclipIcon } from '../icons';
 
-interface SuggestionChipsProps {
+interface ChatSuggestionsProps {
   onSelect: (text: string) => void;
   onUpload?: () => void;
 }
 
-export function SuggestionChips({ onSelect, onUpload }: SuggestionChipsProps) {
+export function ChatSuggestions({ onSelect, onUpload }: ChatSuggestionsProps) {
   const suggestions = [
     {
       label: 'Find recent CRISPR papers',

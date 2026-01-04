@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, type RefObject } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
-export function useScrollToBottom<T extends HTMLElement>(): [RefObject<T>, RefObject<HTMLDivElement>] {
+export function useScrollToBottom<T extends HTMLElement>() {
   const containerRef = useRef<T>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +88,7 @@ export function useScrollToBottom<T extends HTMLElement>(): [RefObject<T>, RefOb
 
     // Scroll to bottom on mount to avoid content hidden behind input
     schedule(() => {
-  end.scrollIntoView({ behavior: 'auto', block: 'end' });
+      end.scrollIntoView({ behavior: 'auto', block: 'end' });
     });
 
     return () => {
@@ -100,5 +100,17 @@ export function useScrollToBottom<T extends HTMLElement>(): [RefObject<T>, RefOb
     };
   }, [prefersReducedMotion]);
 
-  return [containerRef, endRef];
+  // Return both object and array for backward compatibility during transition
+  // This helps avoid breaking components while we update them
+  return Object.assign([containerRef, endRef] as const, {
+    containerRef,
+    endRef,
+    // Add dummy functions to satisfy legacy useMessages if needed
+    scrollToBottom: (behavior: ScrollBehavior = 'smooth') => {
+      endRef.current?.scrollIntoView({ behavior });
+    },
+    onViewportEnter: () => {},
+    onViewportLeave: () => {},
+    isAtBottom: true // Simplification
+  });
 }
