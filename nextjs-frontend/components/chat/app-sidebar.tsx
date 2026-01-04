@@ -5,10 +5,10 @@ import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { SidebarProjects } from '@/components/chat/projects';
 import { SearchDialog } from '@/components/chat/search-dialog';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
 import {
-    BrainIcon,
     ChevronUpIcon,
     LogOutIcon,
     NewChatIcon,
@@ -138,27 +138,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               </Tooltip>
             </SidebarMenuItem>
 
-            {/* Agents */}
-            <SidebarMenuItem>
-              <Tooltip open={isCollapsed ? undefined : false}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => {
-                      if (!isCollapsed) {
-                        router.push('/chat?agent=bioinformatics');
-                        router.refresh();
-                      }
-                    }}
-                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
-                  >
-                    <BrainIcon />
-                    {!isCollapsed && <span className="text-sm">Agents</span>}
-                  </button>
-                </TooltipTrigger>
-                {isCollapsed && <TooltipContent side="right">Agents</TooltipContent>}
-              </Tooltip>
-            </SidebarMenuItem>
-          </SidebarMenu>
+            </SidebarMenu>
+
+          {/* Projects Section */}
+          {!isCollapsed && <SidebarProjects isCollapsed={isCollapsed} />}
 
           {/* Chat History - only when expanded */}
           {!isCollapsed && (
