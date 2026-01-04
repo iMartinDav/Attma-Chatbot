@@ -1,9 +1,9 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronRight, FolderIcon, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ChevronDown, ChevronRight, FolderIcon, MessageSquare, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import {
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuItem } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Project } from '@/lib/db/schema';
+import type { Chat, Project } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { ProjectDialog } from './project-dialog';
 
@@ -24,15 +24,28 @@ interface SidebarProjectsProps {
 
 export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { mutate } = useSWRConfig();
+  
+  const currentProjectId = searchParams.get('project');
+  const currentChatId = pathname.split('/chat/')[1];
   
   const { data: projects, isLoading } = useSWR<Project[]>('/api/projects', fetcher);
   
   const [isExpanded, setIsExpanded] = useState(true);
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  const handleCreateProject = async (data: { name: string; description?: string; emoji?: string }) => {
+  // Auto-expand project if we're viewing it
+  useEffect(() => {
+    if (currentProjectId) {
+      setExpandedProjects(prev => new Set([...prev, currentProjectId]));
+    }
+  }, [currentProjectId]);
+
+  const handleCreateProject = async (data: { name: string; description?: string }) => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -41,15 +54,18 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
       });
       
       if (response.ok) {
+        const newProject = await response.json();
         mutate('/api/projects');
         setDialogOpen(false);
+        // Auto-expand the new project
+        setExpandedProjects(prev => new Set([...prev, newProject.id]));
       }
     } catch (error) {
       console.error('Failed to create project:', error);
     }
   };
 
-  const handleUpdateProject = async (data: { name: string; description?: string; emoji?: string }) => {
+  const handleUpdateProject = async (data: { name: string; description?: string }) => {
     if (!editingProject) return;
     
     try {
@@ -76,13 +92,30 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
       
       if (response.ok) {
         mutate('/api/projects');
+        setExpandedProjects(prev => {
+          const next = new Set(prev);
+          next.delete(projectId);
+          return next;
+        });
       }
     } catch (error) {
       console.error('Failed to delete project:', error);
     }
   };
 
-  const handleProjectClick = (projectId: string) => {
+  const toggleProjectExpanded = (projectId: string) => {
+    setExpandedProjects(prev => {
+      const next = new Set(prev);
+      if (next.has(projectId)) {
+        next.delete(projectId);
+      } else {
+        next.add(projectId);
+      }
+      return next;
+    });
+  };
+
+  const handleNewChatInProject = (projectId: string) => {
     router.push(`/chat?project=${projectId}`);
   };
 
@@ -137,50 +170,17 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
                   <div className="px-3 py-2 text-xs text-muted-foreground/50">Loading...</div>
                 ) : projects && projects.length > 0 ? (
                   projects.map((project) => (
-                    <div
+                    <ProjectItem 
                       key={project.id}
-                      className="group flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-muted/40 cursor-pointer transition-all duration-150"
-                      onClick={() => handleProjectClick(project.id)}
-                    >
-                      <div className="flex items-center justify-center size-6 rounded-md bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
-                        <FolderIcon className="size-3.5" />
-                      </div>
-                      <span className="flex-1 text-sm truncate text-foreground/80 group-hover:text-foreground transition-colors">
-                        {project.name}
-                      </span>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            onClick={(e) => e.stopPropagation()}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted/60 transition-all"
-                          >
-                            <MoreHorizontal className="size-3.5 text-muted-foreground" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-36">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingProject(project);
-                            }}
-                          >
-                            <Pencil className="size-3.5 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProject(project.id);
-                            }}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="size-3.5 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                      project={project}
+                      isExpanded={expandedProjects.has(project.id)}
+                      isActive={currentProjectId === project.id}
+                      currentChatId={currentChatId}
+                      onToggle={() => toggleProjectExpanded(project.id)}
+                      onEdit={() => setEditingProject(project)}
+                      onDelete={() => handleDeleteProject(project.id)}
+                      onNewChat={() => handleNewChatInProject(project.id)}
+                    />
                   ))
                 ) : (
                   <button
@@ -217,5 +217,147 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
         } : undefined}
       />
     </>
+  );
+}
+
+interface ProjectItemProps {
+  project: Project;
+  isExpanded: boolean;
+  isActive: boolean;
+  currentChatId?: string;
+  onToggle: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onNewChat: () => void;
+}
+
+function ProjectItem({ 
+  project, 
+  isExpanded, 
+  isActive,
+  currentChatId,
+  onToggle, 
+  onEdit, 
+  onDelete,
+  onNewChat 
+}: ProjectItemProps) {
+  const router = useRouter();
+  
+  const { data: chats } = useSWR<Chat[]>(
+    isExpanded ? `/api/projects/${project.id}/chats` : null,
+    fetcher
+  );
+
+  return (
+    <div>
+      <div
+        className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-150 ${
+          isActive ? 'bg-muted/60' : 'hover:bg-muted/40'
+        }`}
+      >
+        <button
+          onClick={onToggle}
+          className="p-0.5 rounded hover:bg-muted/60 transition-colors"
+        >
+          {isExpanded ? (
+            <ChevronDown className="size-3 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="size-3 text-muted-foreground" />
+          )}
+        </button>
+        
+        <div 
+          className="flex items-center gap-2 flex-1 min-w-0"
+          onClick={onToggle}
+        >
+          <div className="flex items-center justify-center size-5 rounded bg-gradient-to-br from-primary/20 to-primary/5 text-primary shrink-0">
+            <FolderIcon className="size-3" />
+          </div>
+          <span className="text-sm truncate text-foreground/80 group-hover:text-foreground transition-colors">
+            {project.name}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onNewChat();
+            }}
+            className="p-1 rounded hover:bg-muted/60 transition-colors"
+            title="New chat in project"
+          >
+            <Plus className="size-3 text-muted-foreground" />
+          </button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="p-1 rounded hover:bg-muted/60 transition-colors"
+              >
+                <MoreHorizontal className="size-3 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="size-3.5 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="size-3.5 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="ml-4 pl-3 border-l border-muted/40 mt-0.5 space-y-0.5">
+              {chats && chats.length > 0 ? (
+                chats.map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => router.push(`/chat/${chat.id}?project=${project.id}`)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-all ${
+                      currentChatId === chat.id
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <MessageSquare className="size-3 shrink-0" />
+                    <span className="text-xs truncate">{chat.title}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground/50">
+                  No chats yet
+                </div>
+              )}
+              
+              <button
+                onClick={onNewChat}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/30 transition-all"
+              >
+                <Plus className="size-3" />
+                <span className="text-xs">New chat</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

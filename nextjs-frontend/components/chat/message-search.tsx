@@ -201,7 +201,11 @@ export function MessageSearch({
         const data = await response.json();
         if (data?.id && typeof window !== 'undefined') {
           // Update URL in place so subsequent saves use the valid id
-          window.history.replaceState({}, '', `/chat/${data.id}`);
+          // Preserve project param if present
+          const currentParams = new URLSearchParams(window.location.search);
+          const projectId = currentParams.get('project');
+          const newUrl = projectId ? `/chat/${data.id}?project=${projectId}` : `/chat/${data.id}`;
+          window.history.replaceState({}, '', newUrl);
           setActiveChatId(data.id);
           return data.id;
         }
