@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronRight, FolderIcon, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
@@ -24,7 +24,6 @@ interface SidebarProjectsProps {
 
 export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { mutate } = useSWRConfig();
   
   const { data: projects, isLoading } = useSWR<Project[]>('/api/projects', fetcher);
@@ -32,7 +31,6 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const handleCreateProject = async (data: { name: string; description?: string; emoji?: string }) => {
     try {
@@ -78,7 +76,6 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
       
       if (response.ok) {
         mutate('/api/projects');
-        setDeleteConfirmId(null);
       }
     } catch (error) {
       console.error('Failed to delete project:', error);
@@ -110,24 +107,21 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   return (
     <>
       <div className="mt-4">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground/80 transition-colors"
-        >
-          <div className="flex items-center gap-1">
+        <div className="flex items-center justify-between w-full px-3 py-1.5">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground/80 transition-colors"
+          >
             {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
             <span>Projects</span>
-          </div>
+          </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDialogOpen(true);
-            }}
-            className="p-0.5 rounded hover:bg-muted/60 transition-colors"
+            onClick={() => setDialogOpen(true)}
+            className="p-1 rounded-md hover:bg-muted/60 transition-colors text-muted-foreground/60 hover:text-muted-foreground"
           >
             <Plus className="size-3.5" />
           </button>
-        </button>
+        </div>
 
         <AnimatePresence initial={false}>
           {isExpanded && (
@@ -145,22 +139,26 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
                   projects.map((project) => (
                     <div
                       key={project.id}
-                      className="group flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/60 cursor-pointer transition-colors"
+                      className="group flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-muted/40 cursor-pointer transition-all duration-150"
                       onClick={() => handleProjectClick(project.id)}
                     >
-                      <span className="text-sm">{project.emoji}</span>
-                      <span className="flex-1 text-sm truncate">{project.name}</span>
+                      <div className="flex items-center justify-center size-6 rounded-md bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
+                        <FolderIcon className="size-3.5" />
+                      </div>
+                      <span className="flex-1 text-sm truncate text-foreground/80 group-hover:text-foreground transition-colors">
+                        {project.name}
+                      </span>
                       
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
                             onClick={(e) => e.stopPropagation()}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-muted transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted/60 transition-all"
                           >
                             <MoreHorizontal className="size-3.5 text-muted-foreground" />
                           </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuContent align="end" className="w-36">
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
@@ -187,9 +185,12 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
                 ) : (
                   <button
                     onClick={() => setDialogOpen(true)}
-                    className="w-full px-3 py-2 text-xs text-muted-foreground/50 hover:text-muted-foreground/70 text-left transition-colors"
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-muted-foreground/50 hover:text-muted-foreground/70 hover:bg-muted/20 transition-all"
                   >
-                    Create your first project...
+                    <div className="flex items-center justify-center size-6 rounded-md border border-dashed border-muted-foreground/30">
+                      <Plus className="size-3" />
+                    </div>
+                    <span className="text-xs">Create project...</span>
                   </button>
                 )}
               </div>
@@ -213,7 +214,6 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
         initialData={editingProject ? {
           name: editingProject.name,
           description: editingProject.description || '',
-          emoji: editingProject.emoji || '📁',
         } : undefined}
       />
     </>

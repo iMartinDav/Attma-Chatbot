@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { FolderIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,17 +16,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-const EMOJI_OPTIONS = ['📁', '🧬', '🔬', '📊', '💡', '🚀', '📝', '🎯', '⚡', '🌟', '🔮', '🧪'];
-
 interface ProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { name: string; description?: string; emoji?: string }) => Promise<void>;
+  onSubmit: (data: { name: string; description?: string }) => Promise<void>;
   mode: 'create' | 'edit';
   initialData?: {
     name: string;
     description?: string;
-    emoji?: string;
   };
 }
 
@@ -38,8 +36,14 @@ export function ProjectDialog({
 }: ProjectDialogProps) {
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [emoji, setEmoji] = useState(initialData?.emoji || '📁');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open && initialData) {
+      setName(initialData.name || '');
+      setDescription(initialData.description || '');
+    }
+  }, [open, initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,13 +55,11 @@ export function ProjectDialog({
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
-        emoji,
       });
       
       if (mode === 'create') {
         setName('');
         setDescription('');
-        setEmoji('📁');
       }
     } finally {
       setIsSubmitting(false);
@@ -68,89 +70,86 @@ export function ProjectDialog({
     if (!newOpen && mode === 'create') {
       setName('');
       setDescription('');
-      setEmoji('📁');
     }
     onOpenChange(newOpen);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>
-              {mode === 'create' ? 'Create Project' : 'Edit Project'}
-            </DialogTitle>
-            <DialogDescription>
-              {mode === 'create'
-                ? 'Create a new project to organize your chats.'
-                : 'Update your project details.'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="emoji">Icon</Label>
-              <div className="flex flex-wrap gap-2">
-                {EMOJI_OPTIONS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setEmoji(e)}
-                    className={`w-9 h-9 text-lg rounded-lg border-2 transition-all ${
-                      emoji === e
-                        ? 'border-primary bg-primary/10 scale-110'
-                        : 'border-transparent hover:border-muted hover:bg-muted/50'
-                    }`}
-                  >
-                    {e}
-                  </button>
-                ))}
+      <DialogContent className="sm:max-w-[420px] p-0 gap-0 overflow-hidden">
+        <div className="p-6 pb-4">
+          <DialogHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+                <FolderIcon className="size-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold">
+                  {mode === 'create' ? 'New Project' : 'Edit Project'}
+                </DialogTitle>
+                <DialogDescription className="text-sm">
+                  {mode === 'create'
+                    ? 'Organize your chats into a project'
+                    : 'Update project details'}
+                </DialogDescription>
               </div>
             </div>
-            
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name" className="text-sm font-medium">
+                Project name
+              </Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="My Research Project"
+                placeholder="e.g. Protein Analysis"
                 autoFocus
+                className="h-10"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">
+                Description <span className="text-muted-foreground/50">(optional)</span>
+              </Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="A brief description of your project..."
+                placeholder="What's this project about?"
                 rows={2}
+                className="resize-none"
               />
             </div>
-          </div>
+          </form>
+        </div>
           
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!name.trim() || isSubmitting}>
-              {isSubmitting
-                ? mode === 'create'
-                  ? 'Creating...'
-                  : 'Saving...'
-                : mode === 'create'
-                  ? 'Create Project'
-                  : 'Save Changes'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter className="px-6 py-4 bg-muted/30 border-t">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            className="h-9"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={!name.trim() || isSubmitting}
+            className="h-9 px-4"
+          >
+            {isSubmitting
+              ? mode === 'create'
+                ? 'Creating...'
+                : 'Saving...'
+              : mode === 'create'
+                ? 'Create'
+                : 'Save'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
