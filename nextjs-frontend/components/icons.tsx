@@ -1668,10 +1668,7 @@ export const SecurityLockIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-// ============================================================================
-// Agent Icons - Centralized icon management
-// ============================================================================
-
+// Agent Icons
 export const AgentAutoIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.3L3.1 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 20.9l1.9-5.8a2 2 0 0 1 1.3-1.3l5.8-1.9-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
@@ -1731,12 +1728,7 @@ export const CheckmarkIcon = ({ className = "w-4 h-4" }: { className?: string })
   </svg>
 );
 
-
-
-// ============================================================================
-// Sidebar & Navigation Icons
-// ============================================================================
-
+// Navigation Icons
 export const NewChatIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

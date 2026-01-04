@@ -1,14 +1,5 @@
 /**
- * @fileoverview Reasoning Block Component
- * 
- * Displays the AI model's reasoning/thinking process in a collapsible, 
- * animated format inspired by Grok and Claude's interfaces.
- * 
- * Features:
- * - Collapsible toggle to show/hide reasoning
- * - Animated brain/thinking indicator
- * - Markdown rendering for reasoning content
- * - Streaming support with live updates
+ * Reasoning Block Component - Shows AI thinking in collapsible format
  */
 
 'use client';
@@ -18,10 +9,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Brain, ChevronDown, Sparkles } from 'lucide-react';
 import { memo, useState } from 'react';
 import { Markdown } from './markdown';
-
-// ============================================================================
-// Types
-// ============================================================================
 
 export interface ReasoningBlockProps {
   /** The reasoning content to display */
@@ -33,10 +20,6 @@ export interface ReasoningBlockProps {
   /** Custom className for the container */
   className?: string;
 }
-
-// ============================================================================
-// Animation Variants
-// ============================================================================
 
 const containerVariants = {
   collapsed: { 
@@ -62,11 +45,6 @@ const contentVariants = {
   },
 };
 
-// ============================================================================
-// Subcomponents
-// ============================================================================
-
-/** Animated thinking indicator with pulsing brain icon */
 function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
   return (
     <div className="flex items-center gap-2">
@@ -107,10 +85,6 @@ function ExpandChevron({ isExpanded }: { isExpanded: boolean }) {
     </motion.div>
   );
 }
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 function PureReasoningBlock({
   reasoning,
@@ -181,10 +155,6 @@ function PureReasoningBlock({
     </motion.div>
   );
 }
-
-// ============================================================================
-// Exports
-// ============================================================================
 
 export const ReasoningBlock = memo(PureReasoningBlock);
 
