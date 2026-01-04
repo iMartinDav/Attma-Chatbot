@@ -128,7 +128,7 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
 
 function createLanguageModel(modelId: string) {
   const config = MODEL_REGISTRY[modelId];
-  const baseModel = openai(modelId);
+  const baseModel = openai.chat(modelId);
 
   if (config?.isReasoning) {
     return wrapLanguageModel({
