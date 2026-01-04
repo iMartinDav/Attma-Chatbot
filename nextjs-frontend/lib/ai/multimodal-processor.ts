@@ -1,21 +1,9 @@
 /**
- * @fileoverview Multi-Modal File Processing
- * 
- * Handles processing of PDFs, images, and other file types
- * following AI SDK best practices for multi-modal inputs.
- * 
- * Key features:
- * - PDF text extraction for context injection
- * - Image preprocessing for vision models
- * - File metadata extraction for bioinformatics artifacts
+ * Multi-Modal File Processing - PDFs, images, and bio file types
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-
-// ============================================================================
-// Types
-// ============================================================================
 
 export interface ProcessedFile {
   type: 'image' | 'pdf' | 'data' | 'code' | 'unknown';
@@ -39,13 +27,7 @@ export interface ImageAnalysis {
   };
 }
 
-// ============================================================================
-// File Type Detection
-// ============================================================================
-
-/**
- * Detect file type from MIME type or extension
- */
+/** Detect file type from MIME type or extension */
 export function detectFileType(
   mimeType: string,
   filename: string

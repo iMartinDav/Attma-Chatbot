@@ -1,22 +1,7 @@
 /**
- * @fileoverview Intelligent Model Router
- * 
- * Routes requests to the optimal model based on task type.
- * This implements the "Auto Mode" that selects the best model
- * for each bioinformatics task automatically.
- * 
- * Available Models (2025):
- * - gpt-5-mini: Fast, efficient for simple queries
- * - gpt-5: Highly capable with all tools
- * - gpt-5-codex: Optimized for code generation (Python/R)
- * - o3: Complex reasoning with tool support
- * - o4-mini: Fast reasoning for code/math
- * - o3-deep-research: Deep research queries
+ * Model Router - Routes requests to optimal model based on task type.
+ * Implements auto-selection for bioinformatics tasks.
  */
-
-// ============================================================================
-// Task Categories
-// ============================================================================
 
 export type TaskCategory = 
   | 'quick_answer'      // Simple questions, definitions
@@ -27,10 +12,6 @@ export type TaskCategory =
   | 'visualization'     // Charts, plots, diagrams
   | 'general'           // Default fallback
 ;
-
-// ============================================================================
-// Model Recommendations
-// ============================================================================
 
 interface ModelRecommendation {
   modelId: string;
@@ -111,13 +92,7 @@ const TASK_MODEL_MAP: Record<TaskCategory, ModelRecommendation> = {
   },
 };
 
-// ============================================================================
-// Task Detection
-// ============================================================================
-
-/**
- * Keywords that indicate specific task types
- */
+/** Keywords indicating specific task types */
 const TASK_KEYWORDS: Record<TaskCategory, string[]> = {
   quick_answer: [
     'what is', 'what does', 'define', 'explain briefly',
@@ -152,12 +127,10 @@ const TASK_KEYWORDS: Record<TaskCategory, string[]> = {
     'visualize', 'diagram', 'figure', 'image',
     'umap', 'pca plot', 'dotplot', 'barplot',
   ],
-  general: [], // Fallback, no specific keywords
+  general: [],
 };
 
-/**
- * Detects the task category from user input
- */
+/** Detects the task category from user input */
 export function detectTaskCategory(query: string): TaskCategory {
   const lowerQuery = query.toLowerCase();
   
@@ -181,35 +154,20 @@ export function detectTaskCategory(query: string): TaskCategory {
   return 'general';
 }
 
-// ============================================================================
-// Model Router
-// ============================================================================
-
 interface RoutingResult {
   category: TaskCategory;
   recommendation: ModelRecommendation;
-  agentId?: string; // Optional specialist agent to use
+  agentId?: string;
 }
 
-/**
- * Routes a query to the optimal model and configuration
- * 
- * @example
- * ```typescript
- * const result = routeToOptimalModel("Write Python code to analyze single-cell data");
- * // Returns: { category: 'code_generation', recommendation: { modelId: 'gpt-5-codex', ... } }
- * ```
- */
+/** Routes a query to the optimal model and configuration */
 export function routeToOptimalModel(query: string, selectedAgentId?: string): RoutingResult {
   const category = detectTaskCategory(query);
   const recommendation = TASK_MODEL_MAP[category];
   
-  // If a specialist agent is selected, it may override model choice
   let agentId = selectedAgentId;
   
-  // Auto-detect agent if not specified
   if (!agentId || agentId === 'auto') {
-    // Import cycle prevention - we'll detect agent keywords here
     const agentKeywords: Record<string, string[]> = {
       'single-cell': ['single-cell', 'scrna-seq', 'scanpy', 'seurat', 'umap', 'cluster'],
       'variant-analysis': ['variant', 'vcf', 'snp', 'mutation', 'gwas', 'pathogenic'],
@@ -225,35 +183,21 @@ export function routeToOptimalModel(query: string, selectedAgentId?: string): Ro
     }
   }
   
-  return {
-    category,
-    recommendation,
-    agentId,
-  };
+  return { category, recommendation, agentId };
 }
 
-/**
- * Gets the recommended model key for the provider
- */
+/** Get recommended model key */
 export function getOptimalModelKey(query: string): string {
   const result = routeToOptimalModel(query);
   return result.recommendation.modelKey;
 }
 
-/**
- * Gets suggested tools based on task type
- */
+/** Get suggested tools for task type */
 export function getSuggestedTools(category: TaskCategory): string[] {
   return TASK_MODEL_MAP[category].suggestedTools;
 }
 
-// ============================================================================
-// Provider Options Builder
-// ============================================================================
-
-/**
- * Builds provider options optimized for the task
- */
+/** Build provider options for task */
 export function buildOptimalProviderOptions(
   category: TaskCategory
 ): Record<string, unknown> {
