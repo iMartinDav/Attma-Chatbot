@@ -107,15 +107,15 @@ export function LanguageSwitcher({
     <div className="relative">
       <Select value={currentLocale} onValueChange={handleSelectChange}>
         <SelectTrigger className={triggerClasses} aria-label="Select language">
-          <SelectValue asChild>
-            <div className="flex items-center justify-center">
+          <SelectValue>
+            <span className="flex items-center justify-center">
               <span className="sr-only">
                 {supportedOptions.find(
                   (option) => option.value === currentLocale,
                 )?.label || 'Select language'}
               </span>
               <Languages className="size-5" />
-            </div>
+            </span>
           </SelectValue>
         </SelectTrigger>
         <SelectContent className={contentClasses} align="end" sideOffset={8}>
