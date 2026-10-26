@@ -1,0 +1,1857 @@
+{
+ "date": "2026-10-26",
+ "source": "GA4GH phenopacket-store 0.1.27 (Monarch Initiative, BSD-3-Clause)",
+ "hpoVersion": "hp/releases/2026-09-01",
+ "index": "held-out: annotations sourced only from benchmark case publications removed",
+ "cases": 200,
+ "phenotypeToGene": {
+  "patient": {
+   "n": 200,
+   "top1": 20,
+   "top3": 27.5,
+   "top5": 31,
+   "top10": 38,
+   "mrr": 0.264,
+   "notRanked": 44
+  },
+  "symmetric": {
+   "n": 200,
+   "top1": 19.5,
+   "top3": 31,
+   "top5": 35,
+   "top10": 41.5,
+   "mrr": 0.272,
+   "notRanked": 44
+  }
+ },
+ "selectedMode": "patient",
+ "phenotypeRankingMs": {
+  "median": 53,
+  "p95": 175
+ },
+ "variantPrioritization": {
+  "candidatesPerCase": 20,
+  "variantPoolAnnotated": "230/230",
+  "casesWithCausalAnnotated": 200,
+  "withPhenotypes": {
+   "n": 200,
+   "top1": 50.5,
+   "top3": 59,
+   "top5": 63,
+   "mrr": 0.58,
+   "notRanked": 0
+  },
+  "variantEvidenceOnly": {
+   "n": 200,
+   "top1": 0,
+   "top3": 2.5,
+   "top5": 32,
+   "mrr": 0.143,
+   "notRanked": 0
+  },
+  "vepSeconds": 64,
+  "prioritizationSeconds": 0.1
+ },
+ "perCase": [
+  {
+   "id": "PMID_24573067_CASE_REPORT",
+   "gene": "AAGAB",
+   "disease": "Keratoderma, palmoplantar, punctate type IA",
+   "hpoTerms": 3,
+   "geneRank": 3,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_34014594_Index_patient",
+   "gene": "ABCC8",
+   "disease": "Maturity-onset diabetes of the young, type 12",
+   "hpoTerms": 8,
+   "geneRank": 9,
+   "variantRank": 1,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_30315159_Patient_6",
+   "gene": "ACTB",
+   "disease": "Thrombocytopenia 8, with dysmorphic features and developmental delay",
+   "hpoTerms": 12,
+   "geneRank": 177,
+   "variantRank": 2,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_28830446_Patient_1",
+   "gene": "ADA2",
+   "disease": "Vasculitis, autoinflammation, immunodeficiency, and hematologic defects syndrome",
+   "hpoTerms": 17,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 17
+  },
+  {
+   "id": "PMID_35962790_Family_D_Individual_5_II_2",
+   "gene": "ADAMTS15",
+   "disease": "Arthrogryposis, distal, type 12",
+   "hpoTerms": 14,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_29707406_B_III_6",
+   "gene": "ADGRG1",
+   "disease": "Cortical dysplasia, complex, with other brain malformations 14A, (bilateral frontoparietal)",
+   "hpoTerms": 5,
+   "geneRank": 14.5,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_27376152_FPLD_122_2",
+   "gene": "ADRA2A",
+   "disease": "Lipodystrophy, familial partial, type 8",
+   "hpoTerms": 7,
+   "geneRank": null,
+   "variantRank": 18,
+   "variantOnlyRank": 17
+  },
+  {
+   "id": "PMID_26040326_eldest_sister_III_1",
+   "gene": "AMN",
+   "disease": "Imerslund-Grasbeck syndrome 2",
+   "hpoTerms": 3,
+   "geneRank": 1.5,
+   "variantRank": 1,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_36751037_Family_B_individual_4",
+   "gene": "AMOTL1",
+   "disease": "Craniofaciocardiohepatic syndrome",
+   "hpoTerms": 4,
+   "geneRank": 1773,
+   "variantRank": 6,
+   "variantOnlyRank": 11
+  },
+  {
+   "id": "PMID_38096951_Family_1_III_12",
+   "gene": "APOA4",
+   "disease": "Tubulointerstitial kidney disease, autosomal dominant 6",
+   "hpoTerms": 8,
+   "geneRank": null,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_35638551_Patient_PM9",
+   "gene": "APOLD1",
+   "disease": "Bleeding disorder, vascular-type",
+   "hpoTerms": 4,
+   "geneRank": null,
+   "variantRank": 20,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_36929019_F2_II4",
+   "gene": "ARHGEF15",
+   "disease": "Brain small vessel disease 5 with osteoporosis",
+   "hpoTerms": 4,
+   "geneRank": null,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_33988247_Family_208_II_1",
+   "gene": "ATG4D",
+   "disease": "Spermatogenic failure 101",
+   "hpoTerms": 3,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 15.5
+  },
+  {
+   "id": "PMID_28065471_PIV_1",
+   "gene": "ATP6V1A",
+   "disease": "Cutis laxa, autosomal recessive, type IID",
+   "hpoTerms": 24,
+   "geneRank": 427.5,
+   "variantRank": 3,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_30850397_proband_II_2",
+   "gene": "BBS5",
+   "disease": "Bardet-Biedl syndrome 5",
+   "hpoTerms": 10,
+   "geneRank": 15,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_35266227_Patient_2",
+   "gene": "BNIP1",
+   "disease": "Spondylopeiphyseal dysplasia, Holling type",
+   "hpoTerms": 13,
+   "geneRank": null,
+   "variantRank": 19,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_36136249_II_3_of_family_A",
+   "gene": "CAPRIN1",
+   "disease": "Neurodegeneration, childhood-onset, with cerebellar ataxia and cognitive decline",
+   "hpoTerms": 13,
+   "geneRank": 3290.5,
+   "variantRank": 10,
+   "variantOnlyRank": 12.5
+  },
+  {
+   "id": "PMID_36006710_Patient_3",
+   "gene": "CBLB",
+   "disease": "Autoimmune disease, multisystem, infantile-onset, 3",
+   "hpoTerms": 5,
+   "geneRank": null,
+   "variantRank": 14,
+   "variantOnlyRank": 8
+  },
+  {
+   "id": "PMID_31985809_GL_12",
+   "gene": "CCIN",
+   "disease": "Spermatogenic failure 91",
+   "hpoTerms": 3,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 17.5
+  },
+  {
+   "id": "PMID_39414788_III_4",
+   "gene": "CCN2",
+   "disease": "Spondyloepimetaphyseal dysplasia, Li-Shao-Li type",
+   "hpoTerms": 7,
+   "geneRank": 364.5,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_18297069_Case_4",
+   "gene": "CCNQ",
+   "disease": "STAR syndrome",
+   "hpoTerms": 9,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_12445216_affected_13_y_old_patient",
+   "gene": "CDH3",
+   "disease": "Hypotrichosis, congenital, with juvenile macular dystrophy",
+   "hpoTerms": 4,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_28886341_Individual_F1_II_3",
+   "gene": "CDK10",
+   "disease": "Al Kaissi syndrome",
+   "hpoTerms": 24,
+   "geneRank": 3030,
+   "variantRank": 17,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_23726037_patient",
+   "gene": "CDK5RAP2",
+   "disease": "Microcephaly 3, primary, autosomal recessive",
+   "hpoTerms": 5,
+   "geneRank": 1117,
+   "variantRank": 6,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_36752199_Family_3_P7",
+   "gene": "CFAP57",
+   "disease": "Spermatogenic failure 95",
+   "hpoTerms": 5,
+   "geneRank": null,
+   "variantRank": 14.5,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_17661815_Patient_A_II_2",
+   "gene": "CHD7",
+   "disease": "CHARGE syndrome",
+   "hpoTerms": 5,
+   "geneRank": 75.5,
+   "variantRank": 1,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_20961246_fetus_2",
+   "gene": "CHUK",
+   "disease": "Fetal encasement syndrome",
+   "hpoTerms": 13,
+   "geneRank": 1044,
+   "variantRank": 6,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_39753129_Family_6_II_8",
+   "gene": "CIROZ",
+   "disease": "Heterotaxy, visceral, 14",
+   "hpoTerms": 6,
+   "geneRank": null,
+   "variantRank": 11.5,
+   "variantOnlyRank": 6.5
+  },
+  {
+   "id": "PMID_36443312_Family_1_II_5",
+   "gene": "CMPK2",
+   "disease": "Basal ganglia calcification, idiopathic, 10, autosomal recessive",
+   "hpoTerms": 8,
+   "geneRank": 14.5,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_28742248_Patient_3",
+   "gene": "COL3A1",
+   "disease": "Polymicrogyria with or without vascular-type EDS",
+   "hpoTerms": 6,
+   "geneRank": 6,
+   "variantRank": 1,
+   "variantOnlyRank": 14.5
+  },
+  {
+   "id": "PMID_8923000_Family_A_proband",
+   "gene": "COL5A1",
+   "disease": "Ehlers-Danlos syndrome, classic type, 1",
+   "hpoTerms": 6,
+   "geneRank": 3,
+   "variantRank": 1,
+   "variantOnlyRank": 6.5
+  },
+  {
+   "id": "PMID_17886299_patient_BM5",
+   "gene": "COL6A1",
+   "disease": "Bethlem myopathy 1A",
+   "hpoTerms": 6,
+   "geneRank": 10,
+   "variantRank": 1,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_11381124_Family_B_proband",
+   "gene": "COL6A2",
+   "disease": "Ullrich congenital muscular dystrophy 1B",
+   "hpoTerms": 12,
+   "geneRank": 2.5,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_40830826_Family_2_II_3",
+   "gene": "COX18",
+   "disease": "Charcot-Marie-Tooth disease, axonal, type 2MM",
+   "hpoTerms": 12,
+   "geneRank": 439,
+   "variantRank": 19,
+   "variantOnlyRank": 19.5
+  },
+  {
+   "id": "PMID_37947183_Family_F13_individual_P17",
+   "gene": "CRELD1",
+   "disease": "Jeffries-Lakhani neurodevelopmental syndrome",
+   "hpoTerms": 16,
+   "geneRank": 4876.5,
+   "variantRank": 18,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_31239556_individual_24",
+   "gene": "CTCF",
+   "disease": "Intellectual developmental disorder, autosomal dominant 21",
+   "hpoTerms": 20,
+   "geneRank": 7,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_26734137_patient",
+   "gene": "CYP27B1",
+   "disease": "Vitamin D-dependent rickets, type I",
+   "hpoTerms": 18,
+   "geneRank": 1.5,
+   "variantRank": 1,
+   "variantOnlyRank": 16.5
+  },
+  {
+   "id": "PMID_36316122_case_presentation",
+   "gene": "DAND5",
+   "disease": "Heterotaxy, visceral, 13, autosomal",
+   "hpoTerms": 20,
+   "geneRank": 605,
+   "variantRank": 3,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_37656279_Pedigree_D_II_4",
+   "gene": "DBR1",
+   "disease": "Xerosis and growth failure with immune and pulmonary dysfunction syndrome",
+   "hpoTerms": 9,
+   "geneRank": 37.5,
+   "variantRank": 1,
+   "variantOnlyRank": 11
+  },
+  {
+   "id": "PMID_23972372_family_2_V_2",
+   "gene": "DDX59",
+   "disease": "Orofaciodigital syndrome V",
+   "hpoTerms": 6,
+   "geneRank": 13.5,
+   "variantRank": 1,
+   "variantOnlyRank": 10
+  },
+  {
+   "id": "PMID_36067010_Family_3_Patient_5",
+   "gene": "DEPDC5",
+   "disease": "Developmental and epileptic encephalopathy 111",
+   "hpoTerms": 11,
+   "geneRank": 1802,
+   "variantRank": 7,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_28503313_patient",
+   "gene": "DHCR7",
+   "disease": "Smith-Lemli-Opitz syndrome",
+   "hpoTerms": 13,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 10.5
+  },
+  {
+   "id": "PMID_38821050_Patient_3",
+   "gene": "DHRSX",
+   "disease": "Congenital disorder of glycosylation, type 1DD",
+   "hpoTerms": 19,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_37055165_Individual_F7_1",
+   "gene": "DNA2",
+   "disease": "Rothmund-Thomson syndrome, type 4",
+   "hpoTerms": 27,
+   "geneRank": 752,
+   "variantRank": 4,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_37342957_Patient_3",
+   "gene": "DOCK11",
+   "disease": "Autoinflammatory disease, multisystem, with immune dysregulation, X-linked",
+   "hpoTerms": 12,
+   "geneRank": 11,
+   "variantRank": 2,
+   "variantOnlyRank": 15.5
+  },
+  {
+   "id": "PMID_19776401_Patient_1_1",
+   "gene": "DOCK8",
+   "disease": "Hyper-IgE syndrome 2, autosomal recessive, with recurrent infections",
+   "hpoTerms": 12,
+   "geneRank": 14,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_25817016_Individual_BAB4073",
+   "gene": "DVL1",
+   "disease": "Robinow syndrome, autosomal dominant 2",
+   "hpoTerms": 30,
+   "geneRank": 1,
+   "variantRank": 17,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_39753114_F2_II_7",
+   "gene": "EEFSEC",
+   "disease": "Neurodevelopmental disorder with progressive spasticity and brain abnormalities",
+   "hpoTerms": 15,
+   "geneRank": null,
+   "variantRank": 16.5,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_39013458_individual_KS110041",
+   "gene": "EHMT1",
+   "disease": "Kleefstra syndrome 1",
+   "hpoTerms": 8,
+   "geneRank": 254.5,
+   "variantRank": 3,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_23222957_Family_8_8_2",
+   "gene": "EPG5",
+   "disease": "Vici syndrome",
+   "hpoTerms": 8,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 6.5
+  },
+  {
+   "id": "PMID_40232843_III_2_ID_no_1176",
+   "gene": "FAAP100",
+   "disease": "Fanconi anemia, complementation group X",
+   "hpoTerms": 6,
+   "geneRank": 13.5,
+   "variantRank": 1,
+   "variantOnlyRank": 11.5
+  },
+  {
+   "id": "PMID_16429406_first_patient",
+   "gene": "FANCC",
+   "disease": "Fanconi anemia, complementation group C",
+   "hpoTerms": 3,
+   "geneRank": 4,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_40499538_Subject_2",
+   "gene": "FASTKD5",
+   "disease": "Mitochondrial complex IV deficiency, nuclear type 24",
+   "hpoTerms": 27,
+   "geneRank": null,
+   "variantRank": 17,
+   "variantOnlyRank": 16.5
+  },
+  {
+   "id": "PMID_12189163_Sib_3",
+   "gene": "FBLN5",
+   "disease": "Cutis laxa, autosomal recessive, type IA",
+   "hpoTerms": 4,
+   "geneRank": 3.5,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_28940506_Family_14_Individual_17",
+   "gene": "FBXL4",
+   "disease": "Mitochondrial DNA depletion syndrome 13 (encephalomyopathic type)",
+   "hpoTerms": 12,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 18
+  },
+  {
+   "id": "PMID_40259859_Family_2_II_1",
+   "gene": "FGF4",
+   "disease": "Short-rib thoracic dysplasia 22 without polydactyly",
+   "hpoTerms": 9,
+   "geneRank": null,
+   "variantRank": 15,
+   "variantOnlyRank": 11
+  },
+  {
+   "id": "PMID_38701783_P3",
+   "gene": "FLT3LG",
+   "disease": "Immunodeficiency 125 ",
+   "hpoTerms": 21,
+   "geneRank": null,
+   "variantRank": 18,
+   "variantOnlyRank": 17
+  },
+  {
+   "id": "PMID_38479391_Individual_11",
+   "gene": "FRYL",
+   "disease": "Pan-Chung-Bellen syndrome",
+   "hpoTerms": 9,
+   "geneRank": null,
+   "variantRank": 15,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_37660254_Patient_1",
+   "gene": "FTH1",
+   "disease": "Neurodegeneration with brain iron accumulation 9",
+   "hpoTerms": 18,
+   "geneRank": 3586,
+   "variantRank": 11,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_25516138_IV_6",
+   "gene": "FYB1",
+   "disease": "Thrombocytopenia 3",
+   "hpoTerms": 4,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_24623842_T16706",
+   "gene": "GABRA1",
+   "disease": "Developmental and epileptic encephalopathy 19",
+   "hpoTerms": 7,
+   "geneRank": 6,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_11555793_sister_BV",
+   "gene": "GATM",
+   "disease": "Cerebral creatine deficiency syndrome 3",
+   "hpoTerms": 7,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_38773883_Female_individual_with_Asp24Asn",
+   "gene": "GINS3",
+   "disease": "Meier-Gorlin syndrome 9",
+   "hpoTerms": 11,
+   "geneRank": 325.5,
+   "variantRank": 6.5,
+   "variantOnlyRank": 18
+  },
+  {
+   "id": "PMID_20685856_Family_2_index",
+   "gene": "GLI2",
+   "disease": "Culler-Jones syndrome",
+   "hpoTerms": 12,
+   "geneRank": 8.5,
+   "variantRank": 1,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_30208878_proband",
+   "gene": "GNPTAB",
+   "disease": "Mucolipidosis III alpha/beta",
+   "hpoTerms": 22,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_39500882_Patient_3",
+   "gene": "GON4L",
+   "disease": "Li-Takada-Miyake syndrome",
+   "hpoTerms": 31,
+   "geneRank": null,
+   "variantRank": 17,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_33499149_II_3",
+   "gene": "GSN",
+   "disease": "Amyloidosis, Finnish type",
+   "hpoTerms": 8,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 11
+  },
+  {
+   "id": "PMID_38118446_F2_I_3",
+   "gene": "GTPBP1",
+   "disease": "Neurodevelopmental disorder with characteristic facial and ectodermal features and tetraparesis 1",
+   "hpoTerms": 10,
+   "geneRank": null,
+   "variantRank": 15.5,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_17928598_Patient_2",
+   "gene": "GYS1",
+   "disease": "Glycogen storage disease 0, muscle",
+   "hpoTerms": 7,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_25145518_patient_VI_1",
+   "gene": "HCN4",
+   "disease": "Sick sinus syndrome 2",
+   "hpoTerms": 4,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_27003583_Patient_2",
+   "gene": "HIVEP2",
+   "disease": "Intellectual developmental disorder, autosomal dominant 43",
+   "hpoTerms": 26,
+   "geneRank": 37,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_35484142_F8_P9",
+   "gene": "HNRNPA2B1",
+   "disease": "Oculopharyngeal muscular dystrophy 2",
+   "hpoTerms": 9,
+   "geneRank": 176.5,
+   "variantRank": 3,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_17935235_father_II_2",
+   "gene": "HOXA13",
+   "disease": "Hand-foot-genital syndrome",
+   "hpoTerms": 7,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_28403827_IV_4",
+   "gene": "HOXC13",
+   "disease": "Ectodermal dysplasia 9, hair/nail type",
+   "hpoTerms": 3,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_39526957_Patient_1",
+   "gene": "ITGAV",
+   "disease": "Immune dysregulation, neurodevelopmental defects, and colitis",
+   "hpoTerms": 26,
+   "geneRank": null,
+   "variantRank": 15,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_36302985_Patient_2",
+   "gene": "ITPR3",
+   "disease": "Immunodeficiency 133 with ectodermal dysplasia with or without peripheral neuropathy",
+   "hpoTerms": 18,
+   "geneRank": 56.5,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_36307226_Proband_15",
+   "gene": "KCNH5",
+   "disease": "Developmental and epileptic encephalopathy 112",
+   "hpoTerms": 10,
+   "geneRank": 68.5,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_36195757_Proband_2",
+   "gene": "KCNK3",
+   "disease": "Developmental delay with sleep apnea",
+   "hpoTerms": 14,
+   "geneRank": 4995,
+   "variantRank": 13,
+   "variantOnlyRank": 8
+  },
+  {
+   "id": "PMID_24029078_Patient_1",
+   "gene": "KCNT1",
+   "disease": "Developmental and epileptic encephalopathy 14",
+   "hpoTerms": 4,
+   "geneRank": 84.5,
+   "variantRank": 1,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_38791218_Family_1_Patient_5_II_4",
+   "gene": "KCTD1",
+   "disease": "Dental radicular dysplasia",
+   "hpoTerms": 4,
+   "geneRank": 377,
+   "variantRank": 16,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_36214804_P10",
+   "gene": "KLHL20",
+   "disease": "Neurodevelopmental disorder with early-onset seizures, facial dysmorphism, and behavioral abnormalities",
+   "hpoTerms": 12,
+   "geneRank": 1260.5,
+   "variantRank": 4,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_17056636_Patient_No_10",
+   "gene": "KRAS",
+   "disease": "Noonan syndrome 3",
+   "hpoTerms": 13,
+   "geneRank": 5,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_18219278_proband",
+   "gene": "KRT10",
+   "disease": "Epidermolytic hyperkeratosis 2B, autosomal recessive",
+   "hpoTerms": 4,
+   "geneRank": 4.5,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_18477167_III_4",
+   "gene": "KRT9",
+   "disease": "Palmoplantar keratoderma, epidermolytic, 1",
+   "hpoTerms": 3,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_34606115_F2_8",
+   "gene": "LAMB1",
+   "disease": "Leukoencephalopathy without lacunae, adult-onset",
+   "hpoTerms": 4,
+   "geneRank": 32.5,
+   "variantRank": 17,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_21236492_Individual_P5",
+   "gene": "LAMB2",
+   "disease": "Nephrotic syndrome, type 5, with or without ocular abnormalities",
+   "hpoTerms": 4,
+   "geneRank": 1.5,
+   "variantRank": 1,
+   "variantOnlyRank": 10
+  },
+  {
+   "id": "PMID_35583550_Family_2_Mother",
+   "gene": "LEF1",
+   "disease": "Ectodermal dysplasia 17 with or without limb malformations",
+   "hpoTerms": 3,
+   "geneRank": 1242,
+   "variantRank": 4,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_28757203_Individual_2_P2",
+   "gene": "LIPT2",
+   "disease": "Encephalopathy, neonatal severe, with lactic acidosis and brain abnormalities",
+   "hpoTerms": 8,
+   "geneRank": 4072.5,
+   "variantRank": 12,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_30881852_index_case",
+   "gene": "LMX1B",
+   "disease": "Nail-patella syndrome",
+   "hpoTerms": 5,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_25406581_P2",
+   "gene": "MAP3K14",
+   "disease": "Immunodeficiency 112",
+   "hpoTerms": 10,
+   "geneRank": 31,
+   "variantRank": 2,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_30612693_Individual_8",
+   "gene": "MAPK8IP3",
+   "disease": "Neurodevelopmental disorder with or without variable brain abnormalities",
+   "hpoTerms": 9,
+   "geneRank": null,
+   "variantRank": 14,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_37875108_Patient_1",
+   "gene": "MCTS1",
+   "disease": "Immunodeficiency 118, mycobacteriosis",
+   "hpoTerms": 5,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 6.5
+  },
+  {
+   "id": "PMID_15976030_kindred_A_patient_6",
+   "gene": "MFRP",
+   "disease": "Nanophthalmos 2",
+   "hpoTerms": 3,
+   "geneRank": 3.5,
+   "variantRank": 5,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_18385497_Patient_2",
+   "gene": "MMADHC",
+   "disease": "Homocystinuria-megaloblastic anemia, cblD type",
+   "hpoTerms": 10,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_37133451_Individual_P1",
+   "gene": "MRPL39",
+   "disease": "Combined oxidative phosphorylation deficiency 59",
+   "hpoTerms": 15,
+   "geneRank": null,
+   "variantRank": 17,
+   "variantOnlyRank": 16
+  },
+  {
+   "id": "PMID_15496425_patient",
+   "gene": "MUSK",
+   "disease": "Myasthenic syndrome, congenital, 9, associated with acetylcholine receptor deficiency",
+   "hpoTerms": 9,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_28584669_newborn_male",
+   "gene": "MYH3",
+   "disease": "Arthrogryposis, distal, type 2A (Freeman-Sheldon)",
+   "hpoTerms": 12,
+   "geneRank": 13.5,
+   "variantRank": 1,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_38977784_PKMR471_IV_3",
+   "gene": "NAV3",
+   "disease": "Neurodevelopmental disorder with poor or absent speech, dysmorphic facies, and behavioral abnormalities",
+   "hpoTerms": 9,
+   "geneRank": 156,
+   "variantRank": 16,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_37703920_Family_1_Patient_1",
+   "gene": "NHEJ1",
+   "disease": "Immunodeficiency 124, severe combined",
+   "hpoTerms": 23,
+   "geneRank": 22.5,
+   "variantRank": 1,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_31705625_Uncle_II_7",
+   "gene": "NIT1",
+   "disease": "Brain small vessel disease 4",
+   "hpoTerms": 3,
+   "geneRank": 3617.5,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_28575651_Individual_4",
+   "gene": "NKX6-2",
+   "disease": "Spastic ataxia 8, autosomal recessive, with hypomyelinating leukodystrophy",
+   "hpoTerms": 13,
+   "geneRank": 22,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_28392951_Patient_1",
+   "gene": "NPHS1",
+   "disease": "Nephrotic syndrome, type 1",
+   "hpoTerms": 6,
+   "geneRank": 44,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_25959430_individual_IV_2_family_A",
+   "gene": "NPR2",
+   "disease": "Acromesomelic dysplasia 1, Maroteaux type",
+   "hpoTerms": 9,
+   "geneRank": 16,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_40610405_COL034_1",
+   "gene": "NR6A1",
+   "disease": "Oculovertebral syndrome",
+   "hpoTerms": 11,
+   "geneRank": null,
+   "variantRank": 15.5,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_22541559_individual_M_192_V_3",
+   "gene": "NSUN2",
+   "disease": "Intellectual developmental disorder, autosomal recessive 5",
+   "hpoTerms": 3,
+   "geneRank": 220.5,
+   "variantRank": 2,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_37226891_Individual_1",
+   "gene": "NSUN6",
+   "disease": "Intellectual developmental disorder, autosomal recessive 82",
+   "hpoTerms": 9,
+   "geneRank": null,
+   "variantRank": 14,
+   "variantOnlyRank": 3
+  },
+  {
+   "id": "PMID_30364145_proband",
+   "gene": "OTUD6B",
+   "disease": "Intellectual developmental disorder with dysmorphic facies, seizures, and distal limb anomalies",
+   "hpoTerms": 21,
+   "geneRank": 256.5,
+   "variantRank": 2,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_35304602_Family_3_individual_3_1",
+   "gene": "PAN2",
+   "disease": "Developmental delay with variable cardiac and renal congenital anomalies and dysmorphic facies",
+   "hpoTerms": 20,
+   "geneRank": 362.5,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_15911822_Patient_4",
+   "gene": "PANK2",
+   "disease": "Neurodegeneration with brain iron accumulation 1",
+   "hpoTerms": 10,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_36595822_Case_presentation",
+   "gene": "PAX4",
+   "disease": "Maturity-onset diabetes of the young, type IX",
+   "hpoTerms": 8,
+   "geneRank": 7,
+   "variantRank": 1,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_24889630_Proband_2",
+   "gene": "PCYT1A",
+   "disease": "Lipodystrophy, congenital generalized, type 5",
+   "hpoTerms": 11,
+   "geneRank": 959.5,
+   "variantRank": 8,
+   "variantOnlyRank": 7
+  },
+  {
+   "id": "PMID_41533792_Family_4_subject_2",
+   "gene": "PGBD5",
+   "disease": "Neurodevelopmental disorder with seizures, hypotonia, and variable spasticity",
+   "hpoTerms": 14,
+   "geneRank": null,
+   "variantRank": 16.5,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_28413018_A_IV_6",
+   "gene": "PLAA",
+   "disease": "Neurodevelopmental disorder with progressive microcephaly, spasticity, and brain anomalies",
+   "hpoTerms": 16,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_29078790_proband",
+   "gene": "PMP22",
+   "disease": "Neuropathy, recurrent, with pressure palsies",
+   "hpoTerms": 4,
+   "geneRank": 8,
+   "variantRank": 1,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_25480986_individual_D_1",
+   "gene": "PNPLA6",
+   "disease": "Oliver-McFarlane syndrome",
+   "hpoTerms": 8,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_38099988_patient",
+   "gene": "POLD3",
+   "disease": "Immunodeficiency 122",
+   "hpoTerms": 25,
+   "geneRank": 5,
+   "variantRank": 1,
+   "variantOnlyRank": 14.5
+  },
+  {
+   "id": "PMID_26908613_MOGL2064",
+   "gene": "POMGNT1",
+   "disease": "Retinitis pigmentosa 76",
+   "hpoTerms": 9,
+   "geneRank": 51.5,
+   "variantRank": 1,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_38181735_Patient_8",
+   "gene": "PPFIA3",
+   "disease": "Paul-Chao neurodevelopmental syndrome",
+   "hpoTerms": 27,
+   "geneRank": null,
+   "variantRank": 17.5,
+   "variantOnlyRank": 16
+  },
+  {
+   "id": "PMID_29483676_proband",
+   "gene": "PREPL",
+   "disease": "Myasthenic syndrome, congenital, 22",
+   "hpoTerms": 20,
+   "geneRank": 520,
+   "variantRank": 5,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_39050568_Case_report",
+   "gene": "PRKAR1A",
+   "disease": "Carney complex, type 1",
+   "hpoTerms": 14,
+   "geneRank": 1.5,
+   "variantRank": 1,
+   "variantOnlyRank": 2.5
+  },
+  {
+   "id": "PMID_18412284_Patient_III_8",
+   "gene": "PRPF3",
+   "disease": "Retinitis pigmentosa 18",
+   "hpoTerms": 5,
+   "geneRank": 58,
+   "variantRank": 1,
+   "variantOnlyRank": 2.5
+  },
+  {
+   "id": "PMID_38503300_Individual_6",
+   "gene": "PSMB10",
+   "disease": "Immunodeficiency 121 with autoinflammation",
+   "hpoTerms": 12,
+   "geneRank": 139,
+   "variantRank": 8,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_34819510_Patient_1",
+   "gene": "PSMB9",
+   "disease": "Proteasome-associated autoinflammatory syndrome 6",
+   "hpoTerms": 22,
+   "geneRank": 1,
+   "variantRank": 6,
+   "variantOnlyRank": 14.5
+  },
+  {
+   "id": "PMID_37256937_Patient_6",
+   "gene": "PSMC3",
+   "disease": "Ebstein-Bezieau neurodevelopmental syndrome",
+   "hpoTerms": 6,
+   "geneRank": 2475,
+   "variantRank": 9,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_38422122_Patient_9_Kindred_F",
+   "gene": "PTCRA",
+   "disease": "Immunodeficiency 126",
+   "hpoTerms": 5,
+   "geneRank": null,
+   "variantRank": 11.5,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_21487760_Patient_5",
+   "gene": "PYCR1",
+   "disease": "Cutis laxa, autosomal recessive, type IIB",
+   "hpoTerms": 11,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_28984260_child",
+   "gene": "PYGL",
+   "disease": "Glycogen storage disease VI",
+   "hpoTerms": 11,
+   "geneRank": 11,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_37384395_F2_2",
+   "gene": "RAB34",
+   "disease": "Orofaciodigital syndrome XX",
+   "hpoTerms": 12,
+   "geneRank": 368,
+   "variantRank": 4,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_41492970_Individual_T_II_2",
+   "gene": "RAB3A",
+   "disease": "Spinocerebellar ataxia 52",
+   "hpoTerms": 10,
+   "geneRank": 6,
+   "variantRank": 1,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_20932317_SMS335",
+   "gene": "RAI1",
+   "disease": "Smith-Magenis syndrome",
+   "hpoTerms": 17,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_32627184_Case_1",
+   "gene": "RAP1B",
+   "disease": "Thrombocytopenia 11 with multiple congenital anomalies and dysmorphic facies",
+   "hpoTerms": 30,
+   "geneRank": 4,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_33875846_patient_23",
+   "gene": "RAP1GDS1",
+   "disease": "Alfadhel syndrome",
+   "hpoTerms": 8,
+   "geneRank": 1864,
+   "variantRank": 6,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_37628710_proposita_II_2",
+   "gene": "RDH8",
+   "disease": "Stargardt disease 5",
+   "hpoTerms": 8,
+   "geneRank": null,
+   "variantRank": 15,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_30643655_F1_IV_1",
+   "gene": "RETREG1",
+   "disease": "Neuropathy, hereditary sensory and autonomic, type IIB",
+   "hpoTerms": 9,
+   "geneRank": 7.5,
+   "variantRank": 1,
+   "variantOnlyRank": 7.5
+  },
+  {
+   "id": "PMID_37584719_P15",
+   "gene": "RFXAP",
+   "disease": "MHC class II deficiency 4",
+   "hpoTerms": 9,
+   "geneRank": 14,
+   "variantRank": 1,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_30936877_8_year_old_girl",
+   "gene": "RNF31",
+   "disease": "Immunodeficiency 115 with autoinflammation",
+   "hpoTerms": 12,
+   "geneRank": 1,
+   "variantRank": 16.5,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_40210679_M2",
+   "gene": "RNU2-2",
+   "disease": "Developmental and epileptic encephalopathy 119",
+   "hpoTerms": 24,
+   "geneRank": 297,
+   "variantRank": 18,
+   "variantOnlyRank": 17.5
+  },
+  {
+   "id": "PMID_38991538_Individual_6_MAN_0872",
+   "gene": "RNU4-2",
+   "disease": "ReNU syndrome",
+   "hpoTerms": 19,
+   "geneRank": 3,
+   "variantRank": 19,
+   "variantOnlyRank": 12.5
+  },
+  {
+   "id": "PMID_40379786_Patient_155",
+   "gene": "RNU5B-1",
+   "disease": "Neurodevelopmental disorder with seizures and joint laxity",
+   "hpoTerms": 15,
+   "geneRank": 42,
+   "variantRank": 13,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_35617047_Proband_2",
+   "gene": "RRM1",
+   "disease": "Progressive external ophthalmoplegia with mitochondrial DNA deletions, autosomal recessive 6",
+   "hpoTerms": 5,
+   "geneRank": 8,
+   "variantRank": 1,
+   "variantOnlyRank": 16
+  },
+  {
+   "id": "PMID_41059649_Case_C_II_2",
+   "gene": "RRP12",
+   "disease": "Basal ganglia calcification, idiopathic, 11, autosomal recessive",
+   "hpoTerms": 14,
+   "geneRank": 6.5,
+   "variantRank": 8,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_31548836_Family_E_II1",
+   "gene": "RUNX2",
+   "disease": "Cleidocranial dysplasia",
+   "hpoTerms": 20,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_30296944_Case_presentation",
+   "gene": "RYR2",
+   "disease": "Ventricular tachycardia, catecholaminergic polymorphic, 1",
+   "hpoTerms": 5,
+   "geneRank": 28,
+   "variantRank": 1,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_38272031_Individual_4_2",
+   "gene": "SAMD7",
+   "disease": "Macular dystrophy with or without cone dysfunction",
+   "hpoTerms": 4,
+   "geneRank": null,
+   "variantRank": 12,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_31021519_SATB2_39_from_Zarate_et_al_2018a_Scott_et_al",
+   "gene": "SATB2",
+   "disease": "Glass syndrome",
+   "hpoTerms": 8,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_11410597_proband",
+   "gene": "SCN5A",
+   "disease": "Brugada syndrome 1",
+   "hpoTerms": 3,
+   "geneRank": 12,
+   "variantRank": 1,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_19353847_patient",
+   "gene": "SCO2",
+   "disease": "Mitochondrial complex IV deficiency, nuclear type 2",
+   "hpoTerms": 7,
+   "geneRank": 1,
+   "variantRank": 2,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_27392076_1_III_5",
+   "gene": "SEC61A1",
+   "disease": "Tubulointerstitial kidney disease, autosomal dominant, 5",
+   "hpoTerms": 8,
+   "geneRank": 19,
+   "variantRank": 1,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_38531365_Individual_6",
+   "gene": "SEPHS1",
+   "disease": "Ververi-Brady syndrome 2",
+   "hpoTerms": 12,
+   "geneRank": null,
+   "variantRank": 15.5,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_31251474_proband",
+   "gene": "SERAC1",
+   "disease": "3-methylglutaconic aciduria with deafness, encephalopathy, and Leigh-like syndrome",
+   "hpoTerms": 19,
+   "geneRank": 6,
+   "variantRank": 1,
+   "variantOnlyRank": 3
+  },
+  {
+   "id": "PMID_21371013_Case_1",
+   "gene": "SETBP1",
+   "disease": "Schinzel-Giedion midface retraction syndrome",
+   "hpoTerms": 29,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_38609546_patient_P1",
+   "gene": "SHARPIN",
+   "disease": "Autoinflammation with episodic fever and immune dysregulation",
+   "hpoTerms": 10,
+   "geneRank": null,
+   "variantRank": 19,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_40890458_Family_1_IV_11",
+   "gene": "SKOR2",
+   "disease": "Valence-Farazi cerebellar ataxia syndrome",
+   "hpoTerms": 6,
+   "geneRank": 149.5,
+   "variantRank": 2,
+   "variantOnlyRank": 16
+  },
+  {
+   "id": "PMID_37459438_Family_2_II_1",
+   "gene": "SLC4A10",
+   "disease": "Neurodevelopmental disorder with hypotonia and characteristic brain abnormalities",
+   "hpoTerms": 13,
+   "geneRank": 269,
+   "variantRank": 2,
+   "variantOnlyRank": 3.5
+  },
+  {
+   "id": "PMID_30400883_proband",
+   "gene": "SLC6A8",
+   "disease": "Cerebral creatine deficiency syndrome 1",
+   "hpoTerms": 10,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 18
+  },
+  {
+   "id": "PMID_30157302_Patient_1",
+   "gene": "SMAD2",
+   "disease": "Congenital heart defects, multiple types, 8, with or without heterotaxy",
+   "hpoTerms": 26,
+   "geneRank": 505.5,
+   "variantRank": 3,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_36965478_Individual_5",
+   "gene": "SNAPC4",
+   "disease": "Neurodevelopmental disorder with motor regression, progressive spastic paraplegia, and oromotor dysfunction",
+   "hpoTerms": 7,
+   "geneRank": null,
+   "variantRank": 10,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_38423010_individual_D1",
+   "gene": "SNF8",
+   "disease": "Neurodevelopmental disorder plus optic atrophy",
+   "hpoTerms": 7,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_38366623_Individual_F1_II_1",
+   "gene": "SNUPN",
+   "disease": "Muscular dystrophy, limb-girdle, autosomal recessive 29",
+   "hpoTerms": 13,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 16
+  },
+  {
+   "id": "PMID_30236613_patient",
+   "gene": "SOD1",
+   "disease": "Amyotrophic lateral sclerosis 1",
+   "hpoTerms": 7,
+   "geneRank": 19.5,
+   "variantRank": 1.5,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_29382611_proband_II_5",
+   "gene": "SP7",
+   "disease": "Osteogenesis imperfecta, type XII",
+   "hpoTerms": 17,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_17646629_brother_II_4",
+   "gene": "SPG7",
+   "disease": "Spastic paraplegia 7, autosomal recessive",
+   "hpoTerms": 11,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 12
+  },
+  {
+   "id": "PMID_36927955_proband",
+   "gene": "SPIN4",
+   "disease": "Lui-Jee-Baron syndrome",
+   "hpoTerms": 12,
+   "geneRank": null,
+   "variantRank": 15,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_22089833_8",
+   "gene": "SPINK5",
+   "disease": "Netherton syndrome",
+   "hpoTerms": 11,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_39962046_J_II_1",
+   "gene": "SPOUT1",
+   "disease": "Neurodevelopmental disorder with poor growth, seizures, and brain abnormalities",
+   "hpoTerms": 3,
+   "geneRank": null,
+   "variantRank": 19,
+   "variantOnlyRank": 19
+  },
+  {
+   "id": "PMID_39073169_Patient_F1_III_7",
+   "gene": "SRPK3",
+   "disease": "Intellectual developmental disorder, X-linked 114",
+   "hpoTerms": 7,
+   "geneRank": null,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_37985816_proband",
+   "gene": "SV2A",
+   "disease": "Developmental and epileptic encephalopathy 113",
+   "hpoTerms": 18,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_32303603_family_P0001_IV_2",
+   "gene": "SYCP2L",
+   "disease": "Premature ovarian failure 24",
+   "hpoTerms": 7,
+   "geneRank": null,
+   "variantRank": 12,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_26805781_Family_3_Subject_3_II_1",
+   "gene": "TANGO2",
+   "disease": "Metabolic encephalomyopathic crises, recurrent, with rhabdomyolysis, cardiac arrhythmias, and neurodegeneration",
+   "hpoTerms": 12,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 11
+  },
+  {
+   "id": "PMID_32060556_Pedigree_II_proband_II_8",
+   "gene": "TBC1D32",
+   "disease": "Alsahan-Harris syndrome",
+   "hpoTerms": 27,
+   "geneRank": 6,
+   "variantRank": 1,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_34363755_Family_1_individual_P1",
+   "gene": "TBK1",
+   "disease": "Autoinflammation with arthritis and vasculitis",
+   "hpoTerms": 18,
+   "geneRank": 1681,
+   "variantRank": 4,
+   "variantOnlyRank": 4.5
+  },
+  {
+   "id": "PMID_24108658_Family_2_Patient_3",
+   "gene": "TCOF1",
+   "disease": "Treacher Collins syndrome 1",
+   "hpoTerms": 10,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_39480921_Patient_3",
+   "gene": "TCP1",
+   "disease": "Intellectual developmental disorder with polymicrogyria and seizures",
+   "hpoTerms": 6,
+   "geneRank": null,
+   "variantRank": 14,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_27861123_Patient_1",
+   "gene": "TECRL",
+   "disease": "Ventricular tachycardia, catecholaminergic polymorphic, 3",
+   "hpoTerms": 5,
+   "geneRank": 53,
+   "variantRank": 1,
+   "variantOnlyRank": 13.5
+  },
+  {
+   "id": "PMID_36823193_Patient_2_Family_1",
+   "gene": "TEFM",
+   "disease": "Combined oxidative phosphorylation deficiency 58",
+   "hpoTerms": 12,
+   "geneRank": null,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_15639475_young_male_patient",
+   "gene": "TGFB3",
+   "disease": "Arrhythmogenic right ventricular dysplasia 1",
+   "hpoTerms": 7,
+   "geneRank": 533.5,
+   "variantRank": 3,
+   "variantOnlyRank": 15
+  },
+  {
+   "id": "PMID_28449119_patient",
+   "gene": "THAP11",
+   "disease": "Methylmalonic aciduria and homocystinuria, cblL type ",
+   "hpoTerms": 8,
+   "geneRank": 2564,
+   "variantRank": 19.5,
+   "variantOnlyRank": 19.5
+  },
+  {
+   "id": "PMID_30658709_patient",
+   "gene": "TJP2",
+   "disease": "Cholestasis, progressive familial intrahepatic 4",
+   "hpoTerms": 11,
+   "geneRank": 262.5,
+   "variantRank": 1,
+   "variantOnlyRank": 3
+  },
+  {
+   "id": "PMID_40449487_Individual_3",
+   "gene": "TM2D3",
+   "disease": "Neurocardiorenal malformation syndrome",
+   "hpoTerms": 25,
+   "geneRank": null,
+   "variantRank": 13,
+   "variantOnlyRank": 8
+  },
+  {
+   "id": "PMID_37421948_Individual_8",
+   "gene": "TMEM63B",
+   "disease": "Developmental and epileptic encephalopathy 118",
+   "hpoTerms": 14,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_36299998_affected_individual",
+   "gene": "TOMM7",
+   "disease": "Garg-Mishra progeroid syndrome",
+   "hpoTerms": 16,
+   "geneRank": 1898.5,
+   "variantRank": 3,
+   "variantOnlyRank": 5.5
+  },
+  {
+   "id": "PMID_32376980_Patient_24_mother_of_patients_25_and_26",
+   "gene": "TRAF7",
+   "disease": "Cardiac, facial, and digital anomalies with developmental delay",
+   "hpoTerms": 7,
+   "geneRank": 1028,
+   "variantRank": 5,
+   "variantOnlyRank": 6
+  },
+  {
+   "id": "PMID_27132592_Subject_2",
+   "gene": "TRMT10C",
+   "disease": "Combined oxidative phosphorylation deficiency 30",
+   "hpoTerms": 16,
+   "geneRank": null,
+   "variantRank": 16.5,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_23691375_4_year_old_girl",
+   "gene": "TRPS1",
+   "disease": "Trichorhinophalangeal syndrome, type I",
+   "hpoTerms": 8,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_33539324_C_II_3",
+   "gene": "TSPOAP1",
+   "disease": "Dystonia 22, adult-onset",
+   "hpoTerms": 3,
+   "geneRank": 14,
+   "variantRank": 1,
+   "variantOnlyRank": 14
+  },
+  {
+   "id": "PMID_38884572_Family_9_Patient_10",
+   "gene": "TUBA4A",
+   "disease": "Spastic ataxia 11, autosomal dominant",
+   "hpoTerms": 6,
+   "geneRank": 89,
+   "variantRank": 1,
+   "variantOnlyRank": 9.5
+  },
+  {
+   "id": "PMID_39721588_Individual_16",
+   "gene": "UBR5",
+   "disease": "Neurodevelopmental disorder with speech delay and behavioral abnormalities",
+   "hpoTerms": 12,
+   "geneRank": null,
+   "variantRank": 11,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_40267907_Family_6_2",
+   "gene": "UGGT1",
+   "disease": "Congenital disorder of glycosylation, type IICC",
+   "hpoTerms": 16,
+   "geneRank": null,
+   "variantRank": 15.5,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_14531790_F739_individual_I_1",
+   "gene": "UMOD",
+   "disease": "Tubulointerstitial kidney disease, autosomal dominant, 1",
+   "hpoTerms": 3,
+   "geneRank": 2,
+   "variantRank": 1,
+   "variantOnlyRank": 14.5
+  },
+  {
+   "id": "PMID_41125872_Pathogenic_19",
+   "gene": "UNC13A",
+   "disease": "Neurodevelopmental disorder with speech delay, movement abnormalities, and seizures",
+   "hpoTerms": 9,
+   "geneRank": 322,
+   "variantRank": 2,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_19208399_Patient_II_3",
+   "gene": "VCP",
+   "disease": "Inclusion body myopathy with early-onset Paget disease and frontotemporal dementia 1",
+   "hpoTerms": 12,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 10
+  },
+  {
+   "id": "PMID_26942284_V_2_from_Family_A",
+   "gene": "VPS13C",
+   "disease": "Parkinson disease 23, autosomal recessive, early onset",
+   "hpoTerms": 19,
+   "geneRank": 48,
+   "variantRank": 1,
+   "variantOnlyRank": 5
+  },
+  {
+   "id": "PMID_41757399_Case_Presentation",
+   "gene": "WAS",
+   "disease": "Wiskott-Aldrich syndrome",
+   "hpoTerms": 23,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 8.5
+  },
+  {
+   "id": "PMID_37963460_Family_1_individual_III_1",
+   "gene": "WBP4",
+   "disease": "Neurodevelopemental disorder with hypotonia, feeding difficulties, facial dysmorphism, and brain abnormalities",
+   "hpoTerms": 13,
+   "geneRank": null,
+   "variantRank": 16,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_28686853_Individual_5",
+   "gene": "WDR26",
+   "disease": "Skraban-Deardorff syndrome",
+   "hpoTerms": 12,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 4
+  },
+  {
+   "id": "PMID_24369382_Family_1_II_1",
+   "gene": "WWOX",
+   "disease": "Spinocerebellar ataxia, autosomal recessive 12",
+   "hpoTerms": 8,
+   "geneRank": 24,
+   "variantRank": 1,
+   "variantOnlyRank": 8
+  },
+  {
+   "id": "PMID_38508705_Case_4",
+   "gene": "ZFHX3",
+   "disease": "Epilepsy, idiopathic generalized 20",
+   "hpoTerms": 3,
+   "geneRank": 3541.5,
+   "variantRank": 20,
+   "variantOnlyRank": 20
+  },
+  {
+   "id": "PMID_17295247_Individual_III_3",
+   "gene": "ZIC3",
+   "disease": "Heterotaxy, visceral, 1, X-linked",
+   "hpoTerms": 4,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 13
+  },
+  {
+   "id": "PMID_24721225_Patient_III_1",
+   "gene": "ZMYM3",
+   "disease": "Intellectual developmental disorder, X-linked 112",
+   "hpoTerms": 7,
+   "geneRank": 252.5,
+   "variantRank": 1,
+   "variantOnlyRank": 9
+  },
+  {
+   "id": "PMID_39069253_individual_1_Current",
+   "gene": "ZNF462",
+   "disease": "Weiss-Kruszka syndrome",
+   "hpoTerms": 10,
+   "geneRank": 1,
+   "variantRank": 1,
+   "variantOnlyRank": 6
+  }
+ ]
+}
