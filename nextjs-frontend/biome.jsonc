@@ -1,16 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "files": {
     "ignoreUnknown": false,
-    "includes": [],
-    "experimentalScannerIgnores": [
-      "**/pnpm-lock.yaml",
-      "lib/db/migrations",
-      "lib/editor/react-renderer.tsx",
-      "node_modules",
-      ".next",
-      "public",
-      ".vercel"
+    "includes": [
+      "**",
+      "!!**/bun.lock",
+      "!!**/lib/db/migrations",
+      "!!**/lib/editor/react-renderer.tsx",
+      "!!**/node_modules",
+      "!!**/.next",
+      "!!**/public",
+      "!!**/.vercel"
     ]
   },
   "vcs": {
@@ -31,7 +31,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "a11y": {
         "useHtmlLang": "warn", // Not in recommended ruleset, turning on manually
         "noHeaderScope": "warn", // Not in recommended ruleset, turning on manually
