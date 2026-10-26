@@ -1,8 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import {
-    createProject,
-    getProjectsByUserId
-} from '@/lib/db/queries';
+import { createProject, getProjectsByUserId } from '@/lib/db/queries';
 import { NextRequest } from 'next/server';
 
 export async function GET() {
@@ -32,7 +29,10 @@ export async function POST(request: NextRequest) {
     const { name, description, emoji } = await request.json();
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return Response.json({ error: 'Project name is required' }, { status: 400 });
+      return Response.json(
+        { error: 'Project name is required' },
+        { status: 400 },
+      );
     }
 
     const project = await createProject({
@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
     return Response.json(project, { status: 201 });
   } catch (error) {
     console.error('Failed to create project:', error);
-    return Response.json({ error: 'Failed to create project' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to create project' },
+      { status: 500 },
+    );
   }
 }

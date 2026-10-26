@@ -6,13 +6,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import type React from 'react';
 import {
-    memo,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-    type Dispatch,
-    type SetStateAction,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -25,7 +25,11 @@ import { DragAndDrop } from '../drag-and-drop';
 import { Textarea } from '../ui/textarea';
 import { AgentSelector } from './agent-selector';
 import { AgentStatus } from './agent-status';
-import { AttachmentsButton, SendButton, StopButton } from './input-action-buttons';
+import {
+  AttachmentsButton,
+  SendButton,
+  StopButton,
+} from './input-action-buttons';
 import { MessageSearch, type SearchMessage } from './message-search';
 import { ModelSelector } from './model-selector';
 import { PreviewAttachment } from './preview-attachment';
@@ -82,7 +86,10 @@ function PureMultimodalInput({
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage('input', '');
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
+    'input',
+    '',
+  );
 
   const isLoading = status === 'submitted' || status === 'processing';
 
@@ -127,10 +134,13 @@ function PureMultimodalInput({
   }, [input, setLocalStorageInput]);
 
   // Input handler
-  const handleInput = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
-    adjustHeight();
-  }, [setInput, adjustHeight]);
+  const handleInput = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInput(event.target.value);
+      adjustHeight();
+    },
+    [setInput, adjustHeight],
+  );
 
   // Search functionality
   const { handleSearch, SearchButton } = MessageSearch({
@@ -173,7 +183,7 @@ function PureMultimodalInput({
     sendMessage({
       role: 'user',
       parts: [
-        ...attachments.map(attachment => ({
+        ...attachments.map((attachment) => ({
           type: 'file' as const,
           url: attachment.url,
           filename: attachment.name,
@@ -192,26 +202,43 @@ function PureMultimodalInput({
       textareaRef.current?.focus();
     }
   }, [
-    chatId, handleSearch, input, isSearchMode, resetHeight, setAttachments,
-    setInput, setLocalStorageInput, width, attachments, sendMessage,
+    chatId,
+    handleSearch,
+    input,
+    isSearchMode,
+    resetHeight,
+    setAttachments,
+    setInput,
+    setLocalStorageInput,
+    width,
+    attachments,
+    sendMessage,
   ]);
 
   // Attachment deletion
-  const handleDeleteAttachment = useCallback((attachment: Attachment) => {
-    setAttachments(current => current.filter(a => a.url !== attachment.url));
-  }, [setAttachments]);
-  
+  const handleDeleteAttachment = useCallback(
+    (attachment: Attachment) => {
+      setAttachments((current) =>
+        current.filter((a) => a.url !== attachment.url),
+      );
+    },
+    [setAttachments],
+  );
+
   // Determine active tool for status indication
   const lastMessage = messages[messages.length - 1];
-  const activeTool = lastMessage?.role === 'assistant' && lastMessage.toolInvocations 
-    ? lastMessage.toolInvocations.find(ti => ti.state === 'call' || ti.state === 'partial-call')?.toolName 
-    : undefined;
+  const activeTool =
+    lastMessage?.role === 'assistant' && lastMessage.toolInvocations
+      ? lastMessage.toolInvocations.find(
+          (ti) => ti.state === 'call' || ti.state === 'partial-call',
+        )?.toolName
+      : undefined;
 
   return (
     <div
       className={cx(
-        "relative w-full flex flex-col items-center gap-4",
-        isFullSize ? "h-full" : "max-w-4xl mx-auto"
+        'relative w-full flex flex-col items-center gap-4',
+        isFullSize ? 'h-full' : 'max-w-4xl mx-auto',
       )}
     >
       {/* Private Mode Indicator */}
@@ -227,14 +254,14 @@ function PureMultimodalInput({
       {/* Attachment Previews */}
       {(attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-auto items-end w-full pb-2 px-1">
-          {attachments.map(attachment => (
+          {attachments.map((attachment) => (
             <PreviewAttachment
               key={attachment.url}
               attachment={attachment}
               onDelete={handleDeleteAttachment}
             />
           ))}
-          {uploadQueue.map(filename => (
+          {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
               attachment={{ url: '', name: filename, contentType: '' }}
@@ -247,16 +274,16 @@ function PureMultimodalInput({
       {/* Agent Status Indicator */}
       <AnimatePresence>
         {isLoading && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="absolute -top-12 left-0 right-0 flex justify-center z-20 pointer-events-none"
           >
-            <AgentStatus 
-               isActive={isLoading}
-               currentTool={activeTool}
-               model={selectedModelId}
+            <AgentStatus
+              isActive={isLoading}
+              currentTool={activeTool}
+              model={selectedModelId}
             />
           </motion.div>
         )}
@@ -264,18 +291,23 @@ function PureMultimodalInput({
 
       {/* Main Input Pill */}
       <DragAndDrop onDrop={handleFileDrop} isFullSize={isFullSize}>
-        <div className={cx(
-          "relative flex flex-col w-full transition-all duration-300 ease-in-out",
-          "rounded-[32px] border shadow-sm group bg-background/50 backdrop-blur-md",
-          selectedVisibilityType === 'private'
-            ? "border-purple-500/30 dark:border-purple-500/40 focus-within:ring-2 focus-within:ring-purple-500/10"
-            : "border-zinc-200/80 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5"
-        )}>
-          <div className={cx("w-full", input.length > 0 && "pb-14")}>
+        <div
+          className={cx(
+            'relative flex flex-col w-full transition-all duration-300 ease-in-out',
+            'rounded-[32px] border shadow-sm group bg-background/50 backdrop-blur-md',
+            selectedVisibilityType === 'private'
+              ? 'border-purple-500/30 dark:border-purple-500/40 focus-within:ring-2 focus-within:ring-purple-500/10'
+              : 'border-zinc-200/80 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5',
+          )}
+        >
+          <div className={cx('w-full', input.length > 0 && 'pb-14')}>
             <Textarea
               data-testid="multimodal-input"
               ref={textareaRef}
-              placeholder={placeholder || (isSearchMode ? 'Search with Attma...' : 'Send a message...')}
+              placeholder={
+                placeholder ||
+                (isSearchMode ? 'Search with Attma...' : 'Send a message...')
+              }
               value={input}
               onChange={handleInput}
               className={cx(
@@ -289,37 +321,57 @@ function PureMultimodalInput({
               autoFocus
               suppressHydrationWarning
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
                   event.preventDefault();
                   if (status !== 'ready') {
-                    toast.error('Please wait for the model to finish its response!');
+                    toast.error(
+                      'Please wait for the model to finish its response!',
+                    );
                   } else {
                     submitForm();
                   }
                 }
-                if (event.key === 'Escape' && isSearchMode) setIsSearchMode(false);
+                if (event.key === 'Escape' && isSearchMode)
+                  setIsSearchMode(false);
               }}
             />
           </div>
 
           {/* Bottom-anchored action buttons */}
           <div className="absolute left-2.5 bottom-2.5 flex items-center">
-            <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading || isSearching} />
+            <AttachmentsButton
+              fileInputRef={fileInputRef}
+              isLoading={isLoading || isSearching}
+            />
           </div>
 
           <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1.5">
-            <div className={cx(
-              "flex items-center gap-1.5 transition-all duration-300",
-              input.length > 0 ? "opacity-100" : "opacity-0 translate-x-4 pointer-events-none"
-            )}>
+            <div
+              className={cx(
+                'flex items-center gap-1.5 transition-all duration-300',
+                input.length > 0
+                  ? 'opacity-100'
+                  : 'opacity-0 translate-x-4 pointer-events-none',
+              )}
+            >
               <SearchButton />
               <div className="h-4 w-px bg-border/40 mx-0.5" />
               {onAgentSelect && (
-                <AgentSelector currentAgentId={selectedAgentId} onAgentSelect={onAgentSelect} />
+                <AgentSelector
+                  currentAgentId={selectedAgentId}
+                  onAgentSelect={onAgentSelect}
+                />
               )}
               {selectedModelId && (
                 <div className="hidden sm:block">
-                  <ModelSelector selectedModelId={selectedModelId} triggerType="pill" />
+                  <ModelSelector
+                    selectedModelId={selectedModelId}
+                    triggerType="pill"
+                  />
                 </div>
               )}
             </div>
@@ -347,7 +399,6 @@ function PureMultimodalInput({
         onChange={handleFileChange}
         tabIndex={-1}
       />
-
     </div>
   );
 }

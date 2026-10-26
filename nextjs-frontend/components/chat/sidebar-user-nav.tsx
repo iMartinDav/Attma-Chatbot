@@ -7,16 +7,16 @@ import { memo } from 'react';
 
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { UserAvatar } from '../user-avatar';
 

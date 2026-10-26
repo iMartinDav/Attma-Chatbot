@@ -24,11 +24,7 @@ interface PDFSection {
 
 // Define document types for bioinformatics
 type BioinformaticsDocType =
-  | 'protocol'
-  | 'report'
-  | 'analysis'
-  | 'review'
-  | 'general';
+  'protocol' | 'report' | 'analysis' | 'review' | 'general';
 
 // Document type-specific prompts with placeholder for title
 const documentTemplates: Record<BioinformaticsDocType, string> = {
@@ -531,10 +527,7 @@ class APADocumentRenderer {
     }
 
     // Calculate proportional widths
-    const totalContentWidth = columnWidthsPixel.reduce(
-      (sum, w) => sum + w,
-      0,
-    );
+    const totalContentWidth = columnWidthsPixel.reduce((sum, w) => sum + w, 0);
     const minColumnWidth = 30;
 
     let columnWidths = columnWidthsPixel.map((pixelWidth) => {
@@ -761,9 +754,10 @@ const pdfInputSchema = z.object({
 });
 
 // Unified PDF generation function with APA formatting
-async function generateAndStreamPdf(
-  input: { title: string; docType?: BioinformaticsDocType },
-): Promise<string> {
+async function generateAndStreamPdf(input: {
+  title: string;
+  docType?: BioinformaticsDocType;
+}): Promise<string> {
   try {
     // Validate input
     const { title, docType } = pdfInputSchema.parse(input);

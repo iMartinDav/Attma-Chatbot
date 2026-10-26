@@ -1,14 +1,14 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import {
-    boolean,
-    foreignKey,
-    json,
-    pgTable,
-    primaryKey,
-    text,
-    timestamp,
-    uuid,
-    varchar,
+  boolean,
+  foreignKey,
+  json,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -40,7 +40,9 @@ export const chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
-  projectId: uuid('projectId').references(() => project.id, { onDelete: 'set null' }),
+  projectId: uuid('projectId').references(() => project.id, {
+    onDelete: 'set null',
+  }),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),

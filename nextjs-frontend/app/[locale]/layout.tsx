@@ -1,7 +1,4 @@
-import {
-    i18n,
-    type Locale,
-} from '@/lib/internationalization/config';
+import { i18n, type Locale } from '@/lib/internationalization/config';
 import { getDictionary } from '@/lib/internationalization/dictionaries';
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';

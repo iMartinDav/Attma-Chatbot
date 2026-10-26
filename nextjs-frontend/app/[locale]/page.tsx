@@ -1,6 +1,6 @@
 import {
-    defaultLocale,
-    isValidLocale,
+  defaultLocale,
+  isValidLocale,
 } from '@/lib/internationalization/config';
 import { getDictionary } from '@/lib/internationalization/dictionaries';
 import type { HomePageDictionary } from '@/lib/types/component-types';

@@ -72,6 +72,6 @@ export async function updateChatVisibility({
   visibility: VisibilityType;
 }) {
   if (chatId === 'new') return;
-  
+
   await updateChatVisiblityById({ chatId, visibility });
 }

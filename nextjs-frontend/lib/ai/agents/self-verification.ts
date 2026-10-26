@@ -10,21 +10,35 @@ import { z } from 'zod';
 import type { ValidationResult, VerificationStep } from './types';
 
 const CritiqueSchema = z.object({
-  overallQuality: z.number().min(1).max(10).describe('Overall quality score 1-10'),
+  overallQuality: z
+    .number()
+    .min(1)
+    .max(10)
+    .describe('Overall quality score 1-10'),
   accuracy: z.number().min(1).max(10).describe('Factual accuracy score'),
   completeness: z.number().min(1).max(10).describe('Completeness of answer'),
-  issues: z.array(z.object({
-    type: z.enum(['factual_error', 'incomplete', 'unclear', 'missing_citation', 'outdated']),
-    description: z.string(),
-    severity: z.enum(['low', 'medium', 'high']),
-    suggestedFix: z.string().optional(),
-  })),
-  claimsToVerify: z.array(z.object({
-    claim: z.string(),
-    geneSymbol: z.string().optional(),
-    paperReference: z.string().optional(),
-    verificationPriority: z.enum(['low', 'medium', 'high']),
-  })),
+  issues: z.array(
+    z.object({
+      type: z.enum([
+        'factual_error',
+        'incomplete',
+        'unclear',
+        'missing_citation',
+        'outdated',
+      ]),
+      description: z.string(),
+      severity: z.enum(['low', 'medium', 'high']),
+      suggestedFix: z.string().optional(),
+    }),
+  ),
+  claimsToVerify: z.array(
+    z.object({
+      claim: z.string(),
+      geneSymbol: z.string().optional(),
+      paperReference: z.string().optional(),
+      verificationPriority: z.enum(['low', 'medium', 'high']),
+    }),
+  ),
   needsRevision: z.boolean(),
 });
 
@@ -33,7 +47,7 @@ type Critique = z.infer<typeof CritiqueSchema>;
 /** Validate a gene claim against MyGene.info */
 async function validateGeneClaim(
   geneSymbol: string,
-  claim: string
+  claim: string,
 ): Promise<ValidationResult> {
   try {
     const url = `https://mygene.info/v3/query?q=symbol:${geneSymbol}&species=9606&fields=symbol,name,summary,go,pathway`;
@@ -54,8 +68,8 @@ async function validateGeneClaim(
     const claimLower = claim.toLowerCase();
 
     // Simple keyword matching for validation
-    const keywords = claimLower.split(/\s+/).filter(w => w.length > 3);
-    const matchCount = keywords.filter(k => summary.includes(k)).length;
+    const keywords = claimLower.split(/\s+/).filter((w) => w.length > 3);
+    const matchCount = keywords.filter((k) => summary.includes(k)).length;
     const matchRatio = matchCount / keywords.length;
 
     return {
@@ -82,12 +96,12 @@ async function validateGeneClaim(
 /** Validate a claim against PubMed */
 async function validatePaperClaim(
   claim: string,
-  searchTerms: string
+  searchTerms: string,
 ): Promise<ValidationResult> {
   try {
     const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
     const searchUrl = `${baseUrl}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(searchTerms)}&retmax=3&retmode=json`;
-    
+
     const response = await fetch(searchUrl);
     const data = await response.json();
     const ids = data.esearchresult?.idlist || [];
@@ -135,13 +149,13 @@ async function validatePaperClaim(
 
 /** Run the full self-verification pipeline */
 export async function verifySelfAnswer(
-  options: VerificationOptions
+  options: VerificationOptions,
 ): Promise<VerificationResult> {
-  const { 
-    query, 
-    initialAnswer, 
+  const {
+    query,
+    initialAnswer,
     enableValidation = true,
-    maxRevisions = 2 
+    maxRevisions = 2,
   } = options;
 
   const steps: VerificationStep[] = [];
@@ -162,28 +176,32 @@ export async function verifySelfAnswer(
     input: initialAnswer,
     output: JSON.stringify(critique),
     confidence: critique.accuracy / 10,
-    issues: critique.issues.map(i => i.description),
+    issues: critique.issues.map((i) => i.description),
   });
 
   // Step 3: Validate claims if enabled
   if (enableValidation && critique.claimsToVerify.length > 0) {
     for (const claim of critique.claimsToVerify.slice(0, 3)) {
       let result: ValidationResult;
-      
+
       if (claim.geneSymbol) {
         result = await validateGeneClaim(claim.geneSymbol, claim.claim);
       } else {
         result = await validatePaperClaim(claim.claim, claim.claim);
       }
-      
+
       validations.push(result);
     }
 
     steps.push({
       type: 'validate',
-      input: critique.claimsToVerify.map(c => c.claim).join('; '),
-      output: validations.map(v => `${v.claim}: ${v.isValid ? '✓' : '✗'}`).join('\n'),
-      confidence: validations.reduce((acc, v) => acc + v.confidence, 0) / validations.length,
+      input: critique.claimsToVerify.map((c) => c.claim).join('; '),
+      output: validations
+        .map((v) => `${v.claim}: ${v.isValid ? '✓' : '✗'}`)
+        .join('\n'),
+      confidence:
+        validations.reduce((acc, v) => acc + v.confidence, 0) /
+        validations.length,
     });
   }
 
@@ -191,14 +209,19 @@ export async function verifySelfAnswer(
   let finalAnswer = initialAnswer;
   let wasRevised = false;
 
-  if (critique.needsRevision || validations.some(v => !v.isValid)) {
-    const fixedAnswer = await fixAnswer(query, initialAnswer, critique, validations);
+  if (critique.needsRevision || validations.some((v) => !v.isValid)) {
+    const fixedAnswer = await fixAnswer(
+      query,
+      initialAnswer,
+      critique,
+      validations,
+    );
     finalAnswer = fixedAnswer;
     wasRevised = true;
 
     steps.push({
       type: 'fix',
-      input: `Issues: ${critique.issues.map(i => i.description).join('; ')}`,
+      input: `Issues: ${critique.issues.map((i) => i.description).join('; ')}`,
       output: fixedAnswer,
       confidence: 0.85,
     });
@@ -232,7 +255,10 @@ export interface VerificationResult {
 }
 
 /** Generate a critique of an answer */
-async function critiqueAnswer(query: string, answer: string): Promise<Critique> {
+async function critiqueAnswer(
+  query: string,
+  answer: string,
+): Promise<Critique> {
   const result = await generateObject({
     model: openai.chat('gpt-4o'),
     schema: CritiqueSchema,
@@ -260,10 +286,10 @@ async function fixAnswer(
   query: string,
   originalAnswer: string,
   critique: Critique,
-  validations: ValidationResult[]
+  validations: ValidationResult[],
 ): Promise<string> {
-  const invalidClaims = validations.filter(v => !v.isValid);
-  const validClaims = validations.filter(v => v.isValid);
+  const invalidClaims = validations.filter((v) => !v.isValid);
+  const validClaims = validations.filter((v) => v.isValid);
 
   const result = await generateText({
     model: openai.chat('gpt-4o'),
@@ -275,13 +301,13 @@ ORIGINAL ANSWER:
 ${originalAnswer}
 
 ISSUES FOUND:
-${critique.issues.map(i => `- [${i.severity}] ${i.description}`).join('\n')}
+${critique.issues.map((i) => `- [${i.severity}] ${i.description}`).join('\n')}
 
 INVALID CLAIMS (must be corrected or removed):
-${invalidClaims.map(v => `- "${v.claim}" - ${v.evidence}`).join('\n') || 'None'}
+${invalidClaims.map((v) => `- "${v.claim}" - ${v.evidence}`).join('\n') || 'None'}
 
 VALIDATED CLAIMS (can be kept):
-${validClaims.map(v => `- "${v.claim}" - Confirmed: ${v.evidence?.slice(0, 100)}...`).join('\n') || 'None'}
+${validClaims.map((v) => `- "${v.claim}" - Confirmed: ${v.evidence?.slice(0, 100)}...`).join('\n') || 'None'}
 
 Provide a corrected answer that:
 1. Fixes all identified issues
@@ -297,13 +323,14 @@ Provide a corrected answer that:
 function calculateConfidence(
   critique: Critique,
   validations: ValidationResult[],
-  wasRevised: boolean
+  wasRevised: boolean,
 ): number {
   let score = critique.accuracy / 10;
 
   // Factor in validations
   if (validations.length > 0) {
-    const validRatio = validations.filter(v => v.isValid).length / validations.length;
+    const validRatio =
+      validations.filter((v) => v.isValid).length / validations.length;
     score = score * 0.6 + validRatio * 0.4;
   }
 

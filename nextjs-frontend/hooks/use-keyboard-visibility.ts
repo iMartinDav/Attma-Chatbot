@@ -6,13 +6,16 @@ export function useKeyboardVisibility() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  const scrollInputIntoView = useCallback((inputElement?: HTMLElement | null) => {
-    if (!inputElement) return;
-    
-    setTimeout(() => {
-      inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  }, []);
+  const scrollInputIntoView = useCallback(
+    (inputElement?: HTMLElement | null) => {
+      if (!inputElement) return;
+
+      setTimeout(() => {
+        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return;
@@ -23,7 +26,7 @@ export function useKeyboardVisibility() {
     const handleResize = () => {
       const currentHeight = viewport.height;
       const heightDiff = initialHeight - currentHeight;
-      
+
       if (heightDiff > 150) {
         setIsKeyboardVisible(true);
         setKeyboardHeight(heightDiff);
@@ -37,7 +40,7 @@ export function useKeyboardVisibility() {
       if (isKeyboardVisible) {
         document.documentElement.style.setProperty(
           '--keyboard-offset',
-          `${viewport.offsetTop}px`
+          `${viewport.offsetTop}px`,
         );
       }
     };

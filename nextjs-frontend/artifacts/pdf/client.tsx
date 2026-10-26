@@ -1,12 +1,12 @@
 import { Artifact } from '@/components/chat/create-artifact';
 import {
-    DownloadIcon,
-    FileIcon,
-    LoaderIcon,
-    RedoIcon,
-    UndoIcon,
-    ZoomInIcon,
-    ZoomOutIcon,
+  DownloadIcon,
+  FileIcon,
+  LoaderIcon,
+  RedoIcon,
+  UndoIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -369,8 +369,8 @@ const ErrorView = ({ error }: { error: string }) => (
       <p className="text-red-600 dark:text-red-400 mt-2 text-center max-w-sm">
         {error}
       </p>
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         className="mt-6 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/40"
         onClick={() => window.location.reload()}
       >
@@ -401,13 +401,15 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           <div className="animate-spin mb-4 text-primary">
             <LoaderIcon size={24} />
           </div>
-          <TextShimmer className="text-sm font-medium">Generating PDF...</TextShimmer>
+          <TextShimmer className="text-sm font-medium">
+            Generating PDF...
+          </TextShimmer>
         </div>
       );
     }
     return <LoadingView artifactKind="pdf" />;
   }
-  
+
   if (error) return <ErrorView error={error} />;
 
   if (isInline) {
@@ -484,8 +486,7 @@ export const pdfArtifact = new Artifact<
     if (streamPart.type === 'data-pdfArtifact') {
       const data = (streamPart as any).data;
       if (typeof data === 'string' && data.length > 0) {
-        const isProgressMessage =
-          data.length < 100 && !data.includes('JVBERi');
+        const isProgressMessage = data.length < 100 && !data.includes('JVBERi');
         setArtifact((draft) => ({
           ...draft,
           content: isProgressMessage ? draft.content : data,
@@ -541,8 +542,7 @@ export const pdfArtifact = new Artifact<
       icon: <FileIcon size={16} />,
       onClick: ({ sendMessage }) => {
         sendMessage({
-          text:
-            'Please enhance this PDF document with more detailed information and better formatting.',
+          text: 'Please enhance this PDF document with more detailed information and better formatting.',
         });
       },
     },

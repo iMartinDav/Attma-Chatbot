@@ -1,4 +1,5 @@
 # Manual Testing Plan - Comprehensive Feature Validation
+
 **Date**: 2026-01-02  
 **Tester**: Senior QA Review  
 **Build**: Post-Sidebar Refinement  
@@ -9,6 +10,7 @@
 ## Test Execution Strategy
 
 ### Scope
+
 1. **New AI SDK Features** - Streaming, reasoning, artifacts
 2. **Sidebar UI/UX** - Toggle, collapse, responsive
 3. **Agent System** - Agent selection, routing, specialized responses
@@ -19,6 +21,7 @@
 8. **Responsive Design** - Mobile, tablet, desktop
 
 ### Test Levels
+
 - ✅ **Smoke Tests**: Critical path functionality
 - ✅ **Integration Tests**: Component interactions
 - ✅ **E2E Tests**: Complete user workflows
@@ -31,8 +34,10 @@
 ### 1. SIDEBAR UI/UX TESTS
 
 #### TC-001: Sidebar Toggle (Desktop)
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Open http://localhost:3000/chat
 2. Verify sidebar is expanded by default
 3. Hover over Attma logo - verify it transforms to toggle icon
@@ -41,6 +46,7 @@
 6. Click toggle button in sidebar header - verify collapse
 
 **Expected**:
+
 - Logo transforms smoothly on hover
 - Sidebar animates collapse/expand (200ms)
 - Collapsed state shows icons only
@@ -52,8 +58,10 @@
 ---
 
 #### TC-002: Sidebar Mobile Behavior
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Resize browser to mobile width (<768px)
 2. Verify sidebar is hidden
 3. Click hamburger menu in header
@@ -62,6 +70,7 @@
 6. Select a chat - verify drawer closes
 
 **Expected**:
+
 - Sidebar renders as Sheet (drawer) on mobile
 - Overlay appears behind drawer
 - Drawer slides in from left
@@ -73,8 +82,10 @@
 ---
 
 #### TC-003: User Dropdown Menu
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Click user avatar in sidebar footer
 2. Verify dropdown opens with theme switcher and sign out
 3. Toggle dark/light mode
@@ -82,6 +93,7 @@
 5. Click avatar when collapsed - verify sidebar expands (not dropdown)
 
 **Expected**:
+
 - Dropdown shows theme switcher
 - Theme toggle works immediately
 - Sign out option visible
@@ -94,8 +106,10 @@
 ### 2. AGENT SYSTEM TESTS
 
 #### TC-004: Agent Selection
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Start new chat
 2. Click "Agents" button in sidebar
 3. Verify navigation to /chat?agent=bioinformatics
@@ -105,6 +119,7 @@
 7. Select "Bioinformatics" agent
 
 **Expected**:
+
 - Agent selector displays current agent
 - Dropdown shows all available agents
 - Selection updates URL parameter
@@ -116,8 +131,10 @@
 ---
 
 #### TC-005: Agent-Specific Responses
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Select "Bioinformatics" agent
 2. Send message: "Explain RNA sequencing"
 3. Verify response is bioinformatics-focused
@@ -127,6 +144,7 @@
 7. Compare responses
 
 **Expected**:
+
 - Bioinformatics agent uses domain-specific language
 - Response quality appropriate for agent type
 - Agent context maintained throughout conversation
@@ -139,8 +157,10 @@
 ### 3. SEARCH FUNCTIONALITY TESTS
 
 #### TC-006: Command+K Search
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Press Cmd+K (or Ctrl+K on Windows)
 2. Verify search dialog opens
 3. Type search query: "test"
@@ -149,6 +169,7 @@
 6. Press Escape - verify dialog closes
 
 **Expected**:
+
 - Dialog opens with keyboard shortcut
 - Search is debounced (300ms)
 - Results update as you type
@@ -161,8 +182,10 @@
 ---
 
 #### TC-007: Search API Integration
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Open search dialog
 2. Type query that matches existing chat
 3. Verify API call to /api/history/search
@@ -172,6 +195,7 @@
 7. Test with special characters
 
 **Expected**:
+
 - API endpoint returns correct data
 - Response includes: id, title, createdAt
 - Empty results handled gracefully
@@ -185,8 +209,10 @@
 ### 4. AI SDK & STREAMING TESTS
 
 #### TC-008: Message Streaming
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Send a message: "Write a long story about AI"
 2. Observe streaming behavior
 3. Verify tokens appear progressively
@@ -196,6 +222,7 @@
 7. Verify stream stops cleanly
 
 **Expected**:
+
 - Tokens stream in real-time
 - No flickering or layout shifts
 - Stop button functional
@@ -207,8 +234,10 @@
 ---
 
 #### TC-009: Reasoning Display
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Use a model with reasoning (e.g., GPT-4o with thinking)
 2. Send complex query
 3. Verify reasoning block appears
@@ -217,6 +246,7 @@
 6. Check streaming indicator during reasoning
 
 **Expected**:
+
 - Reasoning block displays with brain icon
 - Collapsible/expandable
 - Markdown renders correctly
@@ -228,8 +258,10 @@
 ---
 
 #### TC-010: Artifacts Generation
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Send: "Create a React component for a button"
 2. Verify artifact panel appears
 3. Check code syntax highlighting
@@ -238,6 +270,7 @@
 6. Verify artifact persistence in DB
 
 **Expected**:
+
 - Artifact renders in side panel
 - Code highlighted correctly
 - Copy to clipboard works
@@ -252,8 +285,10 @@
 ### 5. SOURCE CITATIONS TESTS
 
 #### TC-011: Web Search Sources
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Send: "What are the latest developments in CRISPR?"
 2. Verify web search is triggered
 3. Check for source citations panel
@@ -263,6 +298,7 @@
 7. Verify all sources listed
 
 **Expected**:
+
 - Sources display with favicons
 - Source chips are clickable
 - External links open in new tab
@@ -275,8 +311,10 @@
 ---
 
 #### TC-012: Source Panel Interactions
+
 **Priority**: P2 (Medium)  
 **Steps**:
+
 1. Generate response with sources
 2. Verify collapsed preview shows first 3
 3. Click to expand
@@ -285,6 +323,7 @@
 6. Verify source metadata (title, URL)
 
 **Expected**:
+
 - Preview shows 3 sources + count
 - Expansion animated smoothly
 - All sources accessible
@@ -298,8 +337,10 @@
 ### 6. DATABASE PERSISTENCE TESTS
 
 #### TC-013: Chat History Persistence
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Create new chat
 2. Send multiple messages
 3. Refresh page
@@ -309,6 +350,7 @@
 7. Verify chat appears in correct time group
 
 **Expected**:
+
 - All messages saved to DB
 - Messages load on refresh
 - Chat appears in sidebar
@@ -321,8 +363,10 @@
 ---
 
 #### TC-014: Message Metadata Storage
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Send message with agent selected
 2. Generate response with sources
 3. Create artifact
@@ -334,6 +378,7 @@
 5. Verify all metadata persists
 
 **Expected**:
+
 - Agent ID saved with message
 - Sources stored correctly
 - Artifacts in database
@@ -345,8 +390,10 @@
 ---
 
 #### TC-015: Chat Visibility Persistence
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Create chat
 2. Set visibility to "Public"
 3. Refresh page
@@ -356,6 +403,7 @@
 7. Check database record
 
 **Expected**:
+
 - Visibility setting saves
 - Persists across refreshes
 - Updates correctly
@@ -369,8 +417,10 @@
 ### 7. MODEL SELECTOR TESTS
 
 #### TC-016: Model Selection
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Click model selector in header
 2. Verify all models listed
 3. Check for capability badges (Think, Search, Image, Code)
@@ -380,6 +430,7 @@
 7. Verify correct model used
 
 **Expected**:
+
 - All configured models appear
 - Capabilities displayed correctly
 - Selection saves to cookie
@@ -393,8 +444,10 @@
 ### 8. RESPONSIVE DESIGN TESTS
 
 #### TC-017: Mobile Layout
+
 **Priority**: P0 (Critical)  
 **Steps**:
+
 1. Test on mobile viewport (375px)
 2. Verify header layout
 3. Check input field sizing
@@ -404,6 +457,7 @@
 7. Check all interactive elements
 
 **Expected**:
+
 - Layout doesn't break
 - No horizontal scroll
 - Touch targets adequate
@@ -416,14 +470,17 @@
 ---
 
 #### TC-018: Tablet Layout
+
 **Priority**: P2 (Medium)  
 **Steps**:
+
 1. Test on tablet viewport (768px)
 2. Verify sidebar behavior
 3. Check responsive breakpoints
 4. Test both orientations
 
 **Expected**:
+
 - Smooth transition at breakpoint
 - Sidebar behavior appropriate
 - Layout optimized for tablet
@@ -436,8 +493,10 @@
 ### 9. ERROR HANDLING TESTS
 
 #### TC-019: Network Errors
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Disconnect network
 2. Try to send message
 3. Verify error handling
@@ -446,6 +505,7 @@
 6. Verify recovery
 
 **Expected**:
+
 - Error message displayed
 - User informed of issue
 - Retry mechanism works
@@ -457,8 +517,10 @@
 ---
 
 #### TC-020: API Errors
+
 **Priority**: P1 (High)  
 **Steps**:
+
 1. Trigger API error (invalid input)
 2. Verify error toast appears
 3. Check error message clarity
@@ -466,6 +528,7 @@
 5. Test recovery
 
 **Expected**:
+
 - Error caught and handled
 - User-friendly message
 - State not corrupted
@@ -479,8 +542,10 @@
 ### 10. PERFORMANCE TESTS
 
 #### TC-021: Large Chat History
+
 **Priority**: P2 (Medium)  
 **Steps**:
+
 1. Load chat with 100+ messages
 2. Measure load time
 3. Test scrolling performance
@@ -488,6 +553,7 @@
 5. Check memory usage
 
 **Expected**:
+
 - Load time < 2 seconds
 - Smooth scrolling
 - No memory leaks
@@ -499,8 +565,10 @@
 ---
 
 #### TC-022: Concurrent Operations
+
 **Priority**: P2 (Medium)  
 **Steps**:
+
 1. Stream a long response
 2. Open search dialog mid-stream
 3. Switch agents
@@ -508,6 +576,7 @@
 5. Verify no conflicts
 
 **Expected**:
+
 - Operations don't interfere
 - No race conditions
 - State remains consistent
@@ -521,6 +590,7 @@
 ## Test Execution Checklist
 
 ### Pre-Test Setup
+
 - [ ] Database seeded with test data
 - [ ] All environment variables set
 - [ ] Docker containers running
@@ -529,6 +599,7 @@
 - [ ] Console cleared
 
 ### During Testing
+
 - [ ] Document all bugs found
 - [ ] Take screenshots of issues
 - [ ] Note console errors
@@ -537,6 +608,7 @@
 - [ ] Test edge cases
 
 ### Post-Test
+
 - [ ] Summarize results
 - [ ] File bug reports
 - [ ] Update test cases
@@ -554,9 +626,9 @@
 **Environment**: Browser, OS, Viewport
 
 **Steps to Reproduce**:
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 **Expected Result**:
 
@@ -574,6 +646,7 @@
 ## Success Criteria
 
 ### Must Pass (P0)
+
 - All sidebar interactions work
 - Agent selection functional
 - Message streaming works
@@ -581,6 +654,7 @@
 - No critical errors
 
 ### Should Pass (P1)
+
 - Search fully functional
 - Sources display correctly
 - Artifacts render properly
@@ -588,6 +662,7 @@
 - Error handling works
 
 ### Nice to Have (P2)
+
 - Performance optimal
 - All edge cases handled
 - Animations smooth

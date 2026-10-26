@@ -27,11 +27,7 @@ import { useOnClickOutside } from 'usehooks-ts';
 
 import { artifactDefinitions, ArtifactKind } from './chat/artifact';
 import { ArtifactToolbarItem } from './chat/create-artifact';
-import {
-  ArrowUpIcon,
-  StopIcon,
-  SummarizeIcon
-} from './icons';
+import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
 
 type ToolProps = {
   description: string;
@@ -42,11 +38,7 @@ type ToolProps = {
   setIsToolbarVisible?: Dispatch<SetStateAction<boolean>>;
   isAnimating: boolean;
   sendMessage: (message: any) => void;
-  onClick: ({
-    sendMessage,
-  }: {
-    sendMessage: (message: any) => void;
-  }) => void;
+  onClick: ({ sendMessage }: { sendMessage: (message: any) => void }) => void;
 };
 
 const Tool = ({

@@ -5,10 +5,10 @@ import { startTransition, useMemo, useOptimistic, useState } from 'react';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { chatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,9 @@ export function ModelSelector({
             variant="ghost"
             className="h-8 rounded-full px-3 gap-1.5 border border-transparent hover:border-border/50 bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
           >
-            <span className="text-sm font-medium">{selectedChatModel?.name}</span>
+            <span className="text-sm font-medium">
+              {selectedChatModel?.name}
+            </span>
             <ChevronDownIcon className="size-3 opacity-50" />
           </Button>
         )}
@@ -82,8 +84,8 @@ export function ModelSelector({
                 });
               }}
               className={cn(
-                "gap-4 group/item flex flex-row justify-between items-start py-3 cursor-pointer",
-                "focus:bg-accent/10 hover:bg-accent/10 transition-all duration-200"
+                'gap-4 group/item flex flex-row justify-between items-start py-3 cursor-pointer',
+                'focus:bg-accent/10 hover:bg-accent/10 transition-all duration-200',
               )}
               data-active={isActive}
             >
@@ -96,14 +98,14 @@ export function ModelSelector({
                     </span>
                   )}
                 </div>
-                
+
                 <div className="text-xs text-muted-foreground leading-snug">
                   {chatModel.description}
                 </div>
 
                 {/* Capabilities badges */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                 {capabilities.webSearch && (
+                  {capabilities.webSearch && (
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded">
                       <Globe size={10} />
                       <span>Search</span>
@@ -131,7 +133,7 @@ export function ModelSelector({
               </div>
 
               {isActive && (
-                 <div className="text-primary mt-1">
+                <div className="text-primary mt-1">
                   <CheckCircleFillIcon />
                 </div>
               )}

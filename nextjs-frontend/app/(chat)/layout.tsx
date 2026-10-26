@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { AppSidebar } from "@/components/chat/app-sidebar";
+import { AppSidebar } from '@/components/chat/app-sidebar';
 import { DataStreamHandler } from '@/components/chat/data-stream-handler';
 import { DataStreamProvider } from '@/components/chat/data-stream-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';

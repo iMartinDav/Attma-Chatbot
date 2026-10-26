@@ -5,14 +5,22 @@ import { memo, type Dispatch, type SetStateAction } from 'react';
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from '../icons';
 import { Button } from '../ui/button';
 
-type Message = { id: string; role: 'user' | 'assistant' | 'system'; content?: string; parts?: any[] };
+type Message = {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content?: string;
+  parts?: any[];
+};
 
 export interface AttachmentsButtonProps {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   isLoading: boolean;
 }
 
-function PureAttachmentsButton({ fileInputRef, isLoading }: AttachmentsButtonProps) {
+function PureAttachmentsButton({
+  fileInputRef,
+  isLoading,
+}: AttachmentsButtonProps) {
   return (
     <Button
       className="rounded-full size-8 p-0"
@@ -45,7 +53,7 @@ function PureStopButton({ stop, setMessages }: StopButtonProps) {
       onClick={(e) => {
         e.preventDefault();
         stop();
-        setMessages(messages => messages);
+        setMessages((messages) => messages);
       }}
       aria-label="Stop generating"
       title="Stop generating"
@@ -64,17 +72,22 @@ export interface SendButtonProps {
   isSearchMode: boolean;
 }
 
-function PureSendButton({ submitForm, input, uploadQueue, isSearchMode }: SendButtonProps) {
+function PureSendButton({
+  submitForm,
+  input,
+  uploadQueue,
+  isSearchMode,
+}: SendButtonProps) {
   const hasInput = input.length > 0;
   const label = isSearchMode ? 'Search' : 'Send message';
 
   return (
     <Button
       className={cx(
-        "rounded-full size-8 p-0 border transition-all duration-300",
+        'rounded-full size-8 p-0 border transition-all duration-300',
         hasInput
-          ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 ring-4 ring-primary/20 scale-105"
-          : "bg-muted text-muted-foreground border-border"
+          ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 ring-4 ring-primary/20 scale-105'
+          : 'bg-muted text-muted-foreground border-border',
       )}
       onClick={(e) => {
         e.preventDefault();
@@ -84,7 +97,7 @@ function PureSendButton({ submitForm, input, uploadQueue, isSearchMode }: SendBu
       aria-label={label}
       title={label}
     >
-      <ArrowUpIcon size={18} className={hasInput ? "stroke-[2.5px]" : ""} />
+      <ArrowUpIcon size={18} className={hasInput ? 'stroke-[2.5px]' : ''} />
     </Button>
   );
 }

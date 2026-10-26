@@ -4,21 +4,21 @@
 
 import { openai } from '@ai-sdk/openai';
 import {
-    isStepCount,
-    streamText,
-    tool,
-    type ToolSet,
-    type UIMessage
+  isStepCount,
+  streamText,
+  tool,
+  type ToolSet,
+  type UIMessage,
 } from 'ai';
 import { z } from 'zod';
 
 import { researchTools } from '../tools/research-tools';
 import {
-    detectAgentDomain,
-    detectTaskCategory,
-    getDomainInstructions,
-    hasFileAttachment,
-    routeToOptimalModel,
+  detectAgentDomain,
+  detectTaskCategory,
+  getDomainInstructions,
+  hasFileAttachment,
+  routeToOptimalModel,
 } from './task-router';
 import type { AgentDomain, AgentState, TaskCategory } from './types';
 
@@ -56,7 +56,7 @@ When solving complex problems:
 function getModelForStep(
   taskCategory: TaskCategory,
   stepNumber: number,
-  forceReasoning: boolean = false
+  forceReasoning: boolean = false,
 ): string {
   const selection = routeToOptimalModel('', {
     previousSteps: stepNumber,
@@ -78,17 +78,26 @@ function getModelForStep(
 function createAgentTools(): ToolSet {
   return {
     ...researchTools,
-    
+
     // Document creation tool for code artifacts
     create_code_artifact: tool({
-      description: 'Create a code artifact (Python or R) to display to the user',
+      description:
+        'Create a code artifact (Python or R) to display to the user',
       inputSchema: z.object({
         title: z.string().describe('Title for the code artifact'),
         language: z.enum(['python', 'r']).describe('Programming language'),
         code: z.string().describe('The code content'),
-        description: z.string().optional().describe('Brief description of what the code does'),
+        description: z
+          .string()
+          .optional()
+          .describe('Brief description of what the code does'),
       }),
-      execute: async (input: { title: string; language: 'python' | 'r'; code: string; description?: string }) => {
+      execute: async (input: {
+        title: string;
+        language: 'python' | 'r';
+        code: string;
+        description?: string;
+      }) => {
         return {
           type: 'code_artifact',
           title: input.title,
@@ -103,8 +112,8 @@ function createAgentTools(): ToolSet {
 
 /** Execute the bioinformatics agent */
 export async function executeAgent(options: AgentExecutionOptions) {
-  const { 
-    messages, 
+  const {
+    messages,
     selectedModelId,
     selectedAgentId,
     maxSteps = 10,
@@ -117,7 +126,7 @@ export async function executeAgent(options: AgentExecutionOptions) {
 
   // Detect task category and domain
   const taskCategory = detectTaskCategory(lastMessageText);
-  const agentDomain = selectedAgentId 
+  const agentDomain = selectedAgentId
     ? (selectedAgentId.replace('-agent', '') as AgentDomain)
     : detectAgentDomain(lastMessageText);
 
@@ -178,13 +187,15 @@ export async function executeAgent(options: AgentExecutionOptions) {
  */
 function extractMessageText(message: UIMessage): string {
   if (!message) return '';
-  
+
   // UIMessage uses parts, not content
   const parts = message.parts;
   if (Array.isArray(parts)) {
     return parts
-      .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
-      .map(part => part.text)
+      .filter(
+        (part): part is { type: 'text'; text: string } => part.type === 'text',
+      )
+      .map((part) => part.text)
       .join(' ');
   }
 
@@ -209,12 +220,16 @@ export function createInitialAgentState(): AgentState {
 }
 
 export {
-    createAgentTools, detectAgentDomain, detectTaskCategory, getDomainInstructions, routeToOptimalModel
+  createAgentTools,
+  detectAgentDomain,
+  detectTaskCategory,
+  getDomainInstructions,
+  routeToOptimalModel,
 };
 
 /** Helper to convert UI messages to AI SDK CoreMessage format */
 function convertToModelMessages(messages: UIMessage[]) {
-  return messages.map(m => ({
+  return messages.map((m) => ({
     role: m.role as 'user' | 'assistant' | 'system',
     content: extractMessageText(m),
   }));

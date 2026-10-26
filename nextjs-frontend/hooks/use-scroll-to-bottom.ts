@@ -6,7 +6,8 @@ export function useScrollToBottom<T extends HTMLElement>() {
 
   // Motion preference: downgrade to 'auto' for users preferring reduced motion
   const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined' || !('matchMedia' in window)) return false;
+    if (typeof window === 'undefined' || !('matchMedia' in window))
+      return false;
     try {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch {
@@ -52,7 +53,10 @@ export function useScrollToBottom<T extends HTMLElement>() {
       io = new IntersectionObserver(
         (entries) => {
           const e = entries[0];
-          if (e) state.isNearBottom = e.isIntersecting || bottomDistance() <= Math.max(getComposerHeight() + 48, 96);
+          if (e)
+            state.isNearBottom =
+              e.isIntersecting ||
+              bottomDistance() <= Math.max(getComposerHeight() + 48, 96);
         },
         // Be lenient so partial visibility still counts
         { root: container, threshold: 0, rootMargin: '0px 0px -1px 0px' },
@@ -62,7 +66,10 @@ export function useScrollToBottom<T extends HTMLElement>() {
 
     // ResizeObserver: when content height changes (streaming), keep pinned if near bottom
     const ro = new ResizeObserver(() => {
-      if (state.isNearBottom || bottomDistance() <= Math.max(getComposerHeight() + 48, 96)) {
+      if (
+        state.isNearBottom ||
+        bottomDistance() <= Math.max(getComposerHeight() + 48, 96)
+      ) {
         schedule(() => {
           // scrollIntoView aligns end to bottom, but we add a tiny manual nudge to account for sub-pixel rounding
           end.scrollIntoView({
@@ -98,6 +105,6 @@ export function useScrollToBottom<T extends HTMLElement>() {
     },
     onViewportEnter: () => {},
     onViewportLeave: () => {},
-    isAtBottom: true // Simplification
+    isAtBottom: true, // Simplification
   });
 }

@@ -3,7 +3,12 @@
  * for automatic model and tool selection.
  */
 
-import type { AgentDomain, ModelSelection, ModelTier, TaskCategory } from './types';
+import type {
+  AgentDomain,
+  ModelSelection,
+  ModelTier,
+  TaskCategory,
+} from './types';
 
 /** Keywords indicating specific task types (ordered by specificity) */
 const TASK_PATTERNS: Record<TaskCategory, RegExp[]> = {
@@ -104,7 +109,10 @@ const DOMAIN_PATTERNS: Record<AgentDomain, RegExp[]> = {
 };
 
 /** Model tier configurations */
-const MODEL_TIER_CONFIG: Record<ModelTier, { modelKey: string; description: string }> = {
+const MODEL_TIER_CONFIG: Record<
+  ModelTier,
+  { modelKey: string; description: string }
+> = {
   fast: {
     modelKey: 'chat-model',
     description: 'Fast responses for simple queries',
@@ -168,7 +176,7 @@ export function detectTaskCategory(query: string): TaskCategory {
 
   for (const category of priorityOrder) {
     const patterns = TASK_PATTERNS[category];
-    if (patterns.some(pattern => pattern.test(query))) {
+    if (patterns.some((pattern) => pattern.test(query))) {
       return category;
     }
   }
@@ -187,7 +195,7 @@ export function detectAgentDomain(query: string): AgentDomain {
 
   for (const domain of priorityOrder) {
     const patterns = DOMAIN_PATTERNS[domain];
-    if (patterns.some(pattern => pattern.test(query))) {
+    if (patterns.some((pattern) => pattern.test(query))) {
       return domain;
     }
   }
@@ -198,11 +206,12 @@ export function detectAgentDomain(query: string): AgentDomain {
 /** Check if message contains file attachments */
 export function hasFileAttachment(message: unknown): boolean {
   if (!message || typeof message !== 'object') return false;
-  
+
   const msg = message as { parts?: Array<{ type?: string }> };
-  return msg.parts?.some(part => 
-    part.type === 'file' || part.type === 'image'
-  ) ?? false;
+  return (
+    msg.parts?.some((part) => part.type === 'file' || part.type === 'image') ??
+    false
+  );
 }
 
 /** Routes a query to the optimal model and configuration */
@@ -212,7 +221,7 @@ export function routeToOptimalModel(
     hasAttachments?: boolean;
     previousSteps?: number;
     forceReasoning?: boolean;
-  }
+  },
 ): ModelSelection {
   const { hasAttachments, previousSteps = 0, forceReasoning } = options || {};
 

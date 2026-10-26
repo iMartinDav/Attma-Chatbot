@@ -9,31 +9,35 @@ import { SidebarProjects } from '@/components/chat/projects';
 import { SearchDialog } from '@/components/chat/search-dialog';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
 import {
-    ChevronUpIcon,
-    LogOutIcon,
-    NewChatIcon,
-    SearchIcon,
-    SidebarToggleIcon,
+  ChevronUpIcon,
+  LogOutIcon,
+  NewChatIcon,
+  SearchIcon,
+  SidebarToggleIcon,
 } from '@/components/icons';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuItem,
-    useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { UserAvatar } from '@/components/user-avatar';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
@@ -49,20 +53,22 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       toggleSidebar();
     }
   };
-  
+
   return (
     <>
-      <Sidebar 
-        collapsible="icon" 
+      <Sidebar
+        collapsible="icon"
         className={`bg-background transition-all duration-200 ${
-          isCollapsed 
-            ? 'border-r-2 border-border/40 hover:border-border/60 cursor-pointer' 
+          isCollapsed
+            ? 'border-r-2 border-border/40 hover:border-border/60 cursor-pointer'
             : 'border-r border-border/10'
         }`}
         onClick={handleCollapsedClick}
       >
         {/* Header */}
-        <SidebarHeader className={`h-14 px-2 flex flex-row items-center relative z-20 ${isCollapsed ? 'justify-center' : 'justify-start'}`}>
+        <SidebarHeader
+          className={`h-14 px-2 flex flex-row items-center relative z-20 ${isCollapsed ? 'justify-center' : 'justify-start'}`}
+        >
           <Tooltip open={isCollapsed ? undefined : false}>
             <TooltipTrigger asChild>
               <button
@@ -72,12 +78,24 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 className={`relative flex items-center w-10 h-10 rounded-lg hover:bg-muted/60 transition-all duration-200 ${isCollapsed ? 'justify-center mx-auto' : 'justify-start'}`}
               >
                 {/* Logo - fades out on hover */}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-0' : 'opacity-100'}`}>
-                  <img src="/images/logo.png" alt="Attma" className="w-7 h-7 hidden dark:block"/>
-                  <img src="/images/attma-logo.webp" alt="Attma" className="w-7 h-7 block dark:hidden"/>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-0' : 'opacity-100'}`}
+                >
+                  <img
+                    src="/images/logo.png"
+                    alt="Attma"
+                    className="w-7 h-7 hidden dark:block"
+                  />
+                  <img
+                    src="/images/attma-logo.webp"
+                    alt="Attma"
+                    className="w-7 h-7 block dark:hidden"
+                  />
                 </div>
                 {/* Toggle icon - fades in on hover */}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-100' : 'opacity-0'}`}>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${logoHovered ? 'opacity-100' : 'opacity-0'}`}
+                >
                   <SidebarToggleIcon />
                 </div>
               </button>
@@ -109,7 +127,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     {!isCollapsed && <span className="text-sm">New chat</span>}
                   </button>
                 </TooltipTrigger>
-                {isCollapsed && <TooltipContent side="right">New chat</TooltipContent>}
+                {isCollapsed && (
+                  <TooltipContent side="right">New chat</TooltipContent>
+                )}
               </Tooltip>
             </SidebarMenuItem>
 
@@ -129,16 +149,19 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     {!isCollapsed && (
                       <span className="text-sm flex-1 flex items-center justify-between">
                         Search chats
-                        <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">⌘K</kbd>
+                        <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
+                          ⌘K
+                        </kbd>
                       </span>
                     )}
                   </button>
                 </TooltipTrigger>
-                {isCollapsed && <TooltipContent side="right">Search (⌘K)</TooltipContent>}
+                {isCollapsed && (
+                  <TooltipContent side="right">Search (⌘K)</TooltipContent>
+                )}
               </Tooltip>
             </SidebarMenuItem>
-
-            </SidebarMenu>
+          </SidebarMenu>
 
           {/* Projects Section */}
           {!isCollapsed && <SidebarProjects isCollapsed={isCollapsed} />}
@@ -146,7 +169,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           {/* Chat History - only when expanded */}
           {!isCollapsed && (
             <SidebarGroup className="mt-4">
-              <div className="px-3 text-xs font-medium text-muted-foreground/60 mb-2">Your chats</div>
+              <div className="px-3 text-xs font-medium text-muted-foreground/60 mb-2">
+                Your chats
+              </div>
               <SidebarHistory user={user} />
             </SidebarGroup>
           )}
@@ -161,8 +186,8 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`flex items-center gap-3 w-full rounded-lg hover:bg-muted/60 transition-colors ${
-                        isCollapsed 
-                          ? 'justify-center h-10 w-10 mx-auto p-0' 
+                        isCollapsed
+                          ? 'justify-center h-10 w-10 mx-auto p-0'
                           : 'h-14 px-3'
                       }`}
                     >
@@ -198,7 +223,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   </TooltipContent>
                 )}
               </Tooltip>
-              
+
               {/* Dropdown Content - only when expanded */}
               {!isCollapsed && (
                 <DropdownMenuContent
@@ -211,9 +236,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <DropdownMenuItem className="p-0 focus:bg-transparent hover:bg-transparent">
                     <ThemeSwitcher />
                   </DropdownMenuItem>
-                  
+
                   <DropdownMenuSeparator className="my-1" />
-                  
+
                   {/* Sign Out */}
                   <DropdownMenuItem
                     onClick={() => signOut({ redirectTo: '/' })}
@@ -228,7 +253,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           )}
         </SidebarFooter>
       </Sidebar>
-      
+
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );

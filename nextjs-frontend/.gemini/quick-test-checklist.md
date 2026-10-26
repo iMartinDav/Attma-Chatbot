@@ -1,4 +1,5 @@
 # Quick Manual Testing Checklist
+
 **Execute this checklist systematically at http://localhost:3000/chat**
 
 ---
@@ -6,6 +7,7 @@
 ## 🎯 CRITICAL PATH TESTS (Must Pass)
 
 ### 1. Sidebar Functionality ⭐
+
 - [ ] **Logo Toggle**: Hover over logo → transforms to toggle icon
 - [ ] **Collapse**: Click logo → sidebar collapses to icons only
 - [ ] **Border**: Collapsed sidebar has thicker border (more visible)
@@ -18,6 +20,7 @@
 ---
 
 ### 2. Agent System ⭐
+
 - [ ] **Agent Button**: Click "Agents" in sidebar → navigates to /chat?agent=bioinformatics
 - [ ] **Agent Selector**: Empty state shows agent dropdown in input area
 - [ ] **Agent List**: Click dropdown → shows all agents (General, Bioinformatics, etc.)
@@ -29,6 +32,7 @@
 ---
 
 ### 3. Search Functionality ⭐
+
 - [ ] **Keyboard**: Press Cmd+K (Mac) or Ctrl+K (Windows) → search dialog opens
 - [ ] **Click**: Click "Search chats" in sidebar → dialog opens
 - [ ] **Recent**: Empty search shows recent conversations
@@ -41,6 +45,7 @@
 ---
 
 ### 4. Message Streaming ⭐
+
 - [ ] **Send**: Send message "Write a story about AI"
 - [ ] **Stream**: Tokens appear progressively (not all at once)
 - [ ] **Stop Button**: Stop button appears during streaming
@@ -52,6 +57,7 @@
 ---
 
 ### 5. Database Persistence ⭐
+
 - [ ] **Create**: Send several messages in a chat
 - [ ] **Refresh**: Refresh page (F5)
 - [ ] **Persist**: All messages still visible
@@ -66,6 +72,7 @@
 ## 🔧 FEATURE TESTS (Should Pass)
 
 ### 6. Model Selector
+
 - [ ] **Open**: Click model selector in header → dropdown opens
 - [ ] **Models**: All models listed (GPT-4o Mini, etc.)
 - [ ] **Badges**: Capability badges visible (Think, Search, Image, Code)
@@ -77,6 +84,7 @@
 ---
 
 ### 7. Source Citations (if web search enabled)
+
 - [ ] **Trigger**: Send "Latest CRISPR developments"
 - [ ] **Sources**: Source citations panel appears
 - [ ] **Favicons**: Website favicons load
@@ -89,6 +97,7 @@
 ---
 
 ### 8. Artifacts (if code generation)
+
 - [ ] **Generate**: Send "Create a React button component"
 - [ ] **Panel**: Artifact panel appears on right
 - [ ] **Syntax**: Code syntax highlighted
@@ -100,6 +109,7 @@
 ---
 
 ### 9. Reasoning Display (if model supports)
+
 - [ ] **Generate**: Use reasoning-capable model
 - [ ] **Block**: Reasoning block appears with brain icon
 - [ ] **Expand**: Click to expand → reasoning content shows
@@ -113,6 +123,7 @@
 ## 📱 RESPONSIVE TESTS (Should Pass)
 
 ### 10. Mobile Layout
+
 - [ ] **Resize**: Resize browser to 375px width
 - [ ] **Hidden**: Sidebar hidden by default
 - [ ] **Menu**: Hamburger menu visible in header
@@ -127,6 +138,7 @@
 ---
 
 ### 11. Desktop Layout
+
 - [ ] **Resize**: Resize to 1920px width
 - [ ] **Sidebar**: Sidebar visible by default
 - [ ] **Header**: Clean header (no hamburger on desktop)
@@ -140,6 +152,7 @@
 ## ⚠️ ERROR HANDLING (Should Pass)
 
 ### 12. Network Errors
+
 - [ ] **Offline**: Disconnect network
 - [ ] **Send**: Try to send message
 - [ ] **Error**: Error toast appears
@@ -152,6 +165,7 @@
 ---
 
 ### 13. Edge Cases
+
 - [ ] **Empty Input**: Try to send empty message → prevented
 - [ ] **Long Message**: Send very long message (1000+ chars) → works
 - [ ] **Special Chars**: Send message with emojis, symbols → renders correctly
@@ -165,6 +179,7 @@
 ## 🎨 UI/UX POLISH (Nice to Have)
 
 ### 14. Animations
+
 - [ ] **Sidebar**: Sidebar collapse/expand smooth (200ms)
 - [ ] **Dropdown**: Dropdowns animate smoothly
 - [ ] **Messages**: New messages fade in
@@ -176,6 +191,7 @@
 ---
 
 ### 15. Accessibility
+
 - [ ] **Keyboard**: Tab through all interactive elements
 - [ ] **Focus**: Focus order logical
 - [ ] **Labels**: All buttons have tooltips/labels
@@ -194,22 +210,26 @@
 **Viewport**: ________________
 
 ### Results
+
 - **Total Tests**: 15 categories
 - **Passed**: _____ / 15
 - **Failed**: _____ / 15
 - **Blocked**: _____ / 15
 
 ### Critical Issues Found
-1. _______________________________________________
-2. _______________________________________________
-3. _______________________________________________
+
+1. ***
+2. ***
+3. ***
 
 ### Minor Issues Found
-1. _______________________________________________
-2. _______________________________________________
-3. _______________________________________________
+
+1. ***
+2. ***
+3. ***
 
 ### Overall Status
+
 - [ ] ✅ **READY FOR PRODUCTION** - All critical tests pass
 - [ ] ⚠️ **NEEDS FIXES** - Some critical tests failed
 - [ ] ❌ **NOT READY** - Major issues found
@@ -219,6 +239,7 @@
 ## 🔍 DEBUGGING TIPS
 
 If something fails:
+
 1. **Open DevTools** (F12)
 2. **Check Console** for errors
 3. **Check Network** tab for failed requests
@@ -234,9 +255,9 @@ Run these in your database tool:
 
 ```sql
 -- Check recent chats
-SELECT id, title, "createdAt", "userId" 
-FROM "Chat" 
-ORDER BY "createdAt" DESC 
+SELECT id, title, "createdAt", "userId"
+FROM "Chat"
+ORDER BY "createdAt" DESC
 LIMIT 10;
 
 -- Check recent messages
@@ -257,6 +278,7 @@ LIMIT 5;
 **Testing Complete!** 🎉
 
 Next steps:
+
 1. Review all failed tests
 2. File bug reports for critical issues
 3. Document workarounds

@@ -16,14 +16,30 @@ export const pubmedSearchTool = tool({
     - Protocol references
     - Gene/disease associations in literature`,
   inputSchema: z.object({
-    query: z.string().describe('Search query (e.g., "CRISPR gene editing" or "TP53 cancer")'),
-    maxResults: z.number().min(1).max(20).default(5).describe('Number of results to return'),
-    dateFilter: z.enum(['all', '1year', '5years', '10years']).default('5years')
+    query: z
+      .string()
+      .describe('Search query (e.g., "CRISPR gene editing" or "TP53 cancer")'),
+    maxResults: z
+      .number()
+      .min(1)
+      .max(20)
+      .default(5)
+      .describe('Number of results to return'),
+    dateFilter: z
+      .enum(['all', '1year', '5years', '10years'])
+      .default('5years')
       .describe('Filter by publication date'),
-    sortBy: z.enum(['relevance', 'date']).default('relevance')
+    sortBy: z
+      .enum(['relevance', 'date'])
+      .default('relevance')
       .describe('Sort order for results'),
   }),
-  execute: async ({ query, maxResults, dateFilter, sortBy }): Promise<ToolResult<PubMedResult[]>> => {
+  execute: async ({
+    query,
+    maxResults,
+    dateFilter,
+    sortBy,
+  }): Promise<ToolResult<PubMedResult[]>> => {
     const startTime = Date.now();
     const apiKey = getApiKey('pubmed');
     const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
@@ -40,16 +56,16 @@ export const pubmedSearchTool = tool({
     try {
       // Search for IDs
       const searchUrl = `${baseUrl}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(query)}&retmax=${maxResults}&sort=${sortBy}&retmode=json${dateRange}${apiKey ? `&api_key=${apiKey}` : ''}`;
-      
+
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
       const ids = searchData.esearchresult?.idlist || [];
 
       if (ids.length === 0) {
         recordApiUsage('pubmed', apiKey || '', true);
-        return { 
-          success: true, 
-          data: [], 
+        return {
+          success: true,
+          data: [],
           source: 'PubMed',
           executionTime: Date.now() - startTime,
         };
@@ -86,7 +102,7 @@ export const pubmedSearchTool = tool({
         success: true,
         data: results,
         source: 'PubMed',
-        citations: results.map(r => ({
+        citations: results.map((r) => ({
           type: 'paper' as const,
           title: r.title,
           url: r.url,
@@ -126,7 +142,7 @@ interface PubMedResult {
 function parseAbstracts(text: string, ids: string[]): Record<string, string> {
   const abstracts: Record<string, string> = {};
   const sections = text.split(/\n\d+\.\s+/);
-  
+
   ids.forEach((id, index) => {
     if (sections[index + 1]) {
       // Extract abstract portion
@@ -135,7 +151,7 @@ function parseAbstracts(text: string, ids: string[]): Record<string, string> {
       abstracts[id] = abstractMatch?.[1]?.trim() || '';
     }
   });
-  
+
   return abstracts;
 }
 
@@ -148,17 +164,25 @@ export const semanticScholarTool = tool({
   inputSchema: z.object({
     query: z.string().describe('Search query'),
     maxResults: z.number().min(1).max(10).default(5),
-    fields: z.array(z.string()).default(['title', 'abstract', 'citationCount', 'authors', 'year', 'url'])
+    fields: z
+      .array(z.string())
+      .default(['title', 'abstract', 'citationCount', 'authors', 'year', 'url'])
       .describe('Fields to return'),
   }),
-  execute: async ({ query, maxResults, fields }): Promise<ToolResult<SemanticScholarResult[]>> => {
+  execute: async ({
+    query,
+    maxResults,
+    fields,
+  }): Promise<ToolResult<SemanticScholarResult[]>> => {
     const startTime = Date.now();
     const apiKey = getApiKey('semantic_scholar');
 
     try {
       const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=${maxResults}&fields=${fields.join(',')}`;
-      
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
       if (apiKey) {
         headers['x-api-key'] = apiKey;
       }
@@ -170,15 +194,17 @@ export const semanticScholarTool = tool({
         throw new Error(data.message || 'Semantic Scholar API error');
       }
 
-      const results: SemanticScholarResult[] = (data.data || []).map((paper: any) => ({
-        paperId: paper.paperId,
-        title: paper.title,
-        abstract: paper.abstract,
-        authors: paper.authors?.map((a: any) => a.name) || [],
-        year: paper.year,
-        citationCount: paper.citationCount,
-        url: paper.url,
-      }));
+      const results: SemanticScholarResult[] = (data.data || []).map(
+        (paper: any) => ({
+          paperId: paper.paperId,
+          title: paper.title,
+          abstract: paper.abstract,
+          authors: paper.authors?.map((a: any) => a.name) || [],
+          year: paper.year,
+          citationCount: paper.citationCount,
+          url: paper.url,
+        }),
+      );
 
       recordApiUsage('semantic_scholar', apiKey || '', true);
 
@@ -186,7 +212,7 @@ export const semanticScholarTool = tool({
         success: true,
         data: results,
         source: 'Semantic Scholar',
-        citations: results.map(r => ({
+        citations: results.map((r) => ({
           type: 'paper' as const,
           title: r.title,
           url: r.url,
@@ -228,7 +254,10 @@ export const firecrawlSearchTool = tool({
     query: z.string().describe('Search query'),
     maxResults: z.number().min(1).max(10).default(5),
   }),
-  execute: async ({ query, maxResults }): Promise<ToolResult<FirecrawlResult[]>> => {
+  execute: async ({
+    query,
+    maxResults,
+  }): Promise<ToolResult<FirecrawlResult[]>> => {
     const startTime = Date.now();
     const apiKey = getApiKey('firecrawl');
 
@@ -246,7 +275,7 @@ export const firecrawlSearchTool = tool({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           query,
@@ -276,7 +305,7 @@ export const firecrawlSearchTool = tool({
         success: true,
         data: results,
         source: 'Firecrawl',
-        citations: results.map(r => ({
+        citations: results.map((r) => ({
           type: 'web' as const,
           title: r.title,
           url: r.url,
@@ -313,16 +342,24 @@ export const geneLookupTool = tool({
   inputSchema: z.object({
     geneSymbol: z.string().describe('Gene symbol (e.g., "TP53", "BRCA1")'),
     organism: z.enum(['human', 'mouse', 'rat']).default('human'),
-    includeDiseases: z.boolean().default(false).describe('Include associated diseases'),
+    includeDiseases: z
+      .boolean()
+      .default(false)
+      .describe('Include associated diseases'),
   }),
-  execute: async ({ geneSymbol, organism, includeDiseases }): Promise<ToolResult<GeneInfo>> => {
+  execute: async ({
+    geneSymbol,
+    organism,
+    includeDiseases,
+  }): Promise<ToolResult<GeneInfo>> => {
     const startTime = Date.now();
     const orgMap = { human: '9606', mouse: '10090', rat: '10116' };
     const taxId = orgMap[organism];
 
     try {
       // MyGene.info API
-      const fields = 'symbol,name,summary,alias,pathway.kegg,go,entrezgene,ensembl.gene';
+      const fields =
+        'symbol,name,summary,alias,pathway.kegg,go,entrezgene,ensembl.gene';
       const url = `https://mygene.info/v3/query?q=symbol:${geneSymbol}&species=${taxId}&fields=${fields}`;
 
       const response = await fetch(url);
@@ -338,18 +375,23 @@ export const geneLookupTool = tool({
       }
 
       const gene = data.hits[0];
-      
+
       const geneInfo: GeneInfo = {
         symbol: gene.symbol,
         name: gene.name,
         summary: gene.summary || 'No summary available',
-        aliases: Array.isArray(gene.alias) ? gene.alias : (gene.alias ? [gene.alias] : []),
+        aliases: Array.isArray(gene.alias)
+          ? gene.alias
+          : gene.alias
+            ? [gene.alias]
+            : [],
         entrezId: gene.entrezgene,
         ensemblId: gene.ensembl?.gene,
-        pathways: gene.pathway?.kegg?.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-        })) || [],
+        pathways:
+          gene.pathway?.kegg?.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+          })) || [],
         goTerms: {
           biologicalProcess: (gene.go?.BP || []).slice(0, 5).map((t: any) => ({
             id: t.id,
@@ -376,11 +418,13 @@ export const geneLookupTool = tool({
         success: true,
         data: geneInfo,
         source: 'MyGene.info',
-        citations: [{
-          type: 'database',
-          title: `MyGene.info - ${geneSymbol}`,
-          url: `https://mygene.info/v3/gene/${gene.entrezgene || gene._id}`,
-        }],
+        citations: [
+          {
+            type: 'database',
+            title: `MyGene.info - ${geneSymbol}`,
+            url: `https://mygene.info/v3/gene/${gene.entrezgene || gene._id}`,
+          },
+        ],
         executionTime: Date.now() - startTime,
       };
     } catch (error) {

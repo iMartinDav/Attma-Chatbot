@@ -23,9 +23,14 @@ const messageSchema = z.object({
 });
 
 export const postRequestBodySchema = z.object({
-  id: z.string().refine((val) => val === 'new' || z.string().uuid().safeParse(val).success, {
-    message: "id must be 'new' or a valid UUID"
-  }),
+  id: z
+    .string()
+    .refine(
+      (val) => val === 'new' || z.string().uuid().safeParse(val).success,
+      {
+        message: "id must be 'new' or a valid UUID",
+      },
+    ),
   message: messageSchema,
   selectedChatModel: z.string(),
   selectedVisibilityType: z.enum(['public', 'private']),

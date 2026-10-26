@@ -3,25 +3,21 @@
  */
 
 /** Task categories the agent can perform */
-export type TaskCategory = 
-  | 'quick_answer'      // Simple questions, definitions
-  | 'code_generation'   // Python/R code for analysis
-  | 'data_analysis'     // Statistical analysis, interpretation
-  | 'research'          // Literature search, paper analysis
-  | 'reasoning'         // Complex multi-step problems
-  | 'visualization'     // Charts, plots, diagrams
-  | 'file_analysis'     // Analyze uploaded files (PDF, images)
-  | 'gene_lookup'       // Gene/protein information
-  | 'pathway_analysis'  // Pathway enrichment, GO terms
-  | 'general';          // Default fallback
+export type TaskCategory =
+  | 'quick_answer' // Simple questions, definitions
+  | 'code_generation' // Python/R code for analysis
+  | 'data_analysis' // Statistical analysis, interpretation
+  | 'research' // Literature search, paper analysis
+  | 'reasoning' // Complex multi-step problems
+  | 'visualization' // Charts, plots, diagrams
+  | 'file_analysis' // Analyze uploaded files (PDF, images)
+  | 'gene_lookup' // Gene/protein information
+  | 'pathway_analysis' // Pathway enrichment, GO terms
+  | 'general'; // Default fallback
 
 /** Specialist agent domains */
-export type AgentDomain = 
-  | 'general'
-  | 'single_cell'
-  | 'variant'
-  | 'pathway'
-  | 'structural';
+export type AgentDomain =
+  'general' | 'single_cell' | 'variant' | 'pathway' | 'structural';
 
 /** Model tier based on capability and cost */
 export type ModelTier = 'fast' | 'standard' | 'advanced' | 'reasoning';
@@ -79,12 +75,12 @@ export interface Citation {
 }
 
 /** Embedding document types */
-export type EmbeddingType = 
-  | 'paper'       // Scientific paper
-  | 'gene'        // Gene information
-  | 'pathway'     // Pathway data
-  | 'experiment'  // Experiment metadata
-  | 'protocol';   // Lab protocol
+export type EmbeddingType =
+  | 'paper' // Scientific paper
+  | 'gene' // Gene information
+  | 'pathway' // Pathway data
+  | 'experiment' // Experiment metadata
+  | 'protocol'; // Lab protocol
 
 /**
  * Vector search result

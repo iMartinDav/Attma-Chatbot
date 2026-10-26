@@ -1,5 +1,10 @@
 import { auth } from '@/app/(auth)/auth';
-import { deleteChatById, getChatById, saveChat, saveMessages } from '@/lib/db/queries';
+import {
+  deleteChatById,
+  getChatById,
+  saveChat,
+  saveMessages,
+} from '@/lib/db/queries';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
 
 // Minimal UIMessage-like type to keep this route self-contained
@@ -68,7 +73,11 @@ async function handleDirectSearchRequest(query: string, options: any = {}) {
       const errorText = await response.text();
       console.error('Search API error:', errorText);
       return Response.json(
-        { success: false, content: 'Search service unavailable', error: errorText },
+        {
+          success: false,
+          content: 'Search service unavailable',
+          error: errorText,
+        },
         { status: response.status },
       );
     }
@@ -100,46 +109,62 @@ async function handleDirectSearchRequest(query: string, options: any = {}) {
  */
 function cleanSearchContent(content: string): string {
   if (!content || typeof content !== 'string') return content;
-  
+
   const jsonPatterns = [
     /\n?\s*\{\s*["']?success["']?\s*:/i,
     /\n?\s*\{\s*["']?data["']?\s*:\s*\[/i,
     /\n?\s*```json\s*\n?\{/i,
     /\n?\s*```\s*\n?\{/i,
   ];
-  
+
   for (const pattern of jsonPatterns) {
     const match = content.match(pattern);
     if (match?.index !== undefined && match.index > content.length * 0.6) {
       content = content.substring(0, match.index).trim();
     }
   }
-  
+
   const codeBlockMatch = content.match(/```(?:json)?\s*\n?\{[\s\S]*$/);
-  if (codeBlockMatch?.index !== undefined && codeBlockMatch.index > content.length * 0.5) {
+  if (
+    codeBlockMatch?.index !== undefined &&
+    codeBlockMatch.index > content.length * 0.5
+  ) {
     content = content.substring(0, codeBlockMatch.index).trim();
   }
-  
+
   return content;
 }
 
-async function createSearchChat(userId: string, message: UIMessageLike, chatId: string) {
+async function createSearchChat(
+  userId: string,
+  message: UIMessageLike,
+  chatId: string,
+) {
   let baseText = 'Search query';
-  
+
   if (Array.isArray(message.parts)) {
-    baseText = message.parts.filter((p) => p.type === 'text' && p.text).map((p) => p.text).join(' ');
+    baseText = message.parts
+      .filter((p) => p.type === 'text' && p.text)
+      .map((p) => p.text)
+      .join(' ');
   } else if (typeof message.content === 'string') {
     baseText = message.content;
   } else if (Array.isArray(message.content)) {
     // If content is already the parts array saved by client
-    baseText = (message.content as any[]).filter((p: any) => p.type === 'text' && p.text).map((p: any) => p.text).join(' ');
+    baseText = (message.content as any[])
+      .filter((p: any) => p.type === 'text' && p.text)
+      .map((p: any) => p.text)
+      .join(' ');
   }
 
   baseText = baseText.trim() || 'Search query';
-  let title = baseText.length > 60 ? `${baseText.substring(0, 60)}...` : baseText;
+  let title =
+    baseText.length > 60 ? `${baseText.substring(0, 60)}...` : baseText;
 
   try {
-    const generatedTitle = await generateTitleFromUserMessage({ message: message as any });
+    const generatedTitle = await generateTitleFromUserMessage({
+      message: message as any,
+    });
     if (generatedTitle && generatedTitle.length > 3) title = generatedTitle;
   } catch (err) {
     console.error('Title generation failed, using fallback:', err);
@@ -153,7 +178,11 @@ function processAnnotations(annotations: any): any[] {
   if (!annotations || !Array.isArray(annotations)) return [];
   return annotations
     .map((annotation) => {
-      if (annotation && typeof annotation === 'object' && annotation.type === 'url_citation') {
+      if (
+        annotation &&
+        typeof annotation === 'object' &&
+        annotation.type === 'url_citation'
+      ) {
         return {
           type: 'url_citation',
           url_citation: {
@@ -189,7 +218,7 @@ export async function POST(request: Request) {
       return handleDirectSearchRequest(body.query, body.options || {});
     }
 
-  const { id, messages, saveOnly = false } = body;
+    const { id, messages, saveOnly = false } = body;
 
     if (!saveOnly || !Array.isArray(messages) || messages.length === 0) {
       return new Response('Bad Request', { status: 400 });
@@ -209,33 +238,46 @@ export async function POST(request: Request) {
       const chat = await getChatById({ id: usedId });
 
       if (!chat) {
-        const userMessage = (messages as UIMessageLike[]).find((m) => m.role === 'user');
+        const userMessage = (messages as UIMessageLike[]).find(
+          (m) => m.role === 'user',
+        );
         if (userMessage) {
           await createSearchChat(session.user.id, userMessage, usedId);
         } else {
-          await saveChat({ id: usedId, userId: session.user.id, title: `Research: ${new Date().toLocaleDateString()}` });
+          await saveChat({
+            id: usedId,
+            userId: session.user.id,
+            title: `Research: ${new Date().toLocaleDateString()}`,
+          });
         }
       } else if (chat.userId !== session.user.id) {
         return new Response('Unauthorized', { status: 401 });
       }
 
-      const messagesToSave = ensureProperDateObjects(messages).map((msg: UIMessageLike) => ({
-        id: msg.id,
-        chatId: usedId as string,
-        role: msg.role,
-        content: msg.content,
-        createdAt: new Date(msg.createdAt as any),
-        // Preserve extra metadata if the DB layer supports it; otherwise it's ignored
-        sourceType: msg.sourceType || undefined,
-        reasoningText: msg.reasoningText || undefined,
-        annotations: msg.annotations ? processAnnotations(msg.annotations) : undefined,
-      }));
+      const messagesToSave = ensureProperDateObjects(messages).map(
+        (msg: UIMessageLike) => ({
+          id: msg.id,
+          chatId: usedId as string,
+          role: msg.role,
+          content: msg.content,
+          createdAt: new Date(msg.createdAt as any),
+          // Preserve extra metadata if the DB layer supports it; otherwise it's ignored
+          sourceType: msg.sourceType || undefined,
+          reasoningText: msg.reasoningText || undefined,
+          annotations: msg.annotations
+            ? processAnnotations(msg.annotations)
+            : undefined,
+        }),
+      );
 
       await saveMessages({ messages: messagesToSave });
       return Response.json({ success: true, id: usedId }, { status: 200 });
     } catch (error) {
       console.error('Failed to save search messages:', error);
-      return Response.json({ success: false, error: String(error) }, { status: 500 });
+      return Response.json(
+        { success: false, error: String(error) },
+        { status: 500 },
+      );
     }
   } catch (error) {
     console.error('Unhandled error in search API:', error);

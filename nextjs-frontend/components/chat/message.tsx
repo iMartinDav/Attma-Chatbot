@@ -27,10 +27,10 @@ import { SourcePanel, type Source } from './source-citations';
 
 // AI SDK utilities
 import {
-    getMessageFiles,
-    getMessageReasoning,
-    getMessageSources,
-    getMessageText
+  getMessageFiles,
+  getMessageReasoning,
+  getMessageSources,
+  getMessageText,
 } from '@/lib/ai/message-utils';
 
 // Extended message type that includes sourceType and custom properties
@@ -67,11 +67,16 @@ const PurePreviewMessage = ({
 
   // Extract source links from annotations (legacy fallback)
   const legacySources = useMemo(() => {
-    if (!message.annotations || message.sourceType !== 'web-search' || sources.length > 0) return [];
+    if (
+      !message.annotations ||
+      message.sourceType !== 'web-search' ||
+      sources.length > 0
+    )
+      return [];
 
     try {
       return Array.isArray(message.annotations)
-        ? message.annotations
+        ? (message.annotations
             .filter((annotation): annotation is any => {
               return (
                 annotation !== null &&
@@ -95,19 +100,24 @@ const PurePreviewMessage = ({
               }
               return null;
             })
-            .filter((link) => link !== null && typeof link.url === 'string') as Source[]
+            .filter(
+              (link) => link !== null && typeof link.url === 'string',
+            ) as Source[])
         : [];
     } catch (err) {
       return [];
     }
   }, [message.annotations, message.sourceType, sources.length]);
-  
-  const allSources = useMemo(() => [...sources, ...legacySources], [sources, legacySources]);
+
+  const allSources = useMemo(
+    () => [...sources, ...legacySources],
+    [sources, legacySources],
+  );
 
   // Handle typing animation effect for search messages
   useEffect(() => {
     const textContent = getMessageText(message);
-    
+
     if (
       message.isTyping &&
       textContent &&
@@ -186,15 +196,17 @@ const PurePreviewMessage = ({
               'flex gap-4 max-w-2xl',
               message.role === 'assistant' ? 'w-full' : 'w-fit',
               {
-                'min-h-96': message.role === 'assistant' && requiresScrollPadding,
-              }
+                'min-h-96':
+                  message.role === 'assistant' && requiresScrollPadding,
+              },
             )}
           >
             {message.role === 'assistant' && (
               <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
                 <div className="translate-y-px">
                   {/* Show a different icon for search results */}
-                  {message.sourceType === 'web-search' || allSources.length > 0 ? (
+                  {message.sourceType === 'web-search' ||
+                  allSources.length > 0 ? (
                     <GlobeIcon size={14} />
                   ) : (
                     <SparklesIcon size={14} />
@@ -208,13 +220,13 @@ const PurePreviewMessage = ({
               {allSources.length > 0 && message.role === 'assistant' && (
                 <SourcePanel sources={allSources} className="mb-2" />
               )}
-              
+
               {/* Handle v5 UIMessage file parts and v4 experimental_attachments */}
               {(() => {
                 const fileParts = getMessageFiles(message);
                 const v4Attachments = message.experimental_attachments || [];
-                
-                return (fileParts.length > 0 || v4Attachments.length > 0) ? (
+
+                return fileParts.length > 0 || v4Attachments.length > 0 ? (
                   <div className="flex flex-row justify-end gap-2">
                     {fileParts.map((filePart: any, index: number) => (
                       <PreviewAttachment
@@ -245,275 +257,295 @@ const PurePreviewMessage = ({
               )}
 
               {/* Handle v5 UIMessage parts structure */}
-              {Array.isArray((message as any).parts) && (message as any).parts.map((part: any, index: number) => {
-                const { type } = part;
-                const key = `message-${message.id}-part-${index}`;
+              {Array.isArray((message as any).parts) &&
+                (message as any).parts.map((part: any, index: number) => {
+                  const { type } = part;
+                  const key = `message-${message.id}-part-${index}`;
 
-                // Skip reasoning & source parts as they are handled separately above/below
-                if (type === 'reasoning' || type === 'source') {
-                  return null;
-                }
+                  // Skip reasoning & source parts as they are handled separately above/below
+                  if (type === 'reasoning' || type === 'source') {
+                    return null;
+                  }
 
-                if (type === 'text') {
-                  if (mode === 'view') {
-                    return (
-                      <div key={key} className="flex flex-row gap-2 items-start">
-                        {message.role === 'user' && !isReadonly && (
-                          <>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                                  onClick={() =>
-                                    copyToClipboard(part.text)
-                                  }
-                                  disabled={copying}
-                                >
-                                  {copying ? (
-                                    <CheckIcon className="size-4 text-green-500" />
-                                  ) : (
-                                    <CopyIcon className="size-4" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {copying ? 'Copied!' : 'Copy'}
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  data-testid="message-edit-button"
-                                  variant="ghost"
-                                  className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                                  onClick={() => {
-                                    setMode('edit');
-                                  }}
-                                >
-                                  <PencilEditIcon />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit message</TooltipContent>
-                            </Tooltip>
-                          </>
-                        )}
-                        {message.role === 'assistant' && (
-                          <div className="grow overflow-hidden" />
-                        )}
-
+                  if (type === 'text') {
+                    if (mode === 'view') {
+                      return (
                         <div
-                          data-testid="message-content"
-                          className={cn('flex flex-col gap-4', {
-                            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                              message.role === 'user',
-                          })}
+                          key={key}
+                          className="flex flex-row gap-2 items-start"
                         >
-                          {/* Use displayedContent for typing animation, otherwise use part.text */}
-                          <Markdown>{
-                            message.isTyping && message.sourceType === 'web-search' 
-                              ? displayedContent 
-                              : part.text
-                          }</Markdown>
-                          {message.isTyping && !isTypingComplete && (
-                            <span className="inline-block h-4 w-2 bg-current animate-pulse ml-1" />
+                          {message.role === 'user' && !isReadonly && (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                    onClick={() => copyToClipboard(part.text)}
+                                    disabled={copying}
+                                  >
+                                    {copying ? (
+                                      <CheckIcon className="size-4 text-green-500" />
+                                    ) : (
+                                      <CopyIcon className="size-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {copying ? 'Copied!' : 'Copy'}
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    data-testid="message-edit-button"
+                                    variant="ghost"
+                                    className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                    onClick={() => {
+                                      setMode('edit');
+                                    }}
+                                  >
+                                    <PencilEditIcon />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit message</TooltipContent>
+                              </Tooltip>
+                            </>
                           )}
-                        </div>
-                      </div>
-                    );
-                  }
+                          {message.role === 'assistant' && (
+                            <div className="grow overflow-hidden" />
+                          )}
 
-                  if (mode === 'edit') {
-                    return (
-                      <div key={key} className="flex flex-row gap-2 items-start">
-                        <div className="size-8" />
-
-                        <MessageEditor
-                          key={message.id}
-                          message={message}
-                          setMode={setMode}
-                          setMessages={setMessages}
-                          regenerate={async () => { await regenerate(); }}
-                        />
-                      </div>
-                    );
-                  }
-                }
-
-                // Handle tool results from web search to avoid raw JSON dump (if not caught by legacySources)
-                // We want to suppress specific tool results that are already visualized
-                if (type === 'tool-result' && part.toolName === 'web_search') {
-                  return null; // Don't show raw JSON for web search, it's in the SourcePanel
-                }
-
-                // Handle tool calls in v5 format
-                if (type?.startsWith('tool-')) {
-                  const toolName = type.replace('tool-', '');
-                  const { toolCallId, state } = part;
-
-                  if (toolName === 'getWeather') {
-                    if (state === 'input-available') {
-                      return (
-                        <div key={toolCallId} className="skeleton">
-                          <Weather />
-                        </div>
-                      );
-                    }
-
-                    if (state === 'output-available') {
-                      const { output } = part;
-                      return (
-                        <div key={toolCallId}>
-                          <Weather weatherAtLocation={output} />
-                        </div>
-                      );
-                    }
-                  }
-
-                  if (toolName === 'createDocument') {
-                    if (state === 'input-available') {
-                      const { input } = part;
-                      return (
-                        <div key={toolCallId}>
-                          <DocumentPreview isReadonly={isReadonly} args={input} />
-                        </div>
-                      );
-                    }
-
-                    if (state === 'output-available') {
-                      const { output } = part;
-
-                      if ('error' in output) {
-                        return (
                           <div
-                            key={toolCallId}
-                            className="text-red-500 p-2 border rounded"
+                            data-testid="message-content"
+                            className={cn('flex flex-col gap-4', {
+                              'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                                message.role === 'user',
+                            })}
                           >
-                            Error: {String(output.error)}
+                            {/* Use displayedContent for typing animation, otherwise use part.text */}
+                            <Markdown>
+                              {message.isTyping &&
+                              message.sourceType === 'web-search'
+                                ? displayedContent
+                                : part.text}
+                            </Markdown>
+                            {message.isTyping && !isTypingComplete && (
+                              <span className="inline-block h-4 w-2 bg-current animate-pulse ml-1" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (mode === 'edit') {
+                      return (
+                        <div
+                          key={key}
+                          className="flex flex-row gap-2 items-start"
+                        >
+                          <div className="size-8" />
+
+                          <MessageEditor
+                            key={message.id}
+                            message={message}
+                            setMode={setMode}
+                            setMessages={setMessages}
+                            regenerate={async () => {
+                              await regenerate();
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  // Handle tool results from web search to avoid raw JSON dump (if not caught by legacySources)
+                  // We want to suppress specific tool results that are already visualized
+                  if (
+                    type === 'tool-result' &&
+                    part.toolName === 'web_search'
+                  ) {
+                    return null; // Don't show raw JSON for web search, it's in the SourcePanel
+                  }
+
+                  // Handle tool calls in v5 format
+                  if (type?.startsWith('tool-')) {
+                    const toolName = type.replace('tool-', '');
+                    const { toolCallId, state } = part;
+
+                    if (toolName === 'getWeather') {
+                      if (state === 'input-available') {
+                        return (
+                          <div key={toolCallId} className="skeleton">
+                            <Weather />
                           </div>
                         );
                       }
 
-                      return (
-                        <div key={toolCallId}>
-                          <DocumentPreview
-                            isReadonly={isReadonly}
-                            result={output}
-                          />
-                        </div>
-                      );
-                    }
-                  }
-
-                  if (toolName === 'updateDocument') {
-                    if (state === 'input-available') {
-                      const { input } = part;
-
-                      return (
-                        <div key={toolCallId}>
-                          <DocumentToolCall
-                            type="update"
-                            args={input}
-                            isReadonly={isReadonly}
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (state === 'output-available') {
-                      const { output } = part;
-
-                      if ('error' in output) {
+                      if (state === 'output-available') {
+                        const { output } = part;
                         return (
-                          <div
-                            key={toolCallId}
-                            className="text-red-500 p-2 border rounded"
-                          >
-                            Error: {String(output.error)}
+                          <div key={toolCallId}>
+                            <Weather weatherAtLocation={output} />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolName === 'createDocument') {
+                      if (state === 'input-available') {
+                        const { input } = part;
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentPreview
+                              isReadonly={isReadonly}
+                              args={input}
+                            />
                           </div>
                         );
                       }
 
-                      return (
-                        <div key={toolCallId}>
-                          <DocumentToolResult
-                            type="update"
-                            result={output}
-                            isReadonly={isReadonly}
-                          />
-                        </div>
-                      );
-                    }
-                  }
+                      if (state === 'output-available') {
+                        const { output } = part;
 
-                  if (toolName === 'requestSuggestions') {
-                    if (state === 'input-available') {
-                      const { input } = part;
-                      return (
-                        <div key={toolCallId}>
-                          <DocumentToolCall
-                            type="request-suggestions"
-                            args={input}
-                            isReadonly={isReadonly}
-                          />
-                        </div>
-                      );
-                    }
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
 
-                    if (state === 'output-available') {
-                      const { output } = part;
-
-                      if ('error' in output) {
                         return (
-                          <div
-                            key={toolCallId}
-                            className="text-red-500 p-2 border rounded"
-                          >
-                            Error: {String(output.error)}
+                          <div key={toolCallId}>
+                            <DocumentPreview
+                              isReadonly={isReadonly}
+                              result={output}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolName === 'updateDocument') {
+                      if (state === 'input-available') {
+                        const { input } = part;
+
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolCall
+                              type="update"
+                              args={input}
+                              isReadonly={isReadonly}
+                            />
                           </div>
                         );
                       }
 
+                      if (state === 'output-available') {
+                        const { output } = part;
+
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolResult
+                              type="update"
+                              result={output}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolName === 'requestSuggestions') {
+                      if (state === 'input-available') {
+                        const { input } = part;
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolCall
+                              type="request-suggestions"
+                              args={input}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (state === 'output-available') {
+                        const { output } = part;
+
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolResult
+                              type="request-suggestions"
+                              result={output}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    // NEW: Handle additional tools
+
+                    // Image Generation
+                    if (toolName === 'image_generation') {
+                      if (state === 'result') {
+                        // Images are typically returned as blobs or URLs in the result
+                        // For now, we rely on the message attachments logic above if it returns urls
+                        return (
+                          <div
+                            key={toolCallId}
+                            className="p-2 bg-muted rounded-md text-sm"
+                          >
+                            Image generated
+                          </div>
+                        );
+                      }
                       return (
-                        <div key={toolCallId}>
-                          <DocumentToolResult
-                            type="request-suggestions"
-                            result={output}
-                            isReadonly={isReadonly}
-                          />
+                        <div
+                          key={toolCallId}
+                          className="flex items-center gap-2 text-sm text-muted-foreground p-2"
+                        >
+                          <div className="animate-spin text-primary">
+                            <LoaderIcon size={14} />
+                          </div>
+                          <TextShimmer duration={4}>
+                            Generating image...
+                          </TextShimmer>
                         </div>
                       );
                     }
                   }
-                  
-                  // NEW: Handle additional tools
-                  
-                  // Image Generation
-                  if (toolName === 'image_generation') {
-                    if (state === 'result') {
-                       // Images are typically returned as blobs or URLs in the result
-                       // For now, we rely on the message attachments logic above if it returns urls
-                       return (
-                         <div key={toolCallId} className="p-2 bg-muted rounded-md text-sm">
-                           Image generated
-                         </div>
-                       );
-                    }
-                    return (
-                       <div key={toolCallId} className="flex items-center gap-2 text-sm text-muted-foreground p-2">
-                         <div className="animate-spin text-primary">
-                           <LoaderIcon size={14} />
-                         </div>
-                         <TextShimmer duration={4}>
-                           Generating image...
-                         </TextShimmer>
-                       </div>
-                    );
-                  }
-                }
 
-                return null;
-              })}
+                  return null;
+                })}
 
               {message.toolInvocations &&
                 message.toolInvocations.length > 0 && (
@@ -521,9 +553,13 @@ const PurePreviewMessage = ({
                     {message.toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } =
                         toolInvocation;
-                      
+
                       // Skip web_search tool results from this view since they're in the panel
-                      if (toolName === 'web_search' || toolName === 'pubmed_search') return null;
+                      if (
+                        toolName === 'web_search' ||
+                        toolName === 'pubmed_search'
+                      )
+                        return null;
 
                       if (state === 'result') {
                         const { result } = toolInvocation;
@@ -621,13 +657,16 @@ export const PreviewMessage = memo(
       return false;
     if (prevProps.message.reasoningText !== nextProps.message.reasoningText)
       return false;
-    
+
     // Compare text content using v5-compatible helper
-    if (getMessageText(prevProps.message) !== getMessageText(nextProps.message)) 
+    if (getMessageText(prevProps.message) !== getMessageText(nextProps.message))
       return false;
-    
+
     // Check v5 parts if available
-    if (!equal((prevProps.message as any).parts, (nextProps.message as any).parts)) return false;
+    if (
+      !equal((prevProps.message as any).parts, (nextProps.message as any).parts)
+    )
+      return false;
     if (
       !equal(
         prevProps.message.toolInvocations,

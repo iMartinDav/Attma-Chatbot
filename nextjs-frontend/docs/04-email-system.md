@@ -37,6 +37,7 @@ The Resend API client is initialized in `lib/email/resend.ts`.
 ### Welcome Email
 
 Sent when a user:
+
 - Creates a new account through the registration form
 - Signs up using Google OAuth
 
@@ -82,12 +83,15 @@ This will start a server at [http://localhost:3001/preview](http://localhost:300
 ## Integration Points
 
 ### Registration Flow
+
 When a new user registers via the registration form, the welcome email is triggered in the registration API route.
 
 ### Google Sign-In Flow
+
 When a new user registers via Google OAuth, the welcome email is triggered in the `auth.ts` `signIn` callback.
 
 ### Password Reset Flow
+
 When a user requests a password reset, the email is triggered in the `forgot-password` API route.
 
 ## Testing Emails

@@ -1,19 +1,32 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronRight, FolderIcon, MessageSquare, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  FolderIcon,
+  MessageSquare,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuItem } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import type { Chat, Project } from '@/lib/db/schema';
 import { fetcher, getChatUrl } from '@/lib/utils';
 import { ProjectDialog } from './project-dialog';
@@ -27,54 +40,65 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { mutate } = useSWRConfig();
-  
+
   const currentProjectId = searchParams.get('project');
   const currentChatId = pathname.split('/chat/')[1];
-  
-  const { data: projects, isLoading } = useSWR<Project[]>('/api/projects', fetcher);
-  
+
+  const { data: projects, isLoading } = useSWR<Project[]>(
+    '/api/projects',
+    fetcher,
+  );
+
   const [isExpanded, setIsExpanded] = useState(true);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
+    new Set(),
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   // Auto-expand project if we're viewing it
   useEffect(() => {
     if (currentProjectId) {
-      setExpandedProjects(prev => new Set([...prev, currentProjectId]));
+      setExpandedProjects((prev) => new Set([...prev, currentProjectId]));
     }
   }, [currentProjectId]);
 
-  const handleCreateProject = async (data: { name: string; description?: string }) => {
+  const handleCreateProject = async (data: {
+    name: string;
+    description?: string;
+  }) => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
+
       if (response.ok) {
         const newProject = await response.json();
         mutate('/api/projects');
         setDialogOpen(false);
         // Auto-expand the new project
-        setExpandedProjects(prev => new Set([...prev, newProject.id]));
+        setExpandedProjects((prev) => new Set([...prev, newProject.id]));
       }
     } catch (error) {
       console.error('Failed to create project:', error);
     }
   };
 
-  const handleUpdateProject = async (data: { name: string; description?: string }) => {
+  const handleUpdateProject = async (data: {
+    name: string;
+    description?: string;
+  }) => {
     if (!editingProject) return;
-    
+
     try {
       const response = await fetch(`/api/projects/${editingProject.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
+
       if (response.ok) {
         mutate('/api/projects');
         setEditingProject(null);
@@ -89,10 +113,10 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         mutate('/api/projects');
-        setExpandedProjects(prev => {
+        setExpandedProjects((prev) => {
           const next = new Set(prev);
           next.delete(projectId);
           return next;
@@ -104,7 +128,7 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
   };
 
   const toggleProjectExpanded = (projectId: string) => {
-    setExpandedProjects(prev => {
+    setExpandedProjects((prev) => {
       const next = new Set(prev);
       if (next.has(projectId)) {
         next.delete(projectId);
@@ -145,7 +169,11 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-1 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground/80 transition-colors"
           >
-            {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+            {isExpanded ? (
+              <ChevronDown className="size-3" />
+            ) : (
+              <ChevronRight className="size-3" />
+            )}
             <span>Projects</span>
           </button>
           <button
@@ -167,10 +195,12 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
             >
               <div className="mt-1 space-y-0.5 px-1">
                 {isLoading ? (
-                  <div className="px-3 py-2 text-xs text-muted-foreground/50">Loading...</div>
+                  <div className="px-3 py-2 text-xs text-muted-foreground/50">
+                    Loading...
+                  </div>
                 ) : projects && projects.length > 0 ? (
                   projects.map((project) => (
-                    <ProjectItem 
+                    <ProjectItem
                       key={project.id}
                       project={project}
                       isExpanded={expandedProjects.has(project.id)}
@@ -211,10 +241,14 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
         onOpenChange={(open) => !open && setEditingProject(null)}
         onSubmit={handleUpdateProject}
         mode="edit"
-        initialData={editingProject ? {
-          name: editingProject.name,
-          description: editingProject.description || '',
-        } : undefined}
+        initialData={
+          editingProject
+            ? {
+                name: editingProject.name,
+                description: editingProject.description || '',
+              }
+            : undefined
+        }
       />
     </>
   );
@@ -231,21 +265,21 @@ interface ProjectItemProps {
   onNewChat: () => void;
 }
 
-function ProjectItem({ 
-  project, 
-  isExpanded, 
+function ProjectItem({
+  project,
+  isExpanded,
   isActive,
   currentChatId,
-  onToggle, 
-  onEdit, 
+  onToggle,
+  onEdit,
   onDelete,
-  onNewChat 
+  onNewChat,
 }: ProjectItemProps) {
   const router = useRouter();
-  
+
   const { data: chats } = useSWR<Chat[]>(
     isExpanded ? `/api/projects/${project.id}/chats` : null,
-    fetcher
+    fetcher,
   );
 
   return (
@@ -265,8 +299,8 @@ function ProjectItem({
             <ChevronRight className="size-3 text-muted-foreground" />
           )}
         </button>
-        
-        <div 
+
+        <div
           className="flex items-center gap-2 flex-1 min-w-0"
           onClick={onToggle}
         >
@@ -277,7 +311,7 @@ function ProjectItem({
             {project.name}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => {
@@ -289,7 +323,7 @@ function ProjectItem({
           >
             <Plus className="size-3 text-muted-foreground" />
           </button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -346,7 +380,7 @@ function ProjectItem({
                   No chats yet
                 </div>
               )}
-              
+
               <button
                 onClick={onNewChat}
                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/30 transition-all"

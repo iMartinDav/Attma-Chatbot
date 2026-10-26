@@ -6,7 +6,12 @@ import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import type { Vote } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { fetcher, fetchWithErrorHandlers, generateUUID, getChatUrl } from '@/lib/utils';
+import {
+  fetcher,
+  fetchWithErrorHandlers,
+  generateUUID,
+  getChatUrl,
+} from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import type { Session } from 'next-auth';
@@ -63,11 +68,13 @@ export function Chat({
   const searchParams = useSearchParams();
   const agentParam = searchParams.get('agent');
   const projectParam = searchParams.get('project');
-  const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(agentParam || undefined);
-  
+  const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>(
+    agentParam || undefined,
+  );
+
   const selectedAgentIdRef = useRef(selectedAgentId);
   selectedAgentIdRef.current = selectedAgentId;
-  
+
   const projectIdRef = useRef(projectParam);
   projectIdRef.current = projectParam;
 
@@ -87,7 +94,7 @@ export function Chat({
     resumeStream,
   } = useChat<ChatMessage>({
     id,
-    messages: initialMessages, 
+    messages: initialMessages,
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
@@ -108,7 +115,9 @@ export function Chat({
       },
     }),
     onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart as any] : [dataPart as any]));
+      setDataStream((ds) =>
+        ds ? [...ds, dataPart as any] : [dataPart as any],
+      );
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -153,8 +162,11 @@ export function Chat({
     setMessages,
   });
 
-
-  const isBioAgent = selectedAgentId === 'bioinformatics' || selectedAgentId === 'single-cell' || selectedAgentId === 'variant-analysis' || selectedAgentId === 'pathway-analysis';
+  const isBioAgent =
+    selectedAgentId === 'bioinformatics' ||
+    selectedAgentId === 'single-cell' ||
+    selectedAgentId === 'variant-analysis' ||
+    selectedAgentId === 'pathway-analysis';
 
   // Time-based greeting like Claude/ChatGPT
   const getGreeting = () => {
@@ -177,76 +189,90 @@ export function Chat({
         />
 
         {messages.length === 0 ? (
-           <div className="flex-1 flex flex-col justify-center items-center px-4 relative pb-20">
-              {/* Personalized Greeting - Logo Centered like Grok */}
-              <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                 <div className="flex items-center justify-center gap-3 mb-4">
-                    <img 
-                       src="/images/logo.png" 
-                       alt="Attma" 
-                       className="h-8 hidden dark:block"
+          <div className="flex-1 flex flex-col justify-center items-center px-4 relative pb-20">
+            {/* Personalized Greeting - Logo Centered like Grok */}
+            <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <img
+                  src="/images/logo.png"
+                  alt="Attma"
+                  className="h-8 hidden dark:block"
+                />
+                <img
+                  src="/images/attma-logo.webp"
+                  alt="Attma"
+                  className="h-8 block dark:hidden"
+                />
+
+                <h1 className="text-3xl md:text-4xl font-light text-foreground/90">
+                  {getGreeting()},{' '}
+                  <span className="font-normal">{userName}</span>
+                </h1>
+              </div>
+
+              <p className="text-muted-foreground text-base">
+                How can I help with your research today?
+              </p>
+            </div>
+
+            {/* Suggestion Chips to promote Agent features */}
+            <ChatSuggestions
+              onSelect={(text: string) => {
+                setInput(text);
+                // Optional: auto-focus input
+                const textarea = document.querySelector('textarea');
+                if (textarea) textarea.focus();
+              }}
+            />
+
+            {/* Premium Input Container */}
+            <div className="w-full max-w-2xl px-4">
+              <div className="relative">
+                <form className="w-full">
+                  {!isReadonly && (
+                    <MultimodalInput
+                      chatId={activeChatId}
+                      onChatIdChange={setActiveChatId}
+                      input={input}
+                      setInput={setInput}
+                      status={
+                        status === 'streaming'
+                          ? 'processing'
+                          : status === 'error'
+                            ? 'ready'
+                            : 'ready'
+                      }
+                      stop={stop}
+                      attachments={attachments}
+                      setAttachments={setAttachments}
+                      messages={messages as any}
+                      setMessages={setMessages as any}
+                      sendMessage={sendMessage as any}
+                      selectedVisibilityType={visibilityType}
+                      isFullSize={true}
+                      placeholder="What do you want to know?"
+                      selectedModelId={initialChatModel}
+                      selectedAgentId={selectedAgentId || 'auto'}
+                      onAgentSelect={(agentId) =>
+                        setSelectedAgentId(
+                          agentId === 'auto' || agentId === 'general'
+                            ? undefined
+                            : agentId,
+                        )
+                      }
                     />
-                    <img 
-                       src="/images/attma-logo.webp" 
-                       alt="Attma" 
-                       className="h-8 block dark:hidden"
-                    />
-                    
-                    <h1 className="text-3xl md:text-4xl font-light text-foreground/90">
-                       {getGreeting()}, <span className="font-normal">{userName}</span>
-                    </h1>
-                 </div>
-                 
-                 <p className="text-muted-foreground text-base">
-                    How can I help with your research today?
-                 </p>
+                  )}
+                </form>
               </div>
+            </div>
 
-              {/* Suggestion Chips to promote Agent features */}
-              <ChatSuggestions 
-                onSelect={(text: string) => {
-                  setInput(text);
-                  // Optional: auto-focus input
-                  const textarea = document.querySelector('textarea');
-                  if (textarea) textarea.focus();
-                }}
-              />
-
-              {/* Premium Input Container */}
-              <div className="w-full max-w-2xl px-4">
-                 <div className="relative">
-                    <form className="w-full">
-                      {!isReadonly && (
-                        <MultimodalInput
-                          chatId={activeChatId}
-                          onChatIdChange={setActiveChatId}
-                          input={input}
-                          setInput={setInput}
-                          status={status === 'streaming' ? 'processing' : status === 'error' ? 'ready' : 'ready'}
-                          stop={stop}
-                          attachments={attachments}
-                          setAttachments={setAttachments}
-                          messages={messages as any}
-                          setMessages={setMessages as any}
-                          sendMessage={sendMessage as any}
-                          selectedVisibilityType={visibilityType}
-                          isFullSize={true}
-                          placeholder="What do you want to know?"
-                          selectedModelId={initialChatModel}
-                          selectedAgentId={selectedAgentId || 'auto'}
-                          onAgentSelect={(agentId) => setSelectedAgentId(agentId === 'auto' || agentId === 'general' ? undefined : agentId)}
-                        />
-                      )}
-                    </form>
-                 </div>
-              </div>
-
-              
-              {/* Minimal Footer */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-                 <span className="text-xs text-muted-foreground/50">Powered by Attma AI</span>
-              </div>
-           </div>
+            {/* Minimal Footer */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+              <span className="text-xs text-muted-foreground/50">
+                Powered by Attma AI
+              </span>
+            </div>
+          </div>
         ) : (
           <>
             <Messages
@@ -258,7 +284,10 @@ export function Chat({
               isArtifactVisible={isArtifactVisible}
               isLoading={status === 'streaming'}
               isReasoningMode={false}
-              reload={async () => { await regenerate(); return null; }}
+              reload={async () => {
+                await regenerate();
+                return null;
+              }}
             />
 
             <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -268,12 +297,24 @@ export function Chat({
                   onChatIdChange={setActiveChatId}
                   input={input}
                   setInput={setInput}
-                  status={status === 'streaming' ? 'processing' : status === 'error' ? 'ready' : 'ready'}
+                  status={
+                    status === 'streaming'
+                      ? 'processing'
+                      : status === 'error'
+                        ? 'ready'
+                        : 'ready'
+                  }
                   stop={stop}
                   attachments={attachments}
                   selectedModelId={initialChatModel}
                   selectedAgentId={selectedAgentId || 'auto'}
-                  onAgentSelect={(agentId) => setSelectedAgentId(agentId === 'auto' || agentId === 'general' ? undefined : agentId)}
+                  onAgentSelect={(agentId) =>
+                    setSelectedAgentId(
+                      agentId === 'auto' || agentId === 'general'
+                        ? undefined
+                        : agentId,
+                    )
+                  }
                   setAttachments={setAttachments}
                   messages={messages as any}
                   setMessages={setMessages as any}

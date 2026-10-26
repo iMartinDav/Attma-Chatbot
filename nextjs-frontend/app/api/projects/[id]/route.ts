@@ -1,14 +1,10 @@
 import { auth } from '@/app/(auth)/auth';
-import {
-    deleteProject,
-    getProjectById,
-    updateProject,
-} from '@/lib/db/queries';
+import { deleteProject, getProjectById, updateProject } from '@/lib/db/queries';
 import { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   const { id } = await params;
@@ -19,7 +15,7 @@ export async function GET(
 
   try {
     const project = await getProjectById({ id });
-    
+
     if (!project) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -37,7 +33,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   const { id } = await params;
@@ -48,7 +44,7 @@ export async function PATCH(
 
   try {
     const existingProject = await getProjectById({ id });
-    
+
     if (!existingProject) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -69,13 +65,16 @@ export async function PATCH(
     return Response.json(project);
   } catch (error) {
     console.error('Failed to update project:', error);
-    return Response.json({ error: 'Failed to update project' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to update project' },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   const { id } = await params;
@@ -86,7 +85,7 @@ export async function DELETE(
 
   try {
     const existingProject = await getProjectById({ id });
-    
+
     if (!existingProject) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -100,6 +99,9 @@ export async function DELETE(
     return Response.json({ success: true });
   } catch (error) {
     console.error('Failed to delete project:', error);
-    return Response.json({ error: 'Failed to delete project' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to delete project' },
+      { status: 500 },
+    );
   }
 }

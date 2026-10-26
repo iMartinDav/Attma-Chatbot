@@ -26,7 +26,7 @@ export class ApiKeyManager {
 
   constructor(serviceName: string, configs: ApiKeyConfig[]) {
     this.serviceName = serviceName;
-    
+
     for (const config of configs) {
       if (config.key) {
         this.keys.set(config.key, {
@@ -87,11 +87,15 @@ export class ApiKeyManager {
     const state = this.keys.get(key);
     if (state) {
       state.lastError = error;
-      
+
       // Mark unhealthy if rate limit error
-      if (error.includes('rate') || error.includes('429') || error.includes('limit')) {
+      if (
+        error.includes('rate') ||
+        error.includes('429') ||
+        error.includes('limit')
+      ) {
         state.isHealthy = false;
-        
+
         // Reset health after 1 minute
         setTimeout(() => {
           state.isHealthy = true;
@@ -115,7 +119,10 @@ export class ApiKeyManager {
     }
 
     // Check per-second limit
-    if (config.requestsPerSecond && state.requestCount >= config.requestsPerSecond) {
+    if (
+      config.requestsPerSecond &&
+      state.requestCount >= config.requestsPerSecond
+    ) {
       return true;
     }
 
@@ -125,10 +132,13 @@ export class ApiKeyManager {
   /**
    * Get service status for debugging
    */
-  getStatus(): { service: string; keys: Array<{ name: string; healthy: boolean; requests: number }> } {
+  getStatus(): {
+    service: string;
+    keys: Array<{ name: string; healthy: boolean; requests: number }>;
+  } {
     return {
       service: this.serviceName,
-      keys: Array.from(this.keys.values()).map(state => ({
+      keys: Array.from(this.keys.values()).map((state) => ({
         name: state.config.name,
         healthy: state.isHealthy,
         requests: state.requestCount,
@@ -138,23 +148,29 @@ export class ApiKeyManager {
 }
 
 /** PubMed API key manager */
-export const pubmedKeyManager = new ApiKeyManager('pubmed', [
-  {
-    key: process.env.NCBI_API_KEY || '',
-    name: 'Primary NCBI',
-    requestsPerSecond: 10,
-  },
-  {
-    key: process.env.NCBI_API_KEY_2 || '',
-    name: 'Secondary NCBI',
-    requestsPerSecond: 10,
-  },
-  {
-    key: '', // No key fallback (3/sec)
-    name: 'No Key (Rate Limited)',
-    requestsPerSecond: 3,
-  },
-].filter(c => c.key !== '' || c.name.includes('Fallback') || c.name.includes('No Key')));
+export const pubmedKeyManager = new ApiKeyManager(
+  'pubmed',
+  [
+    {
+      key: process.env.NCBI_API_KEY || '',
+      name: 'Primary NCBI',
+      requestsPerSecond: 10,
+    },
+    {
+      key: process.env.NCBI_API_KEY_2 || '',
+      name: 'Secondary NCBI',
+      requestsPerSecond: 10,
+    },
+    {
+      key: '', // No key fallback (3/sec)
+      name: 'No Key (Rate Limited)',
+      requestsPerSecond: 3,
+    },
+  ].filter(
+    (c) =>
+      c.key !== '' || c.name.includes('Fallback') || c.name.includes('No Key'),
+  ),
+);
 
 /** Firecrawl API key manager */
 export const firecrawlKeyManager = new ApiKeyManager('firecrawl', [
@@ -180,7 +196,9 @@ export const semanticScholarKeyManager = new ApiKeyManager('semantic_scholar', [
 ]);
 
 /** Get API key for a service with automatic rotation */
-export function getApiKey(service: 'pubmed' | 'firecrawl' | 'semantic_scholar'): string | undefined {
+export function getApiKey(
+  service: 'pubmed' | 'firecrawl' | 'semantic_scholar',
+): string | undefined {
   switch (service) {
     case 'pubmed':
       return pubmedKeyManager.getKey();
@@ -198,13 +216,14 @@ export function recordApiUsage(
   service: 'pubmed' | 'firecrawl' | 'semantic_scholar',
   key: string,
   success: boolean,
-  error?: string
+  error?: string,
 ): void {
-  const manager = service === 'pubmed' 
-    ? pubmedKeyManager 
-    : service === 'firecrawl'
-    ? firecrawlKeyManager
-    : semanticScholarKeyManager;
+  const manager =
+    service === 'pubmed'
+      ? pubmedKeyManager
+      : service === 'firecrawl'
+        ? firecrawlKeyManager
+        : semanticScholarKeyManager;
 
   if (success) {
     manager.recordUsage(key);

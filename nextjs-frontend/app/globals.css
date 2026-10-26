@@ -320,212 +320,215 @@
 }
 
 @layer base {
-    :root {
-        /* Core theme colors - Light Mode with refined scientific aesthetic */
-        --background: 0 0% 100%;
-        --foreground: 222 47% 11%;
-        --card: 0 0% 100%;
-        --card-foreground: 222 47% 11%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222 47% 11%;
-        --primary: 164 84% 47%;  /* Attma primary - slightly adjusted for light mode */
-        --primary-foreground: 210 40% 98%;
-        --secondary: 164 84% 97%;  /* Subtle primary-tinted background */
-        --secondary-foreground: 222 47% 11%;
-        --muted: 164 84% 97%;
-        --muted-foreground: 215 25% 27%;
-        --accent: 164 84% 95%;  /* Subtle interaction highlight */
-        --accent-foreground: 222 47% 11%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 164 84% 92%;  /* Refined border color */
-        --input: 164 84% 92%;
-        --ring: 164 84% 47%;  /* Match primary for focus states */
-        --radius: 0.5rem;
-        
-        /* Chart colors - Light Mode - Scientific palette */
-        --chart-1: 164 84% 47%;  /* Attma primary */
-        --chart-2: 187 75% 53%;  /* Ocean blue */
-        --chart-3: 201 96% 32%;  /* Deep marine */
-        --chart-4: 150 84% 40%;  /* Forest green */
-        --chart-5: 176 56% 42%;  /* Sage */
-        
-        /* Sidebar - Light Mode - Professional glass effect */
-        --sidebar-background: 164 84% 98% / 85%;
-        --sidebar-foreground: 222 47% 11%;
-        --sidebar-primary: 164 84% 47%;
-        --sidebar-primary-foreground: 210 40% 98%;
-        --sidebar-accent: 164 84% 96% / 70%;
-        --sidebar-accent-foreground: 222 47% 11%;
-        --sidebar-border: 164 84% 92% / 40%;
-        --sidebar-ring: 164 84% 47%;
-        --sidebar-background-desktop: 164 84% 98% / 75%;
-        --sidebar-accent-desktop: 164 84% 96% / 60%;
-    }
-    
-    .dark {
-        /* Core theme colors - Dark Mode */
-        --background: 240 17% 9%;
-        --foreground: 0 0% 98%;
-        --card: 240 17% 10%;
-        --card-foreground: 0 0% 98%;
-        --popover: 240 17% 10%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 164 84% 59%; /* Using the accent color as primary for better contrast */
-        --primary-foreground: 240 17% 9%;
-        --secondary: 240 17% 14%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 240 17% 14%;
-        --muted-foreground: 240 5% 75%; /* Increased contrast for better readability */
-        --accent: 164 84% 59%;
-        --accent-foreground: 240 17% 9%;
-        --destructive: 0 84% 60%; /* More visible destructive action */
-        --destructive-foreground: 0 0% 98%;
-        --border: 240 3.7% 15.9%;
-        --input: 240 17% 12%;
-        --ring: 164 84% 59%; /* Matching ring with accent for consistency */
-        
-        /* Chart colors - Dark Mode - More vibrant for dark backgrounds */
-        --chart-1: 164 84% 59%; /* Primary/Accent color */
-        --chart-2: 199 89% 48%; /* Complementary blue */
-        --chart-3: 269 75% 64%; /* Supporting purple */
-        --chart-4: 316 72% 52%; /* Supporting pink */
-        --chart-5: 150 84% 50%; /* Supporting green */
-        
-        /* Sidebar - Dark Mode - More refined glass effect */
-        --sidebar-background: 240 17% 9% / 85%;
-        --sidebar-foreground: 0 0% 98%;
-        --sidebar-primary: 164 84% 59%;
-        --sidebar-primary-foreground: 240 17% 9%;
-        --sidebar-accent: 240 17% 12% / 50%;
-        --sidebar-accent-foreground: 0 0% 98%;
-        --sidebar-border: 240 3.7% 15.9% / 30%;
-        --sidebar-ring: 164 84% 59%;
-        --sidebar-background-desktop: 240 17% 9% / 75%;
-        --sidebar-accent-desktop: 240 17% 12% / 40%;
-    }
-    
-    * {
-        border-color: hsl(var(--border));
-    }
+  :root {
+    /* Core theme colors - Light Mode with refined scientific aesthetic */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 164 84% 47%; /* Attma primary - slightly adjusted for light mode */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 164 84% 97%; /* Subtle primary-tinted background */
+    --secondary-foreground: 222 47% 11%;
+    --muted: 164 84% 97%;
+    --muted-foreground: 215 25% 27%;
+    --accent: 164 84% 95%; /* Subtle interaction highlight */
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 164 84% 92%; /* Refined border color */
+    --input: 164 84% 92%;
+    --ring: 164 84% 47%; /* Match primary for focus states */
+    --radius: 0.5rem;
 
-    /* Theme transition settings */
-    :root {
-        --theme-transition-duration: 200ms;
-    }
+    /* Chart colors - Light Mode - Scientific palette */
+    --chart-1: 164 84% 47%; /* Attma primary */
+    --chart-2: 187 75% 53%; /* Ocean blue */
+    --chart-3: 201 96% 32%; /* Deep marine */
+    --chart-4: 150 84% 40%; /* Forest green */
+    --chart-5: 176 56% 42%; /* Sage */
 
-    body {
-        background-color: hsl(var(--background));
-        color: hsl(var(--foreground));
-        transition: background-color var(--theme-transition-duration) ease,
-                    color var(--theme-transition-duration) ease;
-        font-family: var(--font-family-base);
-        font-variation-settings: "wght" var(--font-weight-regular);
-        font-weight: var(--font-weight-regular);
-        letter-spacing: var(--letter-spacing-tight);
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizelegibility;
-        -webkit-text-size-adjust: none;
-        -moz-text-size-adjust: none;
-        text-size-adjust: none;
-    }
+    /* Sidebar - Light Mode - Professional glass effect */
+    --sidebar-background: 164 84% 98% / 85%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 164 84% 47%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 164 84% 96% / 70%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 164 84% 92% / 40%;
+    --sidebar-ring: 164 84% 47%;
+    --sidebar-background-desktop: 164 84% 98% / 75%;
+    --sidebar-accent-desktop: 164 84% 96% / 60%;
+  }
 
-    /* Global transition properties */
-    button,
-    a,
-    [class*='bg-'],
-    [class*='text-'],
-    [class*='border-'] {
-        transition-property: background-color, border-color, color, fill, stroke;
-        transition-timing-function: ease;
-        transition-duration: var(--theme-transition-duration);
-    }
+  .dark {
+    /* Core theme colors - Dark Mode */
+    --background: 240 17% 9%;
+    --foreground: 0 0% 98%;
+    --card: 240 17% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 17% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 164 84% 59%; /* Using the accent color as primary for better contrast */
+    --primary-foreground: 240 17% 9%;
+    --secondary: 240 17% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 17% 14%;
+    --muted-foreground: 240 5% 75%; /* Increased contrast for better readability */
+    --accent: 164 84% 59%;
+    --accent-foreground: 240 17% 9%;
+    --destructive: 0 84% 60%; /* More visible destructive action */
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 17% 12%;
+    --ring: 164 84% 59%; /* Matching ring with accent for consistency */
 
-    /* Font definitions */
-    @font-face {
-        font-family: "geist";
-        font-style: normal;
-        font-weight: 100 900;
-        src: url(/fonts/geist.woff2) format("woff2");
-    }
+    /* Chart colors - Dark Mode - More vibrant for dark backgrounds */
+    --chart-1: 164 84% 59%; /* Primary/Accent color */
+    --chart-2: 199 89% 48%; /* Complementary blue */
+    --chart-3: 269 75% 64%; /* Supporting purple */
+    --chart-4: 316 72% 52%; /* Supporting pink */
+    --chart-5: 150 84% 50%; /* Supporting green */
 
-    @font-face {
-        font-family: "geist-mono";
-        font-style: normal;
-        font-weight: 100 900;
-        src: url(/fonts/geist-mono.woff2) format("woff2");
-    }
-    
-    /* Home page typography classes */
-    h2.home-title {
-        font-family: var(--font-family-base);
-        font-variation-settings: "wght" var(--font-weight-bold);
-        font-weight: var(--font-weight-bold);
-        font-size: var(--home-heading-font-size);
-        line-height: var(--home-heading-line-height);
-        letter-spacing: var(--letter-spacing-tight);
-        text-align: center;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizelegibility;
-    }
-    
-    p.home-description {
-        font-family: var(--font-family-base);
-        font-variation-settings: "wght" var(--font-weight-regular);
-        font-weight: var(--font-weight-regular);
-        font-size: var(--home-body-font-size);
-        line-height: var(--home-body-line-height);
-        letter-spacing: var(--letter-spacing-tight);
-        text-align: center;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizelegibility;
-        color: hsl(var(--muted-foreground));
-    }
+    /* Sidebar - Dark Mode - More refined glass effect */
+    --sidebar-background: 240 17% 9% / 85%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 164 84% 59%;
+    --sidebar-primary-foreground: 240 17% 9%;
+    --sidebar-accent: 240 17% 12% / 50%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9% / 30%;
+    --sidebar-ring: 164 84% 59%;
+    --sidebar-background-desktop: 240 17% 9% / 75%;
+    --sidebar-accent-desktop: 240 17% 12% / 40%;
+  }
 
-    /* Attma-themed link styles - only for standalone links, not navigation */
-    a:not([class*="sidebar"]):not([class*="Sidebar"]) {
-        transition: color 0.2s ease, opacity 0.2s ease;
-    }
-    
-    a:focus-visible {
-        outline: 2px solid hsl(var(--ring));
-        outline-offset: 2px;
-        border-radius: 2px;
-    }
-    
-    /* Sidebar links should inherit color from parent (not bright teal) */
-    [data-sidebar] a,
-    .sidebar a {
-        color: inherit;
-        text-decoration: none;
-    }
-    
-    [data-sidebar] a:hover,
-    .sidebar a:hover {
-        color: hsl(var(--sidebar-foreground));
-        opacity: 0.8;
-    }
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  /* Theme transition settings */
+  :root {
+    --theme-transition-duration: 200ms;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    transition:
+      background-color var(--theme-transition-duration) ease,
+      color var(--theme-transition-duration) ease;
+    font-family: var(--font-family-base);
+    font-variation-settings: 'wght' var(--font-weight-regular);
+    font-weight: var(--font-weight-regular);
+    letter-spacing: var(--letter-spacing-tight);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+    -webkit-text-size-adjust: none;
+    -moz-text-size-adjust: none;
+    text-size-adjust: none;
+  }
+
+  /* Global transition properties */
+  button,
+  a,
+  [class*='bg-'],
+  [class*='text-'],
+  [class*='border-'] {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: ease;
+    transition-duration: var(--theme-transition-duration);
+  }
+
+  /* Font definitions */
+  @font-face {
+    font-family: 'geist';
+    font-style: normal;
+    font-weight: 100 900;
+    src: url(/fonts/geist.woff2) format('woff2');
+  }
+
+  @font-face {
+    font-family: 'geist-mono';
+    font-style: normal;
+    font-weight: 100 900;
+    src: url(/fonts/geist-mono.woff2) format('woff2');
+  }
+
+  /* Home page typography classes */
+  h2.home-title {
+    font-family: var(--font-family-base);
+    font-variation-settings: 'wght' var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--home-heading-font-size);
+    line-height: var(--home-heading-line-height);
+    letter-spacing: var(--letter-spacing-tight);
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+  }
+
+  p.home-description {
+    font-family: var(--font-family-base);
+    font-variation-settings: 'wght' var(--font-weight-regular);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--home-body-font-size);
+    line-height: var(--home-body-line-height);
+    letter-spacing: var(--letter-spacing-tight);
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Attma-themed link styles - only for standalone links, not navigation */
+  a:not([class*='sidebar']):not([class*='Sidebar']) {
+    transition:
+      color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Sidebar links should inherit color from parent (not bright teal) */
+  [data-sidebar] a,
+  .sidebar a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  [data-sidebar] a:hover,
+  .sidebar a:hover {
+    color: hsl(var(--sidebar-foreground));
+    opacity: 0.8;
+  }
 }
 
 @layer utilities {
   /* Multimodal input improvements for artifact panel */
-  [data-testid="multimodal-input"] {
+  [data-testid='multimodal-input'] {
     overflow-y: auto !important;
     overflow-x: hidden !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: pre-wrap !important;
   }
-  
+
   /* Artifact panel input container - prevent nested appearance */
   .artifact-input-container {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
   }
-  
+
   /* Better responsive input sizing in artifact panel */
-  
+
   /* Skeleton loading styles */
   .skeleton {
     * {
@@ -706,8 +709,8 @@
 @layer base {
   * {
     @apply border-border;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
 }

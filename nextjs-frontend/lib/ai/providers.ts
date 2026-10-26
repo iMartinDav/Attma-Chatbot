@@ -4,7 +4,11 @@
  */
 
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-import { customProvider, extractReasoningMiddleware, wrapLanguageModel } from 'ai';
+import {
+  customProvider,
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+} from 'ai';
 
 export interface ModelCapabilities {
   chat: boolean;
@@ -89,7 +93,7 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
       codeInterpreter: true,
     },
   },
-  'o3': {
+  o3: {
     id: 'o3',
     name: 'o3',
     provider: 'openai',
@@ -169,7 +173,7 @@ export const myProvider = customProvider({
 
 export function getModelConfig(internalId: string): ModelConfig | undefined {
   const useFallback = process.env.USE_FALLBACK_MODEL === 'true';
-  
+
   const modelIdMap: Record<string, string> = {
     'chat-model': useFallback ? 'gpt-3.5-turbo' : 'gpt-4o-mini',
     'chat-model-standard': useFallback ? 'gpt-3.5-turbo' : 'gpt-4o',
@@ -181,26 +185,26 @@ export function getModelConfig(internalId: string): ModelConfig | undefined {
     'chat-model-small': useFallback ? 'gpt-3.5-turbo' : 'gpt-4o-mini',
     'chat-model-large': useFallback ? 'gpt-3.5-turbo' : 'gpt-4o',
   };
-  
+
   return MODEL_REGISTRY[modelIdMap[internalId] ?? internalId];
 }
 
 export function getDefaultProviderOptions(
   modelId: string,
-  overrides?: Partial<OpenAIProviderConfig>
+  overrides?: Partial<OpenAIProviderConfig>,
 ): { openai: OpenAIResponsesProviderOptions } {
   const config = getModelConfig(modelId);
-  
+
   const defaults: OpenAIProviderConfig = {
     textVerbosity: 'medium',
     searchContextSize: 'medium',
   };
-  
+
   if (config?.isReasoning || config?.capabilities.reasoning) {
     defaults.reasoningSummary = 'detailed';
     defaults.reasoningEffort = 'medium';
   }
-  
+
   return {
     openai: {
       ...defaults,
@@ -211,21 +215,21 @@ export function getDefaultProviderOptions(
 
 export function modelSupports(
   modelId: string,
-  capability: keyof ModelCapabilities
+  capability: keyof ModelCapabilities,
 ): boolean {
   const config = getModelConfig(modelId);
   return config?.capabilities[capability] ?? false;
 }
 
 export function getModelsWithCapability(
-  capability: keyof ModelCapabilities
+  capability: keyof ModelCapabilities,
 ): ModelConfig[] {
   return Object.values(MODEL_REGISTRY).filter(
-    model => model.capabilities[capability]
+    (model) => model.capabilities[capability],
   );
 }
 
 export function getDefaultModelId(): string {
-  const defaultModel = Object.values(MODEL_REGISTRY).find(m => m.isDefault);
+  const defaultModel = Object.values(MODEL_REGISTRY).find((m) => m.isDefault);
   return defaultModel?.id ?? 'gpt-4o-mini';
 }

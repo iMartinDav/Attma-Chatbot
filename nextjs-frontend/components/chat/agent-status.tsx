@@ -7,14 +7,14 @@
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    BookOpenIcon,
-    BrainIcon,
-    CodeIcon,
-    FileIcon,
-    ImageIcon,
-    Loader2Icon,
-    SearchIcon,
-    SparklesIcon
+  BookOpenIcon,
+  BrainIcon,
+  CodeIcon,
+  FileIcon,
+  ImageIcon,
+  Loader2Icon,
+  SearchIcon,
+  SparklesIcon,
 } from 'lucide-react';
 
 export interface AgentStatusProps {
@@ -27,15 +27,18 @@ export interface AgentStatusProps {
   className?: string;
 }
 
-const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  'pubmed_search': SearchIcon,
-  'semantic_scholar': BookOpenIcon,
-  'gene_lookup': SparklesIcon,
-  'firecrawl_search': SearchIcon,
-  'create_code_artifact': CodeIcon,
-  'image_generation': ImageIcon,
-  'createDocument': FileIcon,
-  'default': BrainIcon,
+const TOOL_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  pubmed_search: SearchIcon,
+  semantic_scholar: BookOpenIcon,
+  gene_lookup: SparklesIcon,
+  firecrawl_search: SearchIcon,
+  create_code_artifact: CodeIcon,
+  image_generation: ImageIcon,
+  createDocument: FileIcon,
+  default: BrainIcon,
 };
 
 function ToolIcon({ tool, className }: { tool?: string; className?: string }) {
@@ -67,7 +70,7 @@ export function AgentStatus({
           'border border-purple-500/20',
           'backdrop-blur-sm',
           'text-xs text-muted-foreground',
-          className
+          className,
         )}
       >
         {/* Animated Icon */}
@@ -84,7 +87,10 @@ export function AgentStatus({
 
         {/* Status Text */}
         <span className="font-medium">
-          {currentAction || (currentTool ? `Using ${formatToolName(currentTool)}...` : 'Thinking...')}
+          {currentAction ||
+            (currentTool
+              ? `Using ${formatToolName(currentTool)}...`
+              : 'Thinking...')}
         </span>
 
         {/* Step Counter */}
@@ -107,13 +113,13 @@ export function AgentStatus({
 
 function formatToolName(tool: string): string {
   const names: Record<string, string> = {
-    'pubmed_search': 'PubMed Search',
-    'semantic_scholar': 'Semantic Scholar',
-    'gene_lookup': 'Gene Lookup',
-    'firecrawl_search': 'Web Search',
-    'create_code_artifact': 'Code Generation',
-    'image_generation': 'Generating Image',
-    'createDocument': 'Creating Document',
+    pubmed_search: 'PubMed Search',
+    semantic_scholar: 'Semantic Scholar',
+    gene_lookup: 'Gene Lookup',
+    firecrawl_search: 'Web Search',
+    create_code_artifact: 'Code Generation',
+    image_generation: 'Generating Image',
+    createDocument: 'Creating Document',
   };
   return names[tool] || tool;
 }
@@ -155,7 +161,7 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
         'flex flex-col gap-1 px-3 py-2 rounded-lg',
         'bg-muted/30 border border-muted',
         'text-xs',
-        className
+        className,
       )}
     >
       {actions.map((action, index) => {
@@ -174,11 +180,13 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
             ) : (
               <ToolIcon tool={action.tool} className="h-3 w-3 text-red-400" />
             )}
-            <span className={cn(
-              action.status === 'running' && 'text-blue-300',
-              action.status === 'complete' && 'text-muted-foreground',
-              action.status === 'error' && 'text-red-400',
-            )}>
+            <span
+              className={cn(
+                action.status === 'running' && 'text-blue-300',
+                action.status === 'complete' && 'text-muted-foreground',
+                action.status === 'error' && 'text-red-400',
+              )}
+            >
               {formatToolName(action.tool)}
             </span>
             {action.duration && (

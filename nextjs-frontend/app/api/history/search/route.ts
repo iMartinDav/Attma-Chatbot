@@ -20,10 +20,11 @@ export async function GET(request: NextRequest) {
   let filteredChats = allChats;
   if (query.trim()) {
     const lowerQuery = query.toLowerCase();
-    filteredChats = allChats.filter((chat: any) => 
-      chat.title?.toLowerCase().includes(lowerQuery) ||
-      // Also search in the first message content if available
-      chat.messages?.[0]?.content?.toLowerCase().includes(lowerQuery)
+    filteredChats = allChats.filter(
+      (chat: any) =>
+        chat.title?.toLowerCase().includes(lowerQuery) ||
+        // Also search in the first message content if available
+        chat.messages?.[0]?.content?.toLowerCase().includes(lowerQuery),
     );
   }
 

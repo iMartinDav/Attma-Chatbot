@@ -1,7 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { AgentBioinformaticsIcon, AgentPathwayIcon, AgentSingleCellIcon, PaperclipIcon } from '../icons';
+import {
+  AgentBioinformaticsIcon,
+  AgentPathwayIcon,
+  AgentSingleCellIcon,
+  PaperclipIcon,
+} from '../icons';
 
 interface ChatSuggestionsProps {
   onSelect: (text: string) => void;
@@ -12,22 +17,43 @@ export function ChatSuggestions({ onSelect, onUpload }: ChatSuggestionsProps) {
   const suggestions = [
     {
       label: 'Find recent CRISPR papers',
-      icon: <div className="w-4 h-4 text-blue-400"><AgentBioinformaticsIcon /></div>,
-      action: () => onSelect('Search PubMed for recent CRISPR-Cas9 papers and summarize key findings'),
+      icon: (
+        <div className="w-4 h-4 text-blue-400">
+          <AgentBioinformaticsIcon />
+        </div>
+      ),
+      action: () =>
+        onSelect(
+          'Search PubMed for recent CRISPR-Cas9 papers and summarize key findings',
+        ),
     },
     {
       label: 'Analyze single-cell data',
-      icon: <div className="w-4 h-4 text-purple-400"><AgentSingleCellIcon /></div>,
-      action: () => onSelect('How do I analyze single-cell RNA-seq data using Seurat v5?'),
+      icon: (
+        <div className="w-4 h-4 text-purple-400">
+          <AgentSingleCellIcon />
+        </div>
+      ),
+      action: () =>
+        onSelect('How do I analyze single-cell RNA-seq data using Seurat v5?'),
     },
     {
       label: 'Find KEGG pathways',
-      icon: <div className="w-4 h-4 text-green-400"><AgentPathwayIcon /></div>,
-      action: () => onSelect('Find KEGG pathways related to apoptosis and TP53'),
+      icon: (
+        <div className="w-4 h-4 text-green-400">
+          <AgentPathwayIcon />
+        </div>
+      ),
+      action: () =>
+        onSelect('Find KEGG pathways related to apoptosis and TP53'),
     },
     {
       label: 'Upload PDF to analyze',
-      icon: <div className="w-4 h-4 text-orange-400"><PaperclipIcon /></div>,
+      icon: (
+        <div className="w-4 h-4 text-orange-400">
+          <PaperclipIcon />
+        </div>
+      ),
       action: onUpload,
     },
   ];

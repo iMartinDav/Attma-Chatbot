@@ -512,7 +512,12 @@ const FeatureContent = ({
   Icon,
   className,
   index,
-}: { index: number; feature: FeatureItem; Icon: any; className?: string }) => {
+}: {
+  index: number;
+  feature: FeatureItem;
+  Icon: any;
+  className?: string;
+}) => {
   return (
     <motion.div
       className={cn(

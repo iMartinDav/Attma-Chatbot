@@ -11,7 +11,7 @@ import { convertToUIMessages } from '@/lib/utils';
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
-  
+
   if (id === 'new') {
     redirect('/chat');
   }
@@ -46,7 +46,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
-  
+
   // Use the model from cookie or default
   const selectedChatModel = chatModelFromCookie?.value || DEFAULT_CHAT_MODEL;
 

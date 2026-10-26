@@ -40,7 +40,10 @@ export const graphArtifact = new Artifact<'graph', GraphMetadata>({
   },
   onStreamPart: ({ streamPart, setArtifact, setMetadata }) => {
     // For now, handle any stream part that might contain graph data
-    if (streamPart.type.includes('graph') || streamPart.type === 'data-graphArtifact') {
+    if (
+      streamPart.type.includes('graph') ||
+      streamPart.type === 'data-graphArtifact'
+    ) {
       try {
         // Use type assertion to access data property
         const data = (streamPart as any).data;

@@ -20,12 +20,7 @@ export type AnalysisResultType =
  * Maps to available artifact types
  */
 export type ArtifactType =
-  | 'graph'
-  | 'sheet'
-  | 'code'
-  | 'text'
-  | 'image'
-  | 'pdf';
+  'graph' | 'sheet' | 'code' | 'text' | 'image' | 'pdf';
 
 /**
  * Parameter value types supported in artifact configurations
@@ -141,9 +136,7 @@ export function mapResultToArtifact(
  * Represents analysis result data in various formats
  */
 export type AnalysisResultData =
-  | string
-  | Record<string, unknown>
-  | Array<Record<string, unknown>>;
+  string | Record<string, unknown> | Array<Record<string, unknown>>;
 
 /**
  * Metadata for analysis results

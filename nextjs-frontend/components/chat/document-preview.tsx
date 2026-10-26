@@ -6,12 +6,12 @@ import type { Document } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import {
-    memo,
-    type MouseEvent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
+  memo,
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
 } from 'react';
 import useSWR from 'swr';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from '../icons';

@@ -56,19 +56,22 @@ interface AgentSelectorProps {
   onAgentSelect: (agentId: string) => void;
 }
 
-export function AgentSelector({ 
+export function AgentSelector({
   currentAgentId = 'auto',
-  onAgentSelect 
+  onAgentSelect,
 }: AgentSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const currentAgent = AGENTS.find(a => a.id === currentAgentId) || AGENTS[0];
+
+  const currentAgent = AGENTS.find((a) => a.id === currentAgentId) || AGENTS[0];
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -95,11 +98,11 @@ export function AgentSelector({
   return (
     <div ref={dropdownRef} className="relative">
       {/* Trigger Button */}
-      <button 
+      <button
         type="button"
         onClick={(e) => {
-            e.preventDefault();
-            setIsOpen(!isOpen);
+          e.preventDefault();
+          setIsOpen(!isOpen);
         }}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors hover:bg-muted/50 text-muted-foreground hover:text-foreground whitespace-nowrap cursor-pointer"
       >
@@ -127,10 +130,14 @@ export function AgentSelector({
                   <AgentIcon id={agent.id} />
                   <div>
                     <div className="text-sm font-medium">{agent.name}</div>
-                    <div className="text-xs text-muted-foreground">{agent.description}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {agent.description}
+                    </div>
                   </div>
                 </div>
-                {isSelected && <CheckmarkIcon className="h-4 w-4 text-primary" />}
+                {isSelected && (
+                  <CheckmarkIcon className="h-4 w-4 text-primary" />
+                )}
               </button>
             );
           })}
@@ -142,8 +149,8 @@ export function AgentSelector({
 
 // Icon selector using centralized icons
 function AgentIcon({ id }: { id: string }) {
-  const className = "w-4 h-4 opacity-60";
-  
+  const className = 'w-4 h-4 opacity-60';
+
   switch (id) {
     case 'auto':
       return <AgentAutoIcon className={className} />;
@@ -171,7 +178,7 @@ export function AgentSelectorButton({
   onAgentSelect: (agentId: string) => void;
 }) {
   return (
-    <AgentSelector 
+    <AgentSelector
       currentAgentId={currentAgentId}
       onAgentSelect={onAgentSelect}
     />

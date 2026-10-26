@@ -6,11 +6,7 @@ import { memo } from 'react';
 import { MenuIcon, NewChatIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '../ui/sidebar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 
 interface ChatHeaderProps {
@@ -51,7 +47,7 @@ function PureChatHeader({
             </TooltipTrigger>
             <TooltipContent side="bottom">Menu</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

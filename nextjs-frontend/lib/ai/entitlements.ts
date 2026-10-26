@@ -51,7 +51,13 @@ export function getUserEntitlements(userType: UserType): UserEntitlements {
 
 export function canUserPerformAction(
   userType: UserType,
-  action: keyof Omit<UserEntitlements, 'maxMessagesPerDay' | 'maxFilesPerUpload' | 'maxFileSize' | 'maxConcurrentRequests'>
+  action: keyof Omit<
+    UserEntitlements,
+    | 'maxMessagesPerDay'
+    | 'maxFilesPerUpload'
+    | 'maxFileSize'
+    | 'maxConcurrentRequests'
+  >,
 ): boolean {
   return entitlementsByUserType[userType][action];
 }
@@ -59,10 +65,10 @@ export function canUserPerformAction(
 export function isWithinLimit(
   userType: UserType,
   limitType: 'messages' | 'files' | 'fileSize' | 'concurrentRequests',
-  currentValue: number
+  currentValue: number,
 ): boolean {
   const entitlements = entitlementsByUserType[userType];
-  
+
   switch (limitType) {
     case 'messages':
       return currentValue <= entitlements.maxMessagesPerDay;

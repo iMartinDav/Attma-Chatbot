@@ -3,13 +3,16 @@
 ## ❌ CRITICAL ISSUE: Inline SVGs Instead of Centralized Icons
 
 ### Problem
+
 Multiple components have inline SVG icons instead of using the centralized `components/icons.tsx` file. This violates the project's icon management pattern and creates:
+
 - Code duplication
 - Maintenance burden
 - Inconsistent styling
 - Larger bundle size
 
 ### Files with Inline SVGs
+
 1. ✅ `components/chat/agent-selector.tsx` - **FIXED**
 2. ❌ `components/chat/app-sidebar.tsx` - **NEEDS FIX**
 3. ❌ `components/chat/chat-header.tsx` - **NEEDS FIX**
@@ -18,7 +21,9 @@ Multiple components have inline SVG icons instead of using the centralized `comp
 ### Required Actions
 
 #### 1. Add Missing Icons to `components/icons.tsx`
+
 Need to add:
+
 - `NewChatIcon`
 - `SearchIcon`
 - `BrainIcon` (Agents)
@@ -28,33 +33,38 @@ Need to add:
 - `LogOutIcon`
 
 #### 2. Update Components to Import Icons
+
 All components must import from `@/components/icons` instead of defining inline SVGs.
 
 ### Pattern to Follow
 
 **❌ WRONG** (Current):
+
 ```tsx
 const NewChatIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
-    <path d="..."/>
+    <path d="..." />
   </svg>
 );
 ```
 
 **✅ CORRECT** (Should be):
+
 ```tsx
 import { NewChatIcon } from '@/components/icons';
 
 // Use directly
-<NewChatIcon />
+<NewChatIcon />;
 ```
 
 ### Impact
+
 - **Severity**: Medium
 - **Effort**: 2-3 hours to fix all files
 - **Risk**: Low (straightforward refactor)
 
 ### Next Steps
+
 1. Add all missing icons to `icons.tsx`
 2. Update `app-sidebar.tsx` to use centralized icons
 3. Update `chat-header.tsx` to use centralized icons
@@ -65,6 +75,7 @@ import { NewChatIcon } from '@/components/icons';
 ---
 
 ## Status
+
 - [x] Identified issue
 - [x] Fixed agent-selector.tsx
 - [ ] Fix app-sidebar.tsx

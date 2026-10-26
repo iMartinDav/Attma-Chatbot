@@ -331,7 +331,13 @@ function PureArtifact({
                     chatId={chatId}
                     input={input}
                     setInput={setInput}
-                    status={status === 'error' ? 'ready' : status === 'streaming' ? 'processing' : status}
+                    status={
+                      status === 'error'
+                        ? 'ready'
+                        : status === 'streaming'
+                          ? 'processing'
+                          : status
+                    }
                     stop={stop}
                     attachments={attachments}
                     setAttachments={setAttachments}
@@ -479,7 +485,13 @@ function PureArtifact({
                     isToolbarVisible={isToolbarVisible}
                     setIsToolbarVisible={setIsToolbarVisible}
                     sendMessage={sendMessage}
-                    status={status === 'error' ? 'ready' : status === 'streaming' ? 'processing' : status}
+                    status={
+                      status === 'error'
+                        ? 'ready'
+                        : status === 'streaming'
+                          ? 'processing'
+                          : status
+                    }
                     stop={stop}
                     setMessages={setMessages}
                     artifactKind={artifact.kind}

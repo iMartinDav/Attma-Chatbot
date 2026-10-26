@@ -21,6 +21,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 ---
 
 ## 📋 Table of Contents
+
 - [Key Features](#-key-features)
 - [Technology Stack](#-technology-stack)
 - [Prerequisites](#-prerequisites)
@@ -40,6 +41,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 <td width="50%">
 
 ### 🔬 Knowledge & Intelligence
+
 - **Specialized Bioinformatics Knowledge Base**
 - **Advanced Thinking Process** via DeepSeek models
 - **Code Generation and Analysis** for Python and R
@@ -50,6 +52,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 <td width="50%">
 
 ### 🛠️ Platform Capabilities
+
 - **Multilingual Support** (7 languages)
 - **Secure Authentication**
 - **Interactive Chat Interface**
@@ -70,6 +73,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 <td width="33%">
 
 ### Frontend
+
 - **Next.js App Router**
 - **React Server Components**
 - **shadcn/ui + Tailwind CSS**
@@ -80,6 +84,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 <td width="33%">
 
 ### AI Integration
+
 - **AI SDK**
 - **OpenAI, Anthropic, Cohere**
 - **DALL-E** for visualizations
@@ -90,6 +95,7 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 <td width="33%">
 
 ### Backend
+
 - **Vercel Infrastructure**
 - **Neon Postgres Database**
 - **Vercel Blob Storage**

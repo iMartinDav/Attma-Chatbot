@@ -485,14 +485,14 @@ const NavLink = memo(
             >
               <p>Coming Soon</p>
               <style jsx global>{`
-              .tooltip-arrow {
-                fill: var(--tooltip-arrow-color);
-              }
-              [data-side="bottom"] .tooltip-arrow {
-                top: -5px;
-                filter: drop-shadow(0 -1px 0 var(--border));
-              }
-            `}</style>
+                .tooltip-arrow {
+                  fill: var(--tooltip-arrow-color);
+                }
+                [data-side='bottom'] .tooltip-arrow {
+                  top: -5px;
+                  filter: drop-shadow(0 -1px 0 var(--border));
+                }
+              `}</style>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -560,11 +560,11 @@ const MobileNavLink = memo(
             >
               <p>Coming Soon</p>
               <style jsx global>{`
-              [data-side="right"] .tooltip-arrow {
-                left: -5px;
-                filter: drop-shadow(-1px 0 0 var(--border));
-              }
-            `}</style>
+                [data-side='right'] .tooltip-arrow {
+                  left: -5px;
+                  filter: drop-shadow(-1px 0 0 var(--border));
+                }
+              `}</style>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -6,8 +6,7 @@ import { getTextGradient } from '@/lib/design-tokens';
 import type { TEXT_GRADIENTS } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
 
-interface GradientHeadingProps
-  extends React.HTMLAttributes<HTMLHeadingElement> {
+interface GradientHeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   gradient?: keyof typeof TEXT_GRADIENTS;
   children: React.ReactNode;

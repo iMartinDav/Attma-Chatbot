@@ -7,17 +7,17 @@ import postgres from 'postgres';
 
 import type { ArtifactKind } from '@/components/chat/artifact';
 import {
-    chat,
-    document,
-    type Message,
-    message,
-    project,
-    type Project,
-    type Suggestion,
-    suggestion,
-    user,
-    type User,
-    vote
+  chat,
+  document,
+  type Message,
+  message,
+  project,
+  type Project,
+  type Suggestion,
+  suggestion,
+  user,
+  type User,
+  vote,
 } from './schema';
 
 // Optionally, if not using email/pass login, you can
@@ -523,19 +523,25 @@ export async function updateBioAnalysisStatus({
 }
 
 // Stream ID management for resumable streams
-export async function createStreamId({ streamId, chatId }: { streamId: string; chatId: string }) {
+export async function createStreamId({
+  streamId,
+  chatId,
+}: {
+  streamId: string;
+  chatId: string;
+}) {
   // For now, this is a placeholder implementation
   // In a full implementation, you'd store stream IDs in a database table
   return { streamId, chatId, createdAt: new Date() };
 }
 
 // Message count for rate limiting
-export async function getMessageCountByUserId({ 
-  id, 
-  differenceInHours = 24 
-}: { 
-  id: string; 
-  differenceInHours?: number; 
+export async function getMessageCountByUserId({
+  id,
+  differenceInHours = 24,
+}: {
+  id: string;
+  differenceInHours?: number;
 }) {
   try {
     const result = await db
@@ -545,10 +551,13 @@ export async function getMessageCountByUserId({
       .where(
         and(
           eq(chat.userId, id),
-          gte(message.createdAt, sql`now() - interval '${sql.raw(differenceInHours.toString())} hours'`)
-        )
+          gte(
+            message.createdAt,
+            sql`now() - interval '${sql.raw(differenceInHours.toString())} hours'`,
+          ),
+        ),
       );
-    
+
     return result[0]?.count || 0;
   } catch (error) {
     console.error('Failed to get message count by user ID', error);
@@ -556,7 +565,11 @@ export async function getMessageCountByUserId({
   }
 }
 
-export async function getProjectsByUserId({ userId }: { userId: string }): Promise<Project[]> {
+export async function getProjectsByUserId({
+  userId,
+}: {
+  userId: string;
+}): Promise<Project[]> {
   try {
     return await db
       .select()
@@ -569,7 +582,11 @@ export async function getProjectsByUserId({ userId }: { userId: string }): Promi
   }
 }
 
-export async function getProjectById({ id }: { id: string }): Promise<Project | null> {
+export async function getProjectById({
+  id,
+}: {
+  id: string;
+}): Promise<Project | null> {
   try {
     const [result] = await db.select().from(project).where(eq(project.id, id));
     return result || null;
@@ -621,7 +638,12 @@ export async function updateProject({
   emoji?: string;
 }): Promise<Project | null> {
   try {
-    const updates: Partial<{ name: string; description: string; emoji: string; updatedAt: Date }> = {
+    const updates: Partial<{
+      name: string;
+      description: string;
+      emoji: string;
+      updatedAt: Date;
+    }> = {
       updatedAt: new Date(),
     };
     if (name !== undefined) updates.name = name;
@@ -642,7 +664,10 @@ export async function updateProject({
 
 export async function deleteProject({ id }: { id: string }): Promise<void> {
   try {
-    await db.update(chat).set({ projectId: null }).where(eq(chat.projectId, id));
+    await db
+      .update(chat)
+      .set({ projectId: null })
+      .where(eq(chat.projectId, id));
     await db.delete(project).where(eq(project.id, id));
   } catch (error) {
     console.error('Failed to delete project', error);
@@ -665,7 +690,11 @@ export async function updateChatProject({
   }
 }
 
-export async function getChatsByProjectId({ projectId }: { projectId: string }) {
+export async function getChatsByProjectId({
+  projectId,
+}: {
+  projectId: string;
+}) {
   try {
     return await db
       .select()

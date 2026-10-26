@@ -14,11 +14,17 @@ export const keggPathwaySearchTool = tool({
     - Understanding biological processes`,
   inputSchema: z.object({
     query: z.string().describe('Gene symbol or pathway keyword'),
-    organism: z.enum(['hsa', 'mmu', 'rno']).default('hsa')
+    organism: z
+      .enum(['hsa', 'mmu', 'rno'])
+      .default('hsa')
       .describe('Organism code (hsa=human, mmu=mouse, rno=rat)'),
     maxResults: z.number().min(1).max(20).default(10),
   }),
-  execute: async (input: { query: string; organism: 'hsa' | 'mmu' | 'rno'; maxResults: number }): Promise<ToolResult<KEGGPathway[]>> => {
+  execute: async (input: {
+    query: string;
+    organism: 'hsa' | 'mmu' | 'rno';
+    maxResults: number;
+  }): Promise<ToolResult<KEGGPathway[]>> => {
     const { query, organism, maxResults } = input;
     const startTime = Date.now();
 
@@ -39,7 +45,7 @@ export const keggPathwaySearchTool = tool({
 
       // Parse KEGG response (tab-separated)
       const lines = text.trim().split('\n').slice(0, maxResults);
-      const pathways: KEGGPathway[] = lines.map(line => {
+      const pathways: KEGGPathway[] = lines.map((line) => {
         const [id, name] = line.split('\t');
         const pathwayId = id.replace('path:', '');
         return {
@@ -54,7 +60,7 @@ export const keggPathwaySearchTool = tool({
         success: true,
         data: pathways,
         source: 'KEGG',
-        citations: pathways.map(p => ({
+        citations: pathways.map((p) => ({
           type: 'database' as const,
           title: `KEGG: ${p.name}`,
           url: p.url,
@@ -87,20 +93,26 @@ export const reactomePathwaySearchTool = tool({
     - Detailed pathway diagrams`,
   inputSchema: z.object({
     query: z.string().describe('Gene symbol, protein, or pathway name'),
-    species: z.enum(['Homo sapiens', 'Mus musculus', 'Rattus norvegicus']).default('Homo sapiens'),
+    species: z
+      .enum(['Homo sapiens', 'Mus musculus', 'Rattus norvegicus'])
+      .default('Homo sapiens'),
     maxResults: z.number().min(1).max(20).default(10),
   }),
-  execute: async (input: { query: string; species: string; maxResults: number }): Promise<ToolResult<ReactomePathway[]>> => {
+  execute: async (input: {
+    query: string;
+    species: string;
+    maxResults: number;
+  }): Promise<ToolResult<ReactomePathway[]>> => {
     const { query, species, maxResults } = input;
     const startTime = Date.now();
 
     try {
       const url = `https://reactome.org/ContentService/search/query?query=${encodeURIComponent(query)}&species=${encodeURIComponent(species)}&types=Pathway&cluster=true`;
-      
+
       const response = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
       });
-      
+
       const data = await response.json();
 
       if (!data.results || data.results.length === 0) {
@@ -129,7 +141,7 @@ export const reactomePathwaySearchTool = tool({
         success: true,
         data: pathways,
         source: 'Reactome',
-        citations: pathways.map(p => ({
+        citations: pathways.map((p) => ({
           type: 'database' as const,
           title: `Reactome: ${p.name}`,
           url: p.url,
@@ -163,25 +175,38 @@ export const goEnrichmentTool = tool({
     - Cellular component localization`,
   inputSchema: z.object({
     genes: z.array(z.string()).describe('List of gene symbols'),
-    ontology: z.enum(['BP', 'MF', 'CC', 'ALL']).default('ALL')
-      .describe('BP=Biological Process, MF=Molecular Function, CC=Cellular Component'),
+    ontology: z
+      .enum(['BP', 'MF', 'CC', 'ALL'])
+      .default('ALL')
+      .describe(
+        'BP=Biological Process, MF=Molecular Function, CC=Cellular Component',
+      ),
     organism: z.enum(['human', 'mouse', 'rat']).default('human'),
     pValueCutoff: z.number().default(0.05),
   }),
-  execute: async (input: { genes: string[]; ontology: string; organism: string; pValueCutoff: number }): Promise<ToolResult<GOEnrichmentResult[]>> => {
+  execute: async (input: {
+    genes: string[];
+    ontology: string;
+    organism: string;
+    pValueCutoff: number;
+  }): Promise<ToolResult<GOEnrichmentResult[]>> => {
     const { genes, ontology, organism, pValueCutoff } = input;
     const startTime = Date.now();
 
     // For now, use PANTHER API (free, no key required)
     // In production, consider g:Profiler or Enrichr
-    
+
     try {
-      const orgMap: Record<string, number> = { human: 9606, mouse: 10090, rat: 10116 };
+      const orgMap: Record<string, number> = {
+        human: 9606,
+        mouse: 10090,
+        rat: 10116,
+      };
       const taxId = orgMap[organism];
 
       // Use PANTHER overrepresentation API
       const url = 'https://pantherdb.org/services/oai/pantherdb/enrich/overrep';
-      
+
       const formData = new URLSearchParams();
       formData.append('geneInputList', genes.join(','));
       formData.append('organism', taxId.toString());
@@ -224,11 +249,13 @@ export const goEnrichmentTool = tool({
         success: true,
         data: results,
         source: 'PANTHER',
-        citations: [{
-          type: 'database' as const,
-          title: 'PANTHER Classification System',
-          url: 'https://pantherdb.org/',
-        }],
+        citations: [
+          {
+            type: 'database' as const,
+            title: 'PANTHER Classification System',
+            url: 'https://pantherdb.org/',
+          },
+        ],
         executionTime: Date.now() - startTime,
       };
     } catch (error) {
@@ -271,18 +298,30 @@ export const stringInteractionTool = tool({
     - Functional associations`,
   inputSchema: z.object({
     geneSymbol: z.string().describe('Gene/protein symbol'),
-    organism: z.number().default(9606).describe('NCBI taxonomy ID (9606=human)'),
-    scoreThreshold: z.number().min(0).max(1000).default(400)
+    organism: z
+      .number()
+      .default(9606)
+      .describe('NCBI taxonomy ID (9606=human)'),
+    scoreThreshold: z
+      .number()
+      .min(0)
+      .max(1000)
+      .default(400)
       .describe('Minimum interaction score (0-1000)'),
     maxInteractions: z.number().min(1).max(50).default(10),
   }),
-  execute: async (input: { geneSymbol: string; organism: number; scoreThreshold: number; maxInteractions: number }): Promise<ToolResult<STRINGInteraction[]>> => {
+  execute: async (input: {
+    geneSymbol: string;
+    organism: number;
+    scoreThreshold: number;
+    maxInteractions: number;
+  }): Promise<ToolResult<STRINGInteraction[]>> => {
     const { geneSymbol, organism, scoreThreshold, maxInteractions } = input;
     const startTime = Date.now();
 
     try {
       const url = `https://string-db.org/api/json/network?identifiers=${encodeURIComponent(geneSymbol)}&species=${organism}&required_score=${scoreThreshold}&limit=${maxInteractions}`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
 
@@ -309,11 +348,13 @@ export const stringInteractionTool = tool({
         success: true,
         data: interactions,
         source: 'STRING',
-        citations: [{
-          type: 'database' as const,
-          title: 'STRING Database',
-          url: `https://string-db.org/network/${geneSymbol}`,
-        }],
+        citations: [
+          {
+            type: 'database' as const,
+            title: 'STRING Database',
+            url: `https://string-db.org/network/${geneSymbol}`,
+          },
+        ],
         executionTime: Date.now() - startTime,
       };
     } catch (error) {

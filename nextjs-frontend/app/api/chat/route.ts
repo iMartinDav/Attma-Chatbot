@@ -1,6 +1,6 @@
 /**
  * @fileoverview Chat API Route Handler
- * 
+ *
  * This is the main chat endpoint that handles:
  * - Message streaming with OpenAI models
  * - Tool execution (web search, image generation, code interpreter)
@@ -9,7 +9,7 @@
  * - Auto-model selection based on task type
  * - Source citations from web search
  * - Chat persistence
- * 
+ *
  * Architecture:
  * - Uses modular provider configuration from lib/ai/providers
  * - Tools are dynamically loaded based on model capabilities
@@ -20,45 +20,45 @@
 import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
 import {
-    detectAgentDomain,
-    detectTaskCategory,
-    getDomainInstructions,
-    routeToOptimalModel,
+  detectAgentDomain,
+  detectTaskCategory,
+  getDomainInstructions,
+  routeToOptimalModel,
 } from '@/lib/ai/agents/task-router';
 import { multiModalProcessor } from '@/lib/ai/multimodal-processor';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
-    getDefaultProviderOptions,
-    getModelConfig,
-    modelSupports,
-    myProvider
+  getDefaultProviderOptions,
+  getModelConfig,
+  modelSupports,
+  myProvider,
 } from '@/lib/ai/providers';
 import {
-    bioinformaticsTools,
-    buildOpenAITools,
-    pathwayTools,
-    researchTools,
+  bioinformaticsTools,
+  buildOpenAITools,
+  pathwayTools,
+  researchTools,
 } from '@/lib/ai/tools';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import {
-    deleteChatById,
-    getChatById,
-    getMessagesByChatId,
-    saveChat,
-    saveMessages
+  deleteChatById,
+  getChatById,
+  getMessagesByChatId,
+  saveChat,
+  saveMessages,
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import {
-    createUIMessageStream,
-    createUIMessageStreamResponse,
-    isStepCount,
-    streamText,
-    toUIMessageStream,
-    ToolSet
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  isStepCount,
+  streamText,
+  toUIMessageStream,
+  ToolSet,
 } from 'ai';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -79,45 +79,66 @@ const MODEL_KEY_MAP: Record<string, string> = {
 import type { Session } from 'next-auth';
 
 /** Build tool set based on model capabilities */
-function buildToolsForModel(modelId: string, session: Session, dataStream?: { write: (data: any) => void }) {
+function buildToolsForModel(
+  modelId: string,
+  session: Session,
+  dataStream?: { write: (data: any) => void },
+) {
   const tools: Record<string, unknown> = {};
-  
+
   const streamWriter = dataStream || { write: () => {} };
 
   tools.getWeather = getWeather;
-  tools.createDocument = createDocument({ session, dataStream: streamWriter as any }); 
-  tools.updateDocument = updateDocument({ session, dataStream: streamWriter as any });
-  tools.requestSuggestions = requestSuggestions({ session, dataStream: streamWriter as any });
-  
+  tools.createDocument = createDocument({
+    session,
+    dataStream: streamWriter as any,
+  });
+  tools.updateDocument = updateDocument({
+    session,
+    dataStream: streamWriter as any,
+  });
+  tools.requestSuggestions = requestSuggestions({
+    session,
+    dataStream: streamWriter as any,
+  });
+
   Object.assign(tools, researchTools);
   Object.assign(tools, pathwayTools);
   Object.assign(tools, bioinformaticsTools);
-  
+
   if (modelSupports(modelId, 'webSearch')) {
     const openaiTools = buildOpenAITools({
       webSearch: { enabled: true, searchContextSize: 'high' },
     });
     Object.assign(tools, openaiTools);
   }
-  
+
   if (modelSupports(modelId, 'imageGeneration')) {
-    Object.assign(tools, buildOpenAITools({ imageGeneration: { enabled: true, quality: 'medium' } }));
+    Object.assign(
+      tools,
+      buildOpenAITools({
+        imageGeneration: { enabled: true, quality: 'medium' },
+      }),
+    );
   }
-  
+
   if (modelSupports(modelId, 'codeInterpreter')) {
-    Object.assign(tools, buildOpenAITools({ codeInterpreter: { enabled: true } }));
+    Object.assign(
+      tools,
+      buildOpenAITools({ codeInterpreter: { enabled: true } }),
+    );
   }
-  
+
   return tools;
 }
 
 /** Converts database messages to AI SDK format */
 function convertMessagesToAIFormat(
-  messages: Array<{ id: string; role: string; content: unknown }>
+  messages: Array<{ id: string; role: string; content: unknown }>,
 ): Array<{ role: 'user' | 'assistant' | 'system'; content: string }> {
-  return messages.map(msg => {
+  return messages.map((msg) => {
     let textContent = '';
-    
+
     if (Array.isArray(msg.content)) {
       textContent = msg.content
         .map((c: { text?: string; type?: string }) => c.text || '')
@@ -127,7 +148,7 @@ function convertMessagesToAIFormat(
     } else {
       textContent = JSON.stringify(msg.content);
     }
-    
+
     return {
       role: msg.role as 'user' | 'assistant' | 'system',
       content: textContent,
@@ -138,15 +159,18 @@ function convertMessagesToAIFormat(
 /** Extracts text from message parts */
 function extractTextFromParts(parts: unknown[]): string {
   if (!Array.isArray(parts)) return '';
-  
+
   return parts
-    .filter((p: unknown): p is { type: string; text: string } => 
-      typeof p === 'object' && p !== null && 'type' in p && (p as { type: string }).type === 'text'
+    .filter(
+      (p: unknown): p is { type: string; text: string } =>
+        typeof p === 'object' &&
+        p !== null &&
+        'type' in p &&
+        (p as { type: string }).type === 'text',
     )
-    .map(p => p.text)
+    .map((p) => p.text)
     .join('');
 }
-
 
 export async function POST(request: Request) {
   try {
@@ -157,10 +181,10 @@ export async function POST(request: Request) {
       return new ChatSDKError('bad_request:api').toResponse();
     }
 
-    const { 
-      id, 
-      message, 
-      selectedChatModel, 
+    const {
+      id,
+      message,
+      selectedChatModel,
       selectedVisibilityType,
       selectedAgentId,
       projectId,
@@ -182,12 +206,17 @@ export async function POST(request: Request) {
     }
 
     // Load existing messages for context
-    let existingMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
-    
+    let existingMessages: Array<{
+      role: 'user' | 'assistant' | 'system';
+      content: string;
+    }> = [];
+
     if (!isNewChat) {
       try {
         const dbMessages = await getMessagesByChatId({ id: chatId });
-        existingMessages = convertMessagesToAIFormat(dbMessages).filter(m => m.role !== 'system');
+        existingMessages = convertMessagesToAIFormat(dbMessages).filter(
+          (m) => m.role !== 'system',
+        );
       } catch {
         // Continue with empty history if messages can't be loaded
       }
@@ -195,25 +224,29 @@ export async function POST(request: Request) {
 
     // Build current message
     // Build current message with multi-modal support
-    const userMessageText = message.parts && Array.isArray(message.parts)
-      ? extractTextFromParts(message.parts)
-      : message.content || '';
+    const userMessageText =
+      message.parts && Array.isArray(message.parts)
+        ? extractTextFromParts(message.parts)
+        : message.content || '';
 
     // Handle file attachments for the current message
-    let currentUserMessageContent: string | Array<{ type: string; [key: string]: unknown }> = userMessageText;
-    
+    let currentUserMessageContent:
+      string | Array<{ type: string; [key: string]: unknown }> =
+      userMessageText;
+
     // Check for experimental_attachments in the request body
     const attachments = (message as any).experimental_attachments;
     if (attachments && attachments.length > 0) {
       // Process attachments using multiModalProcessor
-      currentUserMessageContent = await multiModalProcessor.prepareMessageWithFiles(
-        userMessageText,
-        attachments.map((a: any) => ({
-          base64: a.content || '', 
-          mimeType: a.contentType,
-          filename: a.name
-        }))
-      );
+      currentUserMessageContent =
+        await multiModalProcessor.prepareMessageWithFiles(
+          userMessageText,
+          attachments.map((a: any) => ({
+            base64: a.content || '',
+            mimeType: a.contentType,
+            filename: a.name,
+          })),
+        );
     }
 
     const allMessages = [
@@ -243,16 +276,16 @@ export async function POST(request: Request) {
         'single-cell': 'single_cell',
         'variant-analysis': 'variant',
         'pathway-analysis': 'pathway',
-        'bioinformatics': 'general',
+        bioinformatics: 'general',
       };
       domain = idMap[selectedAgentId] || 'general';
     } else {
       domain = detectAgentDomain(userMessageText);
     }
-    
+
     const domainInstructions = getDomainInstructions(domain);
     let system = systemPrompt({ selectedChatModel });
-    
+
     if (domain !== 'general') {
       system = `ACTING AS SPECIALIST: ${domain.replace('_', ' ')}\n\n${domainInstructions}\n\n${system}`;
     }
@@ -263,35 +296,51 @@ export async function POST(request: Request) {
       hasAttachments: false,
       forceReasoning: selectedChatModel === 'chat-model-reasoning',
     });
-    
+
     // File attachment detection for model upgrade
-    const hasAttachments = message.parts?.some((part: any) => 
-      part.type === 'image' || part.type === 'file' ||
-      (part.type === 'text' && part.experimental_attachments?.length > 0)
-    ) || (message as any).experimental_attachments?.length > 0;
-    
+    const hasAttachments =
+      message.parts?.some(
+        (part: any) =>
+          part.type === 'image' ||
+          part.type === 'file' ||
+          (part.type === 'text' && part.experimental_attachments?.length > 0),
+      ) || (message as any).experimental_attachments?.length > 0;
+
     let finalModelKey = modelKey;
     if (selectedChatModel === 'chat-model' && detectedTask !== 'general') {
       finalModelKey = modelRouting.modelKey;
     }
-    
+
     if (hasAttachments && finalModelKey === 'chat-model') {
       finalModelKey = 'chat-model-standard';
     }
-    
-    const maxSteps = detectedTask === 'research' ? 10 
-      : detectedTask === 'reasoning' ? 8 : detectedTask === 'data_analysis' ? 6 : 5;
+
+    const maxSteps =
+      detectedTask === 'research'
+        ? 10
+        : detectedTask === 'reasoning'
+          ? 8
+          : detectedTask === 'data_analysis'
+            ? 6
+            : 5;
 
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
-        const toolsWithWriter = buildToolsForModel(selectedChatModel, session, writer as any);
+        const toolsWithWriter = buildToolsForModel(
+          selectedChatModel,
+          session,
+          writer as any,
+        );
         const finalTools = { ...tools, ...toolsWithWriter };
 
         const streamingResult = streamText({
           model: myProvider.languageModel(finalModelKey),
           messages: allMessages,
           instructions: system,
-          tools: Object.keys(finalTools).length > 0 ? (finalTools as ToolSet) : undefined,
+          tools:
+            Object.keys(finalTools).length > 0
+              ? (finalTools as ToolSet)
+              : undefined,
           providerOptions,
           stopWhen: isStepCount(maxSteps),
           onEnd: async (result) => {
@@ -309,34 +358,44 @@ export async function POST(request: Request) {
                   });
                 }
 
-                const assistantParts: Array<{type: string; [key: string]: unknown}> = [];
-                
+                const assistantParts: Array<{
+                  type: string;
+                  [key: string]: unknown;
+                }> = [];
+
                 if (result.text) {
                   assistantParts.push({ type: 'text', text: result.text });
                 }
-                
+
                 if (result.steps && result.steps.length > 0) {
                   for (const step of result.steps) {
                     if (step.toolCalls?.length) {
                       for (const tc of step.toolCalls as any[]) {
                         assistantParts.push({
-                          type: 'tool-call', toolCallId: tc.toolCallId,
-                          toolName: tc.toolName, args: tc.args || tc.input,
+                          type: 'tool-call',
+                          toolCallId: tc.toolCallId,
+                          toolName: tc.toolName,
+                          args: tc.args || tc.input,
                         });
                       }
                     }
                     if (step.toolResults?.length) {
                       for (const tr of step.toolResults as any[]) {
                         assistantParts.push({
-                          type: 'tool-result', toolCallId: tr.toolCallId,
-                          toolName: tr.toolName, result: tr.result || tr.output,
+                          type: 'tool-result',
+                          toolCallId: tr.toolCallId,
+                          toolName: tr.toolName,
+                          result: tr.result || tr.output,
                         });
                       }
                     }
                   }
                 }
                 if (assistantParts.length === 0) {
-                  assistantParts.push({ type: 'text', text: result.text || '' });
+                  assistantParts.push({
+                    type: 'text',
+                    text: result.text || '',
+                  });
                 }
 
                 const messagesToSave = [
@@ -344,7 +403,9 @@ export async function POST(request: Request) {
                     id: message.id,
                     chatId: chatId,
                     role: message.role,
-                    content: message.parts || [{ type: 'text', text: userMessageText }],
+                    content: message.parts || [
+                      { type: 'text', text: userMessageText },
+                    ],
                     createdAt: new Date(),
                   },
                   {
@@ -353,7 +414,7 @@ export async function POST(request: Request) {
                     role: 'assistant' as const,
                     content: assistantParts,
                     createdAt: new Date(),
-                  }
+                  },
                 ];
 
                 await saveMessages({ messages: messagesToSave });
@@ -368,33 +429,34 @@ export async function POST(request: Request) {
           toUIMessageStream<ToolSet, ChatMessage>({
             stream: streamingResult.stream,
             sendReasoning: isReasoningModel,
-          })
+          }),
         );
       },
     });
 
     return createUIMessageStreamResponse({
       stream,
-      headers: { 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' }
+      headers: { 'Cache-Control': 'no-cache', Connection: 'keep-alive' },
     });
-
   } catch (error) {
     console.error('Chat API Error:', error);
-    
+
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    
-    return new Response(JSON.stringify({ 
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+
+    return new Response(
+      JSON.stringify({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 }
-
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);

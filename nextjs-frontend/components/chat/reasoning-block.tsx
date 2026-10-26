@@ -22,24 +22,24 @@ export interface ReasoningBlockProps {
 }
 
 const containerVariants = {
-  collapsed: { 
+  collapsed: {
     opacity: 1,
     height: 'auto',
   },
-  expanded: { 
+  expanded: {
     opacity: 1,
     height: 'auto',
   },
 };
 
 const contentVariants = {
-  collapsed: { 
-    opacity: 0, 
+  collapsed: {
+    opacity: 0,
     height: 0,
     marginTop: 0,
   },
-  expanded: { 
-    opacity: 1, 
+  expanded: {
+    opacity: 1,
     height: 'auto',
     marginTop: 12,
   },
@@ -48,10 +48,12 @@ const contentVariants = {
 function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
   return (
     <div className="flex items-center gap-2">
-      <div className={cn(
-        "relative flex items-center justify-center",
-        isStreaming && "animate-pulse"
-      )}>
+      <div
+        className={cn(
+          'relative flex items-center justify-center',
+          isStreaming && 'animate-pulse',
+        )}
+      >
         <Brain className="size-4 text-primary" />
         {isStreaming && (
           <motion.div
@@ -61,10 +63,12 @@ function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
           />
         )}
       </div>
-      <span className={cn(
-        "text-sm font-medium",
-        isStreaming ? "text-primary" : "text-muted-foreground"
-      )}>
+      <span
+        className={cn(
+          'text-sm font-medium',
+          isStreaming ? 'text-primary' : 'text-muted-foreground',
+        )}
+      >
         {isStreaming ? 'Thinking...' : 'Reasoning'}
       </span>
       {isStreaming && (
@@ -102,21 +106,21 @@ function PureReasoningBlock({
   return (
     <motion.div
       className={cn(
-        "rounded-lg border border-border/50 bg-muted/30 backdrop-blur-sm",
-        "transition-colors hover:border-border",
-        className
+        'rounded-lg border border-border/50 bg-muted/30 backdrop-blur-sm',
+        'transition-colors hover:border-border',
+        className,
       )}
       variants={containerVariants}
       initial="collapsed"
-      animate={isExpanded ? "expanded" : "collapsed"}
+      animate={isExpanded ? 'expanded' : 'collapsed'}
     >
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          "flex w-full items-center justify-between px-3 py-2",
-          "rounded-lg transition-colors",
-          "hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          'flex w-full items-center justify-between px-3 py-2',
+          'rounded-lg transition-colors',
+          'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20',
         )}
         aria-expanded={isExpanded}
         aria-label={isExpanded ? 'Collapse reasoning' : 'Expand reasoning'}
@@ -134,17 +138,19 @@ function PureReasoningBlock({
             initial="collapsed"
             animate="expanded"
             exit="collapsed"
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className={cn(
-              "px-3 pb-3",
-              "prose prose-sm dark:prose-invert max-w-none",
-              "prose-p:text-muted-foreground prose-p:leading-relaxed",
-              "prose-headings:text-foreground prose-headings:font-medium",
-              "prose-code:text-xs prose-code:bg-muted prose-code:rounded",
-              "prose-pre:bg-muted prose-pre:border prose-pre:border-border/50"
-            )}>
+            <div
+              className={cn(
+                'px-3 pb-3',
+                'prose prose-sm dark:prose-invert max-w-none',
+                'prose-p:text-muted-foreground prose-p:leading-relaxed',
+                'prose-headings:text-foreground prose-headings:font-medium',
+                'prose-code:text-xs prose-code:bg-muted prose-code:rounded',
+                'prose-pre:bg-muted prose-pre:border prose-pre:border-border/50',
+              )}
+            >
               <div className="border-t border-border/30 pt-3">
                 <Markdown>{reasoning}</Markdown>
               </div>

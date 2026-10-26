@@ -55,4 +55,3 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     return draftContent;
   },
 });
-

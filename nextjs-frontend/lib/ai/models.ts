@@ -1,6 +1,6 @@
 /**
  * @fileoverview Chat Model Definitions
- * 
+ *
  * Defines the available models for the UI selector, including their capabilities
  * and display metadata. Updated for 2025 with latest OpenAI models.
  */
@@ -29,7 +29,7 @@ export interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   // Default - Fast & capable
   {
-    id: 'chat-model',  // Maps to gpt-4o-mini or gpt-5-mini depending on API
+    id: 'chat-model', // Maps to gpt-4o-mini or gpt-5-mini depending on API
     name: 'Standard',
     description: 'Fast & efficient for everyday tasks',
     capabilities: {
@@ -42,7 +42,7 @@ export const chatModels: Array<ChatModel> = [
   },
   // Advanced - Most capable
   {
-    id: 'chat-model-standard',  // Maps to gpt-4o or gpt-5 depending on API
+    id: 'chat-model-standard', // Maps to gpt-4o or gpt-5 depending on API
     name: 'Advanced',
     description: 'Most capable with vision & analysis',
     capabilities: {
@@ -55,13 +55,13 @@ export const chatModels: Array<ChatModel> = [
   },
   // Reasoning - For complex logic
   {
-    id: 'chat-model-reasoning',  // Maps to o3-mini
+    id: 'chat-model-reasoning', // Maps to o3-mini
     name: 'Reasoning',
     description: 'For complex logic & analysis',
     capabilities: {
       reasoning: true,
       webSearch: false,
-      vision: true, 
+      vision: true,
       codeInterpreter: false,
     },
   },

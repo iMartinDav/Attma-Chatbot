@@ -129,8 +129,8 @@ export const VercelInviteUserEmail = ({
               located in{' '}
               <span className="text-black">{inviteFromLocation}</span>. If you
               were not expecting this invitation, you can ignore this email. If
-              you are concerned about your account&apos;s safety, please reply to
-              this email to get in touch with us.
+              you are concerned about your account&apos;s safety, please reply
+              to this email to get in touch with us.
             </Text>
           </Container>
         </Body>

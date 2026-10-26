@@ -30,13 +30,7 @@ interface LanguageSwitcherProps {
 }
 
 const LanguageMenuItem = memo(
-  ({
-    option,
-    isSelected,
-  }: {
-    option: LanguageOption;
-    isSelected: boolean;
-  }) => (
+  ({ option, isSelected }: { option: LanguageOption; isSelected: boolean }) => (
     <motion.div
       initial={{ opacity: 0.8 }}
       animate={{ opacity: 1 }}

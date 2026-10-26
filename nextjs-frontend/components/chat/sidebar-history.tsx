@@ -11,43 +11,43 @@ import useSWR from 'swr';
 export const getChatHistoryPaginationKey = () => '/api/history';
 
 import {
-    CheckCircleFillIcon,
-    GlobeIcon,
-    LockIcon,
-    MoreHorizontalIcon,
-    ShareIcon,
-    TrashIcon,
+  CheckCircleFillIcon,
+  GlobeIcon,
+  LockIcon,
+  MoreHorizontalIcon,
+  ShareIcon,
+  TrashIcon,
 } from '@/components/icons';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    VisuallyHidden,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  VisuallyHidden,
 } from '@/components/ui/alert-dialog';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuAction,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import type { Chat } from '@/lib/db/schema';
@@ -299,7 +299,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
             {history &&
               (() => {
                 // Filter out chats that belong to a project (they show under the project)
-                const unassignedChats = history.filter((chat: Chat) => !chat.projectId);
+                const unassignedChats = history.filter(
+                  (chat: Chat) => !chat.projectId,
+                );
                 const groupedChats = groupChatsByDate(unassignedChats);
 
                 return (

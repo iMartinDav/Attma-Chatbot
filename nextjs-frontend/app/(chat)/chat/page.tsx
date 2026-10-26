@@ -15,7 +15,7 @@ export default async function Page() {
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
-  
+
   // Use the model from cookie or default
   const selectedChatModel = modelIdFromCookie?.value || DEFAULT_CHAT_MODEL;
 

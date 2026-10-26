@@ -3,7 +3,10 @@ import React from 'react';
 export function Spinner({
   size = 24,
   className = '',
-}: { size?: number; className?: string }) {
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       className={`animate-spin text-gray-400 ${className}`}

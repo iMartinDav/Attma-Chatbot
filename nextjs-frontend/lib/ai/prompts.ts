@@ -180,7 +180,6 @@ print(head(results))
 **IMPORTANT**: Always wait for user feedback before updating a newly created artifact.
 `;
 
-
 export const systemPrompt = ({
   selectedChatModel,
 }: {

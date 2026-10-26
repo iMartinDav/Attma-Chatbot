@@ -3,15 +3,14 @@
  * Implements auto-selection for bioinformatics tasks.
  */
 
-export type TaskCategory = 
-  | 'quick_answer'      // Simple questions, definitions
-  | 'code_generation'   // Python/R code for analysis
-  | 'data_analysis'     // Statistical analysis, interpretation
-  | 'research'          // Literature search, deep research
-  | 'reasoning'         // Complex multi-step problems
-  | 'visualization'     // Charts, plots, diagrams
-  | 'general'           // Default fallback
-;
+export type TaskCategory =
+  | 'quick_answer' // Simple questions, definitions
+  | 'code_generation' // Python/R code for analysis
+  | 'data_analysis' // Statistical analysis, interpretation
+  | 'research' // Literature search, deep research
+  | 'reasoning' // Complex multi-step problems
+  | 'visualization' // Charts, plots, diagrams
+  | 'general'; // Default fallback
 
 interface ModelRecommendation {
   modelId: string;
@@ -95,37 +94,85 @@ const TASK_MODEL_MAP: Record<TaskCategory, ModelRecommendation> = {
 /** Keywords indicating specific task types */
 const TASK_KEYWORDS: Record<TaskCategory, string[]> = {
   quick_answer: [
-    'what is', 'what does', 'define', 'explain briefly',
-    'quick question', 'simple question', 'short answer',
+    'what is',
+    'what does',
+    'define',
+    'explain briefly',
+    'quick question',
+    'simple question',
+    'short answer',
   ],
   code_generation: [
-    'write code', 'python script', 'r script', 'function',
-    'implement', 'create a script', 'generate code',
-    'scanpy', 'seurat', 'deseq2', 'biopython', 'pandas',
-    'write a function', 'code for', 'script for',
+    'write code',
+    'python script',
+    'r script',
+    'function',
+    'implement',
+    'create a script',
+    'generate code',
+    'scanpy',
+    'seurat',
+    'deseq2',
+    'biopython',
+    'pandas',
+    'write a function',
+    'code for',
+    'script for',
   ],
   data_analysis: [
-    'analyze', 'statistical', 'interpret', 'calculate',
-    'differential expression', 'fold change', 'p-value',
-    'correlation', 'regression', 'normalization',
-    'batch effect', 'clustering result',
+    'analyze',
+    'statistical',
+    'interpret',
+    'calculate',
+    'differential expression',
+    'fold change',
+    'p-value',
+    'correlation',
+    'regression',
+    'normalization',
+    'batch effect',
+    'clustering result',
   ],
   research: [
-    'search pubmed', 'search literature', 'find papers',
-    'recent research', 'what does the literature say',
-    'systematic review', 'meta-analysis', 'state of the art',
-    'latest findings', 'research on', 'studies show',
+    'search pubmed',
+    'search literature',
+    'find papers',
+    'recent research',
+    'what does the literature say',
+    'systematic review',
+    'meta-analysis',
+    'state of the art',
+    'latest findings',
+    'research on',
+    'studies show',
   ],
   reasoning: [
-    'why', 'how does', 'explain the mechanism',
-    'step by step', 'reasoning', 'logic',
-    'complex analysis', 'multi-step', 'think through',
-    'interpret these results', 'what could cause',
+    'why',
+    'how does',
+    'explain the mechanism',
+    'step by step',
+    'reasoning',
+    'logic',
+    'complex analysis',
+    'multi-step',
+    'think through',
+    'interpret these results',
+    'what could cause',
   ],
   visualization: [
-    'plot', 'graph', 'chart', 'heatmap', 'volcano plot',
-    'visualize', 'diagram', 'figure', 'image',
-    'umap', 'pca plot', 'dotplot', 'barplot',
+    'plot',
+    'graph',
+    'chart',
+    'heatmap',
+    'volcano plot',
+    'visualize',
+    'diagram',
+    'figure',
+    'image',
+    'umap',
+    'pca plot',
+    'dotplot',
+    'barplot',
   ],
   general: [],
 };
@@ -133,24 +180,24 @@ const TASK_KEYWORDS: Record<TaskCategory, string[]> = {
 /** Detects the task category from user input */
 export function detectTaskCategory(query: string): TaskCategory {
   const lowerQuery = query.toLowerCase();
-  
+
   // Check each category in priority order
   const priorityOrder: TaskCategory[] = [
-    'research',       // Highest priority - explicit research requests
+    'research', // Highest priority - explicit research requests
     'code_generation', // Code-related tasks
-    'visualization',   // Plot/chart requests
-    'reasoning',       // Complex reasoning
-    'data_analysis',   // Statistical analysis
-    'quick_answer',    // Simple queries
+    'visualization', // Plot/chart requests
+    'reasoning', // Complex reasoning
+    'data_analysis', // Statistical analysis
+    'quick_answer', // Simple queries
   ];
-  
+
   for (const category of priorityOrder) {
     const keywords = TASK_KEYWORDS[category];
-    if (keywords.some(keyword => lowerQuery.includes(keyword))) {
+    if (keywords.some((keyword) => lowerQuery.includes(keyword))) {
       return category;
     }
   }
-  
+
   return 'general';
 }
 
@@ -161,28 +208,52 @@ interface RoutingResult {
 }
 
 /** Routes a query to the optimal model and configuration */
-export function routeToOptimalModel(query: string, selectedAgentId?: string): RoutingResult {
+export function routeToOptimalModel(
+  query: string,
+  selectedAgentId?: string,
+): RoutingResult {
   const category = detectTaskCategory(query);
   const recommendation = TASK_MODEL_MAP[category];
-  
+
   let agentId = selectedAgentId;
-  
+
   if (!agentId || agentId === 'auto') {
     const agentKeywords: Record<string, string[]> = {
-      'single-cell': ['single-cell', 'scrna-seq', 'scanpy', 'seurat', 'umap', 'cluster'],
-      'variant-analysis': ['variant', 'vcf', 'snp', 'mutation', 'gwas', 'pathogenic'],
-      'pathway-analysis': ['pathway', 'enrichment', 'gsea', 'go term', 'kegg', 'reactome'],
+      'single-cell': [
+        'single-cell',
+        'scrna-seq',
+        'scanpy',
+        'seurat',
+        'umap',
+        'cluster',
+      ],
+      'variant-analysis': [
+        'variant',
+        'vcf',
+        'snp',
+        'mutation',
+        'gwas',
+        'pathogenic',
+      ],
+      'pathway-analysis': [
+        'pathway',
+        'enrichment',
+        'gsea',
+        'go term',
+        'kegg',
+        'reactome',
+      ],
     };
-    
+
     const lowerQuery = query.toLowerCase();
     for (const [id, keywords] of Object.entries(agentKeywords)) {
-      if (keywords.some(kw => lowerQuery.includes(kw))) {
+      if (keywords.some((kw) => lowerQuery.includes(kw))) {
         agentId = id;
         break;
       }
     }
   }
-  
+
   return { category, recommendation, agentId };
 }
 
@@ -199,15 +270,15 @@ export function getSuggestedTools(category: TaskCategory): string[] {
 
 /** Build provider options for task */
 export function buildOptimalProviderOptions(
-  category: TaskCategory
+  category: TaskCategory,
 ): Record<string, unknown> {
   const recommendation = TASK_MODEL_MAP[category];
-  
+
   const baseOptions: Record<string, unknown> = {
     textVerbosity: 'medium',
     searchContextSize: 'medium',
   };
-  
+
   return {
     ...baseOptions,
     ...recommendation.providerOptions,

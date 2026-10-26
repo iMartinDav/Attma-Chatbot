@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   const { id } = await params;
@@ -15,7 +15,7 @@ export async function GET(
 
   try {
     const project = await getProjectById({ id });
-    
+
     if (!project) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -28,6 +28,9 @@ export async function GET(
     return Response.json(chats);
   } catch (error) {
     console.error('Failed to get project chats:', error);
-    return Response.json({ error: 'Failed to get project chats' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to get project chats' },
+      { status: 500 },
+    );
   }
 }

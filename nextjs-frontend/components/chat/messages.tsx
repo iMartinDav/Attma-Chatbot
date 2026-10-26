@@ -39,12 +39,10 @@ function PureMessages({
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
-
-
   return (
     <div
       ref={messagesContainerRef}
-  className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
+      className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
       style={{
         // Tie padding to the actual composer height measured by MultimodalInput
         // Fallback to 120px if the CSS var isn't set yet
@@ -72,7 +70,13 @@ function PureMessages({
                 ? votes.find((vote) => vote.messageId === message.id)
                 : undefined
             }
-            setMessages={setMessages as unknown as (messages: SearchMessage[] | ((messages: SearchMessage[]) => SearchMessage[])) => void}
+            setMessages={
+              setMessages as unknown as (
+                messages:
+                  | SearchMessage[]
+                  | ((messages: SearchMessage[]) => SearchMessage[]),
+              ) => void
+            }
             regenerate={reload}
             isReadonly={isReadonly}
           />
@@ -80,9 +84,13 @@ function PureMessages({
 
         {isLoading &&
           messages.length > 0 &&
-          messages[messages.length - 1].role === 'user' && 
+          messages[messages.length - 1].role === 'user' &&
           (() => {
-            return isReasoningMode ? <ReasoningThinkingMessage /> : <ThinkingMessage />;
+            return isReasoningMode ? (
+              <ReasoningThinkingMessage />
+            ) : (
+              <ThinkingMessage />
+            );
           })()}
 
         <div
@@ -98,8 +106,6 @@ function PureMessages({
 // Create a reasoning-specific thinking message component similar to Grok
 const ReasoningThinkingMessage = () => {
   const role = 'assistant';
-  
-
 
   return (
     <motion.div
@@ -137,8 +143,11 @@ const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.isArtifactVisible !== nextProps.isArtifactVisible) return false;
   if (prevProps.isReadonly !== nextProps.isReadonly) return false;
   if (prevProps.isReasoningMode !== nextProps.isReasoningMode) return false;
-  
-  return equal(prevProps.messages, nextProps.messages) && equal(prevProps.votes, nextProps.votes);
+
+  return (
+    equal(prevProps.messages, nextProps.messages) &&
+    equal(prevProps.votes, nextProps.votes)
+  );
 });
 
 export { Messages };

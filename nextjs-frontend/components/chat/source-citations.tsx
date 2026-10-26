@@ -66,12 +66,12 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-1 rounded-full",
-        "bg-muted/60 hover:bg-muted border border-border/50",
-        "text-xs text-muted-foreground hover:text-foreground",
-        "transition-all duration-200 hover:scale-105",
-        "focus:outline-none focus:ring-2 focus:ring-primary/20",
-        className
+        'inline-flex items-center gap-1.5 px-2 py-1 rounded-full',
+        'bg-muted/60 hover:bg-muted border border-border/50',
+        'text-xs text-muted-foreground hover:text-foreground',
+        'transition-all duration-200 hover:scale-105',
+        'focus:outline-none focus:ring-2 focus:ring-primary/20',
+        className,
       )}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -80,9 +80,9 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
     >
       {/* Favicon */}
       {faviconUrl ? (
-        <img 
-          src={faviconUrl} 
-          alt="" 
+        <img
+          src={faviconUrl}
+          alt=""
           className="size-3.5 rounded-sm"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
@@ -91,19 +91,19 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
       ) : (
         <Globe className="size-3.5" />
       )}
-      
+
       {/* Source number badge */}
       {typeof index === 'number' && (
         <span className="flex items-center justify-center size-4 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
           {index + 1}
         </span>
       )}
-      
+
       {/* Hostname/Title */}
       <span className="max-w-[120px] truncate font-medium">
         {truncate(hostname, 20)}
       </span>
-      
+
       <ExternalLink className="size-3 opacity-60" />
     </motion.a>
   );
@@ -111,17 +111,17 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
 
 export const SourceChip = memo(PureSourceChip);
 
-function PureSourcePanel({ 
-  sources, 
-  className, 
-  defaultExpanded = false 
+function PureSourcePanel({
+  sources,
+  className,
+  defaultExpanded = false,
 }: SourcePanelProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   // Deduplicate sources by URL
   const uniqueSources = useMemo(() => {
     const seen = new Set<string>();
-    return (sources ?? []).filter(source => {
+    return (sources ?? []).filter((source) => {
       if (seen.has(source.url)) return false;
       seen.add(source.url);
       return true;
@@ -134,24 +134,24 @@ function PureSourcePanel({
   }
 
   return (
-    <div className={cn(
-      "rounded-lg border border-border/50 bg-muted/20",
-      className
-    )}>
+    <div
+      className={cn(
+        'rounded-lg border border-border/50 bg-muted/20',
+        className,
+      )}
+    >
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          "flex w-full items-center justify-between px-3 py-2",
-          "rounded-lg transition-colors",
-          "hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          'flex w-full items-center justify-between px-3 py-2',
+          'rounded-lg transition-colors',
+          'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20',
         )}
       >
         <div className="flex items-center gap-2">
           <Link2 className="size-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">
-            Sources
-          </span>
+          <span className="text-sm font-medium text-foreground">Sources</span>
           <span className="text-xs text-muted-foreground">
             ({uniqueSources.length})
           </span>
@@ -191,10 +191,10 @@ function PureSourcePanel({
             <div className="border-t border-border/30 px-3 py-2">
               <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
                 {uniqueSources.map((source, index) => (
-                  <SourceListItem 
-                    key={source.url} 
-                    source={source} 
-                    index={index} 
+                  <SourceListItem
+                    key={source.url}
+                    source={source}
+                    index={index}
                   />
                 ))}
               </div>
@@ -211,15 +211,15 @@ export const SourcePanel = memo(PureSourcePanel);
 function SourceListItem({ source, index }: { source: Source; index: number }) {
   const hostname = getHostname(source.url);
   const faviconUrl = getFaviconUrl(source.url);
-  
+
   return (
     <motion.a
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "flex items-start gap-3 p-2 rounded-md",
-        "hover:bg-muted/50 transition-colors group"
+        'flex items-start gap-3 p-2 rounded-md',
+        'hover:bg-muted/50 transition-colors group',
       )}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
@@ -233,9 +233,9 @@ function SourceListItem({ source, index }: { source: Source; index: number }) {
       {/* Favicon */}
       <div className="flex-shrink-0 size-4 mt-0.5">
         {faviconUrl ? (
-          <img 
-            src={faviconUrl} 
-            alt="" 
+          <img
+            src={faviconUrl}
+            alt=""
             className="size-full rounded-sm"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '';
@@ -252,9 +252,7 @@ function SourceListItem({ source, index }: { source: Source; index: number }) {
         <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
           {source.title || hostname}
         </p>
-        <p className="text-xs text-muted-foreground truncate">
-          {hostname}
-        </p>
+        <p className="text-xs text-muted-foreground truncate">{hostname}</p>
       </div>
 
       {/* External Link Icon */}
@@ -274,7 +272,7 @@ function PureInlineSources({ sources, className }: InlineSourcesProps) {
   }
 
   return (
-    <div className={cn("flex flex-wrap gap-1.5 mt-3", className)}>
+    <div className={cn('flex flex-wrap gap-1.5 mt-3', className)}>
       {sources.map((source, index) => (
         <SourceChip key={source.url} source={source} index={index} />
       ))}
@@ -284,5 +282,7 @@ function PureInlineSources({ sources, className }: InlineSourcesProps) {
 
 export const InlineSources = memo(PureInlineSources);
 
-export type { SourceChipProps as SourceChipPropsType, SourcePanelProps as SourcePanelPropsType };
-
+export type {
+  SourceChipProps as SourceChipPropsType,
+  SourcePanelProps as SourcePanelPropsType,
+};

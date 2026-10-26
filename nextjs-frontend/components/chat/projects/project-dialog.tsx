@@ -5,12 +5,12 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,7 +35,9 @@ export function ProjectDialog({
   initialData,
 }: ProjectDialogProps) {
   const [name, setName] = useState(initialData?.name || '');
-  const [description, setDescription] = useState(initialData?.description || '');
+  const [description, setDescription] = useState(
+    initialData?.description || '',
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -47,16 +49,16 @@ export function ProjectDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) return;
-    
+
     setIsSubmitting(true);
     try {
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
       });
-      
+
       if (mode === 'create') {
         setName('');
         setDescription('');
@@ -95,7 +97,7 @@ export function ProjectDialog({
               </div>
             </div>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
@@ -110,10 +112,14 @@ export function ProjectDialog({
                 className="h-10"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">
-                Description <span className="text-muted-foreground/50">(optional)</span>
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Description{' '}
+                <span className="text-muted-foreground/50">(optional)</span>
               </Label>
               <Textarea
                 id="description"
@@ -126,7 +132,7 @@ export function ProjectDialog({
             </div>
           </form>
         </div>
-          
+
         <DialogFooter className="px-6 py-4 bg-muted/30 border-t">
           <Button
             type="button"
@@ -136,7 +142,7 @@ export function ProjectDialog({
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={!name.trim() || isSubmitting}
             className="h-9 px-4"

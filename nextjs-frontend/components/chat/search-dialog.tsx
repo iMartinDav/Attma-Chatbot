@@ -57,7 +57,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/history/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+      const response = await fetch(
+        `/api/history/search?q=${encodeURIComponent(searchQuery)}&limit=10`,
+      );
       if (response.ok) {
         const data = await response.json();
         setResults(data.chats || []);
@@ -112,11 +114,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] animate-in fade-in duration-200"
         onClick={() => onOpenChange(false)}
       />
-      
+
       {/* Dialog */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-300">
         <div className="bg-background border border-border/50 rounded-xl shadow-2xl overflow-hidden">
@@ -132,7 +134,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               autoFocus
             />
             {query && (
-              <button 
+              <button
                 onClick={() => setQuery('')}
                 className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground"
               >
@@ -163,7 +165,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   >
                     <MessageSquareIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{chat.title}</div>
+                      <div className="text-sm font-medium truncate">
+                        {chat.title}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {new Date(chat.createdAt).toLocaleDateString()}
                       </div>
@@ -174,13 +178,19 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             ) : query.trim() ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <SearchIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground">No results found</p>
-                <p className="text-xs text-muted-foreground/50 mt-1">Try a different search term</p>
+                <p className="text-sm text-muted-foreground">
+                  No results found
+                </p>
+                <p className="text-xs text-muted-foreground/50 mt-1">
+                  Try a different search term
+                </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <MessageSquareIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground">No recent conversations</p>
+                <p className="text-sm text-muted-foreground">
+                  No recent conversations
+                </p>
               </div>
             )}
           </div>
@@ -189,15 +199,19 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/30 bg-muted/30">
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">↵</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">
+                  ↵
+                </kbd>
                 Select
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">esc</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">
+                  esc
+                </kbd>
                 Close
               </span>
             </div>
-            <button 
+            <button
               onClick={handleNewChat}
               className="text-xs px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
             >

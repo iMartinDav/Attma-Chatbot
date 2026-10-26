@@ -57,22 +57,26 @@ const DEFAULT_CODE_INTERPRETER_CONFIG: CodeInterpreterConfig = {
 /** Creates OpenAI web search tool */
 export function createWebSearchTool(config?: Partial<WebSearchConfig>) {
   const mergedConfig = { ...DEFAULT_WEB_SEARCH_CONFIG, ...config };
-  
+
   if (!mergedConfig.enabled) return null;
-  
+
   return openai.tools.webSearch({
     searchContextSize: mergedConfig.searchContextSize,
     externalWebAccess: mergedConfig.externalWebAccess,
-    ...(mergedConfig.userLocation && { userLocation: mergedConfig.userLocation }),
+    ...(mergedConfig.userLocation && {
+      userLocation: mergedConfig.userLocation,
+    }),
   });
 }
 
 /** Creates OpenAI image generation tool */
-export function createImageGenerationTool(config?: Partial<ImageGenerationConfig>) {
+export function createImageGenerationTool(
+  config?: Partial<ImageGenerationConfig>,
+) {
   const mergedConfig = { ...DEFAULT_IMAGE_GENERATION_CONFIG, ...config };
-  
+
   if (!mergedConfig.enabled) return null;
-  
+
   return openai.tools.imageGeneration({
     outputFormat: mergedConfig.outputFormat,
     quality: mergedConfig.quality,
@@ -81,11 +85,13 @@ export function createImageGenerationTool(config?: Partial<ImageGenerationConfig
 }
 
 /** Creates OpenAI code interpreter tool */
-export function createCodeInterpreterTool(config?: Partial<CodeInterpreterConfig>) {
+export function createCodeInterpreterTool(
+  config?: Partial<CodeInterpreterConfig>,
+) {
   const mergedConfig = { ...DEFAULT_CODE_INTERPRETER_CONFIG, ...config };
-  
+
   if (!mergedConfig.enabled) return null;
-  
+
   return openai.tools.codeInterpreter({
     ...(mergedConfig.fileIds && {
       container: { fileIds: mergedConfig.fileIds },
@@ -94,70 +100,95 @@ export function createCodeInterpreterTool(config?: Partial<CodeInterpreterConfig
 }
 
 /** Builds tools object with all configured OpenAI built-in tools */
-export function buildOpenAITools(config?: ToolsConfig): Record<string, ReturnType<typeof openai.tools.webSearch>> {
+export function buildOpenAITools(
+  config?: ToolsConfig,
+): Record<string, ReturnType<typeof openai.tools.webSearch>> {
   const tools: Record<string, ReturnType<typeof openai.tools.webSearch>> = {};
-  
+
   const webSearch = createWebSearchTool(config?.webSearch);
   if (webSearch) {
     tools.web_search = webSearch;
   }
-  
+
   const imageGeneration = createImageGenerationTool(config?.imageGeneration);
   if (imageGeneration) {
-    tools.image_generation = imageGeneration as unknown as ReturnType<typeof openai.tools.webSearch>;
+    tools.image_generation = imageGeneration as unknown as ReturnType<
+      typeof openai.tools.webSearch
+    >;
   }
-  
+
   const codeInterpreter = createCodeInterpreterTool(config?.codeInterpreter);
   if (codeInterpreter) {
-    tools.code_interpreter = codeInterpreter as unknown as ReturnType<typeof openai.tools.webSearch>;
+    tools.code_interpreter = codeInterpreter as unknown as ReturnType<
+      typeof openai.tools.webSearch
+    >;
   }
-  
+
   return tools;
 }
 
 /** PubMed search tool for finding scientific publications */
 export const pubmedSearchTool = tool({
-  description: 'Search PubMed for scientific publications on a topic. Use this for finding recent research papers, protocols, and scientific literature.',
+  description:
+    'Search PubMed for scientific publications on a topic. Use this for finding recent research papers, protocols, and scientific literature.',
   inputSchema: z.object({
-    query: z.string().describe('Search query for PubMed (e.g., "CRISPR gene editing" or "RNA-seq differential expression")'),
-    maxResults: z.number().optional().default(5).describe('Maximum number of results to return'),
-    sortBy: z.enum(['relevance', 'date']).optional().default('relevance').describe('Sort order for results'),
+    query: z
+      .string()
+      .describe(
+        'Search query for PubMed (e.g., "CRISPR gene editing" or "RNA-seq differential expression")',
+      ),
+    maxResults: z
+      .number()
+      .optional()
+      .default(5)
+      .describe('Maximum number of results to return'),
+    sortBy: z
+      .enum(['relevance', 'date'])
+      .optional()
+      .default('relevance')
+      .describe('Sort order for results'),
   }),
   execute: async ({ query, maxResults, sortBy }) => {
     // Using NCBI E-utilities API (free, no key required for low volume)
     const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
     const searchUrl = `${baseUrl}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(query)}&retmax=${maxResults}&sort=${sortBy}&retmode=json`;
-    
+
     try {
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
       const ids = searchData.esearchresult?.idlist || [];
-      
+
       if (ids.length === 0) {
-        return { success: true, results: [], message: 'No publications found.' };
+        return {
+          success: true,
+          results: [],
+          message: 'No publications found.',
+        };
       }
-      
+
       // Fetch summaries for found IDs
       const summaryUrl = `${baseUrl}/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`;
       const summaryResponse = await fetch(summaryUrl);
       const summaryData = await summaryResponse.json();
-      
+
       const results = ids.map((id: string) => {
         const article = summaryData.result?.[id];
         return {
           pmid: id,
           title: article?.title || 'Unknown',
-          authors: article?.authors?.map((a: { name: string }) => a.name).join(', ') || 'Unknown',
+          authors:
+            article?.authors?.map((a: { name: string }) => a.name).join(', ') ||
+            'Unknown',
           journal: article?.source || 'Unknown',
           pubDate: article?.pubdate || 'Unknown',
           url: `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
         };
       });
-      
+
       return { success: true, results, count: results.length };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: 'Failed to search PubMed. Please try again.',
         results: [],
       };
@@ -167,25 +198,32 @@ export const pubmedSearchTool = tool({
 
 /** Gene lookup tool for retrieving gene information */
 export const geneLookupTool = tool({
-  description: 'Look up information about a gene including its function, aliases, and associated pathways.',
+  description:
+    'Look up information about a gene including its function, aliases, and associated pathways.',
   inputSchema: z.object({
-    geneSymbol: z.string().describe('Gene symbol to look up (e.g., "TP53", "BRCA1")'),
-    organism: z.enum(['human', 'mouse', 'rat']).optional().default('human').describe('Organism'),
+    geneSymbol: z
+      .string()
+      .describe('Gene symbol to look up (e.g., "TP53", "BRCA1")'),
+    organism: z
+      .enum(['human', 'mouse', 'rat'])
+      .optional()
+      .default('human')
+      .describe('Organism'),
   }),
   execute: async ({ geneSymbol, organism }) => {
     const orgMap = { human: '9606', mouse: '10090', rat: '10116' };
     const taxId = orgMap[organism];
-    
+
     const url = `https://mygene.info/v3/query?q=symbol:${geneSymbol}&species=${taxId}&fields=symbol,name,summary,alias,pathway,go`;
-    
+
     try {
       const response = await fetch(url);
       const data = await response.json();
-      
+
       if (!data.hits || data.hits.length === 0) {
         return { success: false, error: `Gene "${geneSymbol}" not found.` };
       }
-      
+
       const gene = data.hits[0];
       return {
         success: true,
@@ -219,23 +257,23 @@ export function getAllTools(
     includeOpenAITools?: boolean;
     includeBioTools?: boolean;
     openAIConfig?: ToolsConfig;
-  } = {}
+  } = {},
 ) {
   const {
     includeOpenAITools = true,
     includeBioTools = true,
     openAIConfig,
   } = options;
-  
+
   let tools: Record<string, unknown> = {};
-  
+
   if (includeOpenAITools) {
     tools = { ...tools, ...buildOpenAITools(openAIConfig) };
   }
-  
+
   if (includeBioTools) {
     tools = { ...tools, ...bioinformaticsTools };
   }
-  
+
   return tools;
 }

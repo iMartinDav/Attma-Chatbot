@@ -211,7 +211,10 @@ const PureSpreadsheetEditor = ({
         cell: ({
           row,
           column,
-        }: { row: Row<SheetRow>; column: { id: string } }) => {
+        }: {
+          row: Row<SheetRow>;
+          column: { id: string };
+        }) => {
           const colKey = column.id;
           const rowKey = row.index;
           const cellValue = row.original.cells[colKey]?.value || '';

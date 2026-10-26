@@ -1,8 +1,8 @@
 'use client';
 
 import {
-    createSearchMessages,
-    executeWebSearch,
+  createSearchMessages,
+  executeWebSearch,
 } from '@/lib/ai/tools/search-function';
 import { generateUUID, getChatUrl } from '@/lib/utils';
 import cx from 'classnames';
@@ -147,13 +147,21 @@ export function MessageSearch({
     try {
       // Format the message - keep parts if available for rich database content
       // Include reasoning and annotations as specialized parts for persistence
-      const messageParts = Array.isArray(message.parts) ? [...message.parts] : [];
-      
+      const messageParts = Array.isArray(message.parts)
+        ? [...message.parts]
+        : [];
+
       // Add reasoning as a part if it exists
-      if (message.reasoningText && !messageParts.some(p => p.type === 'reasoning')) {
-        messageParts.push({ type: 'reasoning', reasoningText: message.reasoningText });
+      if (
+        message.reasoningText &&
+        !messageParts.some((p) => p.type === 'reasoning')
+      ) {
+        messageParts.push({
+          type: 'reasoning',
+          reasoningText: message.reasoningText,
+        });
       }
-      
+
       // Add annotations as source parts if they exist
       if (Array.isArray(message.annotations)) {
         for (const annotation of message.annotations) {
@@ -163,7 +171,7 @@ export function MessageSearch({
               source: {
                 url: annotation.url_citation.url,
                 title: annotation.url_citation.title,
-              }
+              },
             });
           }
         }
@@ -172,7 +180,7 @@ export function MessageSearch({
       const formattedMessage = {
         id: message.id,
         role: message.role,
-        content: messageParts.length > 0 ? messageParts : (message.content || ''),
+        content: messageParts.length > 0 ? messageParts : message.content || '',
         createdAt:
           message.createdAt instanceof Date
             ? message.createdAt.toISOString()
@@ -195,7 +203,7 @@ export function MessageSearch({
         console.error('Failed to save search message:', errorText);
         return undefined;
       }
-      
+
       // If server minted a new id (when client had "new" or invalid), adopt it
       try {
         const data = await response.json();
@@ -295,8 +303,14 @@ export function MessageSearch({
         const errorMessage: SearchMessage = {
           id: generateUUID(),
           role: 'assistant',
-          parts: [{ type: 'text', text: 'Sorry, I encountered an error while searching. Please try again.' }],
-          content: 'Sorry, I encountered an error while searching. Please try again.',
+          parts: [
+            {
+              type: 'text',
+              text: 'Sorry, I encountered an error while searching. Please try again.',
+            },
+          ],
+          content:
+            'Sorry, I encountered an error while searching. Please try again.',
           createdAt: new Date(),
           sourceType: 'error',
         };
@@ -320,7 +334,12 @@ export function MessageSearch({
       const errorMessage: SearchMessage = {
         id: generateUUID(),
         role: 'assistant',
-        parts: [{ type: 'text', text: 'Sorry, I encountered an error while searching. Please try again.' }],
+        parts: [
+          {
+            type: 'text',
+            text: 'Sorry, I encountered an error while searching. Please try again.',
+          },
+        ],
         content:
           'Sorry, I encountered an error while searching. Please try again.',
         createdAt: new Date(),
@@ -347,10 +366,10 @@ export function MessageSearch({
     return (
       <Button
         className={cx(
-          "rounded-full size-8 p-0 flex items-center justify-center border transition-all duration-300",
+          'rounded-full size-8 p-0 flex items-center justify-center border transition-all duration-300',
           isSearchMode
-            ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20"
-            : "dark:border-zinc-800 bg-transparent hover:bg-muted"
+            ? 'bg-primary text-primary-foreground border-primary ring-2 ring-primary/20'
+            : 'dark:border-zinc-800 bg-transparent hover:bg-muted',
         )}
         onClick={(event) => {
           event.preventDefault();

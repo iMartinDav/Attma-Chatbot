@@ -12,8 +12,9 @@ export interface LocalizedComponentProps<T = Record<string, any>> {
 }
 
 // Section component base props
-export interface SectionProps<T = Record<string, any>>
-  extends LocalizedComponentProps<T> {
+export interface SectionProps<
+  T = Record<string, any>,
+> extends LocalizedComponentProps<T> {
   className?: string;
 }
 

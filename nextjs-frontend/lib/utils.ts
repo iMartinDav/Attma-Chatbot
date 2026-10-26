@@ -1,7 +1,7 @@
 import type {
-    AssistantModelMessage as CoreAssistantMessage,
-    ToolModelMessage as CoreToolMessage,
-    UIMessage,
+  AssistantModelMessage as CoreAssistantMessage,
+  ToolModelMessage as CoreToolMessage,
+  UIMessage,
 } from 'ai';
 import { clsx, type ClassValue } from 'clsx';
 import { getCookie, setCookie } from 'cookies-next';
@@ -83,13 +83,16 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export const fetchWithErrorHandlers = async (input: string | URL | Request, init?: RequestInit) => {
+export const fetchWithErrorHandlers = async (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => {
   const res = await fetch(input, init);
 
   if (!res.ok) {
     const errorText = await res.text();
     let errorData;
-    
+
     try {
       errorData = JSON.parse(errorText);
     } catch {
@@ -98,14 +101,16 @@ export const fetchWithErrorHandlers = async (input: string | URL | Request, init
 
     // Import ChatSDKError dynamically to avoid circular imports
     const { ChatSDKError } = await import('@/lib/errors');
-    
+
     // If it's a known SDK error format, throw ChatSDKError
     if (errorData.code && errorData.message) {
       throw new ChatSDKError(errorData.code, errorData.message);
     }
-    
+
     // Otherwise throw a generic error
-    const error = new Error(errorData.message || 'An error occurred') as ApplicationError;
+    const error = new Error(
+      errorData.message || 'An error occurred',
+    ) as ApplicationError;
     error.info = errorData;
     error.status = res.status;
     throw error;
@@ -118,21 +123,21 @@ export function getTextFromMessage(message: any): string {
   if (typeof message.content === 'string') {
     return message.content;
   }
-  
+
   if (Array.isArray(message.parts)) {
     return message.parts
       .filter((part: any) => part.type === 'text')
       .map((part: any) => part.text)
       .join(' ');
   }
-  
+
   if (Array.isArray(message.content)) {
     return message.content
       .filter((part: any) => part.type === 'text')
       .map((part: any) => part.text)
       .join(' ');
   }
-  
+
   return '';
 }
 
@@ -169,21 +174,25 @@ function addToolMessageToChat({
     if ((message as any).toolInvocations) {
       return {
         ...message,
-        toolInvocations: (message as any).toolInvocations.map((toolInvocation: any) => {
-          const toolResult = toolMessage.content.find(
-            (tool) => tool.type === 'tool-result' && tool.toolCallId === toolInvocation.toolCallId,
-          );
+        toolInvocations: (message as any).toolInvocations.map(
+          (toolInvocation: any) => {
+            const toolResult = toolMessage.content.find(
+              (tool) =>
+                tool.type === 'tool-result' &&
+                tool.toolCallId === toolInvocation.toolCallId,
+            );
 
-          if (toolResult) {
-            return {
-              ...toolInvocation,
-              state: 'result',
-              result: (toolResult as any).result,
-            };
-          }
+            if (toolResult) {
+              return {
+                ...toolInvocation,
+                state: 'result',
+                result: (toolResult as any).result,
+              };
+            }
 
-          return toolInvocation;
-        }),
+            return toolInvocation;
+          },
+        ),
       };
     }
 
@@ -216,7 +225,8 @@ export function convertToUIMessages(
         } else if (part.type === 'tool-call') {
           // Find if we already have a tool result for this ID in the same message
           const toolResult = content.find(
-            (c: any) => c.type === 'tool-result' && c.toolCallId === part.toolCallId
+            (c: any) =>
+              c.type === 'tool-result' && c.toolCallId === part.toolCallId,
           );
 
           if (toolResult) {
@@ -238,7 +248,9 @@ export function convertToUIMessages(
         } else if (part.type === 'tool-result') {
           // If we found a tool-result but no tool-call yet (unlikely but possible),
           // check if we already pushed it via the tool-call branch above
-          const alreadyAdded = toolInvocations.some(ti => ti.toolCallId === part.toolCallId);
+          const alreadyAdded = toolInvocations.some(
+            (ti) => ti.toolCallId === part.toolCallId,
+          );
           if (!alreadyAdded) {
             toolInvocations.push({
               state: 'result',
@@ -248,22 +260,23 @@ export function convertToUIMessages(
             });
           }
         } else if (part.type === 'reasoning') {
-          reasoning = (reasoning || '') + (part.reasoningText || part.text || '');
+          reasoning =
+            (reasoning || '') + (part.reasoningText || part.text || '');
         } else if (part.type === 'source') {
           // Source parts are preserved in 'parts' for the UI sources panel
         }
       }
     }
 
-    const parts = Array.isArray((message as any).content) 
-      ? (message as any).content 
+    const parts = Array.isArray((message as any).content)
+      ? (message as any).content
       : [{ type: 'text', text: textContent || '' }];
 
     chatMessages.push({
       id: message.id,
       role: message.role as ChatMessage['role'],
       // Fallback to textContent if content is empty but it shouldn't be
-      content: textContent || '', 
+      content: textContent || '',
       // Ensure ChatMessage has the full parts structure for multi-modal rendering
       parts,
       reasoning,
@@ -325,7 +338,9 @@ export function sanitizeResponseMessages({
   );
 }
 
-export function sanitizeUIMessages(messages: Array<UIMessage>): Array<UIMessage> {
+export function sanitizeUIMessages(
+  messages: Array<UIMessage>,
+): Array<UIMessage> {
   const messagesBySanitizedToolInvocations = messages.map((message) => {
     if (message.role !== 'assistant') return message;
 
@@ -354,7 +369,8 @@ export function sanitizeUIMessages(messages: Array<UIMessage>): Array<UIMessage>
   return messagesBySanitizedToolInvocations.filter(
     (message) =>
       (message as any).content.length > 0 ||
-      ((message as any).toolInvocations && (message as any).toolInvocations.length > 0),
+      ((message as any).toolInvocations &&
+        (message as any).toolInvocations.length > 0),
   );
 }
 
