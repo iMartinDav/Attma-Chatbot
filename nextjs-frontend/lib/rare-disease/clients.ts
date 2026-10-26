@@ -3,6 +3,9 @@
  * AlphaMissense, CADD). Each variant's annotation is cached in memory per instance.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 const VEP_API = 'https://rest.ensembl.org/vep/human';
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -19,7 +22,7 @@ function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
   return value;
 }
 
-const MAX_CONCURRENT_REQUESTS = 2;
+const MAX_CONCURRENT_REQUESTS = 3;
 const MAX_ATTEMPTS = 4;
 let active = 0;
 const waiting: (() => void)[] = [];
@@ -103,6 +106,75 @@ export interface VepResult {
   }[];
 }
 
+/**
+ * Annotations captured ahead of time for the benchmark and demo variants
+ * (scripts/rare-disease-engine/snapshot_vep.ts), so they answer instantly
+ * whatever the state of the public VEP service. Keyed by `${kind}:${query}`.
+ */
+export const VEP_SNAPSHOT_PATH = join(
+  process.cwd(),
+  'lib/rare-disease/data/vep-snapshot.json',
+);
+
+let snapshot: Map<string, VepResult> | undefined;
+
+function loadSnapshot(): Map<string, VepResult> {
+  if (!snapshot) {
+    try {
+      const file = JSON.parse(readFileSync(VEP_SNAPSHOT_PATH, 'utf8')) as {
+        entries: Record<string, VepResult>;
+      };
+      snapshot = new Map(Object.entries(file.entries));
+    } catch {
+      snapshot = new Map();
+    }
+  }
+  return snapshot;
+}
+
+/** Keeps only what the ranking reads: the chosen transcript, ClinVar and gnomAD. */
+export function trimVepResult(result: VepResult): VepResult {
+  const transcripts = result.transcript_consequences ?? [];
+  const chosen =
+    transcripts.find((t) => t.mane_select) ??
+    transcripts.find((t) => t.canonical) ??
+    transcripts[0];
+  return {
+    input: result.input,
+    most_severe_consequence: result.most_severe_consequence,
+    transcript_consequences: chosen
+      ? [
+          {
+            gene_symbol: chosen.gene_symbol,
+            canonical: chosen.canonical,
+            mane_select: chosen.mane_select,
+            consequence_terms: chosen.consequence_terms,
+            hgvsc: chosen.hgvsc,
+            hgvsp: chosen.hgvsp,
+            cadd_phred: chosen.cadd_phred,
+            alphamissense: chosen.alphamissense,
+          },
+        ]
+      : [],
+    colocated_variants: (result.colocated_variants ?? []).map((c) => ({
+      id: c.id,
+      clin_sig: c.clin_sig,
+      frequencies: c.frequencies
+        ? Object.fromEntries(
+            Object.entries(c.frequencies).map(([allele, f]) => [
+              allele,
+              Object.fromEntries(
+                Object.entries(f).filter(
+                  ([k]) => k === 'gnomade' || k === 'gnomadg',
+                ),
+              ),
+            ]),
+          )
+        : undefined,
+    })),
+  };
+}
+
 const VEP_PARAMS =
   'AlphaMissense=1&CADD=1&canonical=1&mane=1&hgvs=1&af_gnomade=1&af_gnomadg=1';
 
@@ -150,9 +222,12 @@ interface PendingVariant {
 export async function annotateWithVep(
   inputs: string[],
 ): Promise<Map<string, VepResult>> {
+  const snapshot = loadSnapshot();
   const pending = new Map<VariantKind, PendingVariant[]>();
   const lookups = inputs.map((input) => {
     const { kind, query } = classifyVariant(input);
+    const stored = snapshot.get(`${kind}:${query}`);
+    if (stored) return Promise.resolve([input, stored] as const);
     const result = cached(
       `vep:${kind}:${query}`,
       () =>

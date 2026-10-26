@@ -98,21 +98,41 @@ class HpoEngine {
       : { id: this.ids[index], label: this.names[index] };
   }
 
+  /**
+   * Text search over labels and synonyms: the label matching the most query
+   * words wins (shorter labels break ties). Plurals are folded and common
+   * modifiers ignored, so "mild hypotonia" or "focal seizures with hemiclonic
+   * jerks" still resolve.
+   */
   private search(label: string): number | undefined {
-    const tokens = normalize(label)
-      .split(' ')
-      .filter((t) => t.length > 2);
-    if (tokens.length === 0) return undefined;
-    let best: { index: number; length: number } | undefined;
+    const words = [
+      ...new Set(
+        normalize(label)
+          .split(' ')
+          .filter((w) => w.length > 2 && !IGNORED_WORDS.has(w))
+          .map(stem),
+      ),
+    ];
+    if (words.length === 0) return undefined;
+    let best: { index: number; matched: number; length: number } | undefined;
     for (const { index, text } of this.searchable) {
+      let matched = 0;
+      for (const w of words) if (text.includes(w)) matched++;
       if (
-        tokens.every((t) => text.includes(t)) &&
-        (!best || text.length < best.length)
+        matched > 0 &&
+        (!best ||
+          matched > best.matched ||
+          (matched === best.matched && text.length < best.length))
       ) {
-        best = { index, length: text.length };
+        best = { index, matched, length: text.length };
       }
     }
-    return best?.index;
+    if (!best) return undefined;
+    const enough =
+      words.length <= 2 ? best.matched === words.length : best.matched >= 2;
+    return enough && best.matched / words.length >= 0.5
+      ? best.index
+      : undefined;
   }
 
   rankDiseases(
@@ -178,6 +198,28 @@ class HpoEngine {
       genes: disease.genes,
     }));
   }
+}
+
+const IGNORED_WORDS = new Set([
+  'and',
+  'with',
+  'the',
+  'some',
+  'mild',
+  'moderate',
+  'severe',
+  'repeated',
+  'recurrent',
+  'frequent',
+  'occasional',
+  'episodes',
+  'now',
+  'history',
+]);
+
+function stem(word: string): string {
+  if (word.length <= 4) return word;
+  return word.replace(/ies$/, 'y').replace(/s$/, '');
 }
 
 function normalize(text: string): string {

@@ -24,10 +24,33 @@ Pass only findings the patient HAS (not negated ones), mapped to HPO terms.
 Ranks all ~12,900 OMIM, Orphanet and DECIPHER diseases by HPO semantic similarity and returns the differential diagnosis with each disease's causal genes.`,
   inputSchema: z.object({
     phenotypes: z.array(phenotypeSchema).min(1).max(40),
+    variants: z
+      .array(z.string())
+      .max(200)
+      .optional()
+      .describe(
+        "The patient's candidate variants, if any. They are annotated and ranked against these phenotypes in the same call.",
+      ),
   }),
-  execute: async ({ phenotypes }) => {
-    const ranking = await rankDiagnoses(phenotypes);
-    return { ...ranking, genes: ranking.genes.slice(0, 20) };
+  execute: async ({ phenotypes, variants }) => {
+    const ranking = rankDiagnoses(phenotypes);
+    const [diagnosis, variantRanking] = await Promise.all([
+      ranking,
+      variants?.length
+        ? prioritizeVariants(
+            variants,
+            ranking.then((r) => r.genes),
+          )
+        : undefined,
+    ]);
+    return {
+      ...diagnosis,
+      genes: diagnosis.genes.slice(0, 20),
+      variantRanking: variantRanking && {
+        ...variantRanking,
+        variants: variantRanking.variants.slice(0, 25),
+      },
+    };
   },
 });
 

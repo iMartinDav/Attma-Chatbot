@@ -1,10 +1,10 @@
 'use client';
 
+import { DEMO_CASES, demoPrompt } from '@/lib/rare-disease/demo-cases';
 import { motion } from 'framer-motion';
 import {
   AgentBioinformaticsIcon,
-  AgentPathwayIcon,
-  AgentSingleCellIcon,
+  AgentVariantIcon,
   PaperclipIcon,
 } from '../icons';
 
@@ -15,6 +15,15 @@ interface ChatSuggestionsProps {
 
 export function ChatSuggestions({ onSelect, onUpload }: ChatSuggestionsProps) {
   const suggestions = [
+    ...DEMO_CASES.map((demo) => ({
+      label: demo.title,
+      icon: (
+        <div className="w-4 h-4 text-primary">
+          <AgentVariantIcon />
+        </div>
+      ),
+      action: () => onSelect(demoPrompt(demo)),
+    })),
     {
       label: 'Find recent CRISPR papers',
       icon: (
@@ -26,26 +35,6 @@ export function ChatSuggestions({ onSelect, onUpload }: ChatSuggestionsProps) {
         onSelect(
           'Search PubMed for recent CRISPR-Cas9 papers and summarize key findings',
         ),
-    },
-    {
-      label: 'Analyze single-cell data',
-      icon: (
-        <div className="w-4 h-4 text-purple-400">
-          <AgentSingleCellIcon />
-        </div>
-      ),
-      action: () =>
-        onSelect('How do I analyze single-cell RNA-seq data using Seurat v5?'),
-    },
-    {
-      label: 'Find KEGG pathways',
-      icon: (
-        <div className="w-4 h-4 text-green-400">
-          <AgentPathwayIcon />
-        </div>
-      ),
-      action: () =>
-        onSelect('Find KEGG pathways related to apoptosis and TP53'),
     },
     {
       label: 'Upload PDF to analyze',

@@ -280,10 +280,10 @@ export function getDomainInstructions(domain: AgentDomain): string {
       Workflow:
       1. Map the patient's findings to HPO terms. Use only findings the patient has;
          list negated or absent findings separately and do not send them to tools.
-      2. Call rankDiagnoses with those phenotypes.
-      3. If the user gave variants, call prioritizeVariants with the variants and the same phenotypes.
+      2. Call rankDiagnoses once with those phenotypes and, if the user gave any, the
+         candidate variants: both are analyzed in the same call.
+      3. Use prioritizeVariants only for variant questions without phenotypes.
       4. For the leading candidate gene, search PubMed for supporting case reports.
-      Call rankDiagnoses and prioritizeVariants in the same step when both apply.
       The results already appear to the user as interactive tables, so do not repeat them.
       Answer in under 250 words: the leading hypothesis and why (which findings and which
       variant evidence support it), what argues against the runners-up, and 2-4 concrete next

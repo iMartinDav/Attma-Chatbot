@@ -41,10 +41,11 @@ export function RareDiseaseResult({
   if (state !== 'output-available' || !output) {
     const phenotypes = input?.phenotypes?.length ?? 0;
     const variants = input?.variants?.length ?? 0;
+    const annotating = `annotating ${variants} variants with VEP, gnomAD, ClinVar and AlphaMissense`;
     const message =
       toolName === 'rankDiagnoses'
-        ? `Comparing ${phenotypes || 'the'} phenotypes with 12,900 rare diseases…`
-        : `Annotating ${variants || 'the'} variants with VEP, gnomAD, ClinVar and AlphaMissense…`;
+        ? `Comparing ${phenotypes || 'the'} phenotypes with 12,900 rare diseases${variants ? ` and ${annotating}` : ''}…`
+        : `A${annotating.slice(1)}…`;
     return (
       <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
         <div className="animate-spin text-primary">
@@ -55,9 +56,19 @@ export function RareDiseaseResult({
     );
   }
 
-  return toolName === 'rankDiagnoses' ? (
-    <DiagnosisCard ranking={output as DiagnosisRanking} />
-  ) : (
+  if (toolName === 'rankDiagnoses') {
+    const { variantRanking, ...ranking } = output as DiagnosisRanking & {
+      variantRanking?: VariantPrioritization;
+    };
+    return (
+      <div className="flex w-full flex-col gap-3">
+        <DiagnosisCard ranking={ranking} />
+        {variantRanking && <VariantCard result={variantRanking} />}
+      </div>
+    );
+  }
+
+  return (
     <VariantCard
       result={
         output as VariantPrioritization & { topDiseases?: RankedDisease[] }
