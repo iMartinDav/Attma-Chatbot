@@ -4,6 +4,7 @@
  */
 
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import {
   customProvider,
   extractReasoningMiddleware,
@@ -130,6 +131,20 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
   },
 } as const;
 
+// Meta Model API (Muse) is OpenAI-compatible. When MODEL_API_KEY is set, Muse
+// serves every chat alias; OpenAI stays as the fallback provider.
+const meta = createOpenAICompatible({
+  name: 'meta',
+  baseURL: 'https://api.meta.ai/v1',
+  apiKey: process.env.MODEL_API_KEY,
+  supportsStructuredOutputs: true,
+});
+const USE_META = Boolean(process.env.MODEL_API_KEY);
+/** OpenAI built-in tools (web search, image generation, code interpreter) only run on OpenAI. */
+export const supportsOpenAIBuiltInTools = !USE_META;
+const MUSE_FAST = 'muse-spark-1.3';
+const MUSE_ADVANCED = 'muse-wonder-1.0';
+
 function createLanguageModel(modelId: string) {
   const config = MODEL_REGISTRY[modelId];
   const baseModel = openai.chat(modelId);
@@ -151,19 +166,26 @@ const ADVANCED_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : 'gpt-4o';
 const REASONING_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3-mini';
 const REASONING_ADVANCED = USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3';
 
+const fast = () =>
+  USE_META ? meta(MUSE_FAST) : createLanguageModel(FAST_MODEL);
+const advanced = () =>
+  USE_META ? meta(MUSE_ADVANCED) : createLanguageModel(ADVANCED_MODEL);
+const reasoning = (openaiModel: string) =>
+  USE_META ? meta(MUSE_ADVANCED) : createLanguageModel(openaiModel);
+
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model': createLanguageModel(FAST_MODEL),
-    'chat-model-standard': createLanguageModel(ADVANCED_MODEL),
-    'chat-model-advanced': createLanguageModel(ADVANCED_MODEL),
-    'chat-model-codex': createLanguageModel(ADVANCED_MODEL),
-    'chat-model-research': createLanguageModel(ADVANCED_MODEL),
-    'chat-model-reasoning': createLanguageModel(REASONING_MODEL),
-    'chat-model-reasoning-advanced': createLanguageModel(REASONING_ADVANCED),
-    'title-model': createLanguageModel(FAST_MODEL),
-    'artifact-model': createLanguageModel(ADVANCED_MODEL),
-    'chat-model-small': createLanguageModel(FAST_MODEL),
-    'chat-model-large': createLanguageModel(ADVANCED_MODEL),
+    'chat-model': fast(),
+    'chat-model-standard': advanced(),
+    'chat-model-advanced': advanced(),
+    'chat-model-codex': advanced(),
+    'chat-model-research': advanced(),
+    'chat-model-reasoning': reasoning(REASONING_MODEL),
+    'chat-model-reasoning-advanced': reasoning(REASONING_ADVANCED),
+    'title-model': fast(),
+    'artifact-model': advanced(),
+    'chat-model-small': fast(),
+    'chat-model-large': advanced(),
   },
   imageModels: {
     'image-model': openai.image('gpt-image-1'),

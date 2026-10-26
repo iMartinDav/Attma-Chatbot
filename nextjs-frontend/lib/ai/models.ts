@@ -31,7 +31,7 @@ export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model', // Maps to gpt-4o-mini or gpt-5-mini depending on API
     name: 'Standard',
-    description: 'Fast & efficient for everyday tasks',
+    description: 'Muse Spark · fast for everyday tasks',
     capabilities: {
       webSearch: false,
       vision: true,
@@ -44,7 +44,7 @@ export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-standard', // Maps to gpt-4o or gpt-5 depending on API
     name: 'Advanced',
-    description: 'Most capable with vision & analysis',
+    description: 'Muse Wonder · most capable for analysis',
     capabilities: {
       webSearch: false,
       vision: true,
@@ -57,7 +57,7 @@ export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-reasoning', // Maps to o3-mini
     name: 'Reasoning',
-    description: 'For complex logic & analysis',
+    description: 'Muse Wonder · deep reasoning',
     capabilities: {
       reasoning: true,
       webSearch: false,
