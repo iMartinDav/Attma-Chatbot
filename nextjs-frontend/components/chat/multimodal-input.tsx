@@ -19,7 +19,6 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { useKeyboardVisibility } from '@/hooks/use-keyboard-visibility';
-import { useBioflowTaskStatus } from '@/hooks/useBioflowTaskStatus';
 import { getChatUrl } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
@@ -83,17 +82,13 @@ function PureMultimodalInput({
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [bioflowTaskId, setBioflowTaskId] = useState<string | null>(null);
   const [localStorageInput, setLocalStorageInput] = useLocalStorage('input', '');
 
-  const bioflowStatus = useBioflowTaskStatus(bioflowTaskId ?? undefined);
   const isLoading = status === 'submitted' || status === 'processing';
 
   // File upload hook
-  const { uploadQueue, handleFileChange, handleFileDrop } = useFileUpload(
-    setAttachments,
-    { onBioflowTaskCreated: setBioflowTaskId }
-  );
+  const { uploadQueue, handleFileChange, handleFileDrop } =
+    useFileUpload(setAttachments);
 
   const { isKeyboardVisible, scrollInputIntoView } = useKeyboardVisibility();
 
@@ -353,12 +348,6 @@ function PureMultimodalInput({
         tabIndex={-1}
       />
 
-      {/* Bioflow Task Status */}
-      {bioflowTaskId && (
-        <div className="mt-2 text-xs font-medium text-primary animate-pulse">
-          Processing: {bioflowStatus?.status || 'Initializing...'}
-        </div>
-      )}
     </div>
   );
 }

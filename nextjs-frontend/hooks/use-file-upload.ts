@@ -10,10 +10,6 @@ const BIOINFORMATICS_EXTENSIONS = [
 
 const DOCUMENT_EXTENSIONS = ['.csv', '.tsv'];
 
-interface UseFileUploadOptions {
-  onBioflowTaskCreated?: (taskId: string) => void;
-}
-
 interface UseFileUploadReturn {
   uploadFile: (file: File) => Promise<Attachment | undefined>;
   uploadQueue: string[];
@@ -54,7 +50,6 @@ function getUploadUrl(file: File): string {
 
 export function useFileUpload(
   setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>,
-  options: UseFileUploadOptions = {}
 ): UseFileUploadReturn {
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
@@ -109,10 +104,6 @@ export function useFileUpload(
         if (response.ok) {
           const data = await response.json();
 
-          if (isBioflowUpload && data.backendTask?.task_id) {
-            options.onBioflowTaskCreated?.(data.backendTask.task_id);
-          }
-
           toast.success(`File "${file.name}" uploaded successfully`);
           return {
             url: data.url,
@@ -166,7 +157,7 @@ export function useFileUpload(
     }
 
     return undefined;
-  }, [options]);
+  }, []);
 
   const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);

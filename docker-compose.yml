@@ -1,50 +1,4 @@
 services:
-  backend:
-    build:
-      context: fastapi_backend
-    container_name: fastapi-backend
-    restart: unless-stopped
-    environment:
-      - DEV=true
-      - OPENAPI_OUTPUT_FILE=./shared-data/openapi.json
-      # Connect to the same Neon database as Next.js frontend
-      - DATABASE_URL=postgres://neondb_owner:REDACTED@ep-spring-scene-a2qod2lp-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
-      - TEST_DATABASE_URL=postgresql://postgres:password@db:5433/testdatabase
-      # Authentication secrets
-      - ACCESS_SECRET_KEY=dev_secret_key_do_not_use_in_production
-      - RESET_PASSWORD_SECRET_KEY=dev_reset_key_do_not_use_in_production
-      - VERIFICATION_SECRET_KEY=dev_verification_key_do_not_use_in_production
-      # CORS settings
-      - FRONTEND_URL=http://frontend:3000
-      - CORS_ORIGINS=["http://localhost:3000","http://frontend:3000"]
-      # Email service configuration
-      - EMAIL_API_TOKEN=dummy_token_for_local_dev
-      - EMAIL_API_ENDPOINT=/api/email
-      # Blob storage
-      - BLOB_READ_WRITE_TOKEN=REDACTED
-      # Other settings
-      - PYTHONPATH=/app
-      - SINGLE_CELL_DATA_DIR=/app/shared-data/single_cell_data
-      - LOG_LEVEL=INFO
-    ports:
-      - "8000:8000"
-    networks:
-      - my_network
-    volumes:
-      - ./fastapi_backend:/app
-      - fastapi-venv:/app/.venv
-      - ./local-shared-data:/app/shared-data
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      # Use more tolerant health check that accepts any response
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 0"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
   db:
     image: postgres:17-alpine
     container_name: postgres-db
@@ -61,23 +15,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       # Add initialization scripts for Drizzle schema
       - ./db/init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  db_test:
-    image: postgres:17-alpine
-    container_name: postgres-db-test
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: testdatabase
-    ports:
-      - "5433:5432"
-    networks:
-      - my_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -105,28 +42,20 @@ services:
       EMAIL_FROM: no-reply@example.com
       # Database connection
       DATABASE_URL: postgresql://postgres:password@db:5432/mydatabase
-      # API endpoints
-      API_BASE_URL: http://backend:8000
-      NEXT_PUBLIC_API_URL: http://backend:8000
-      OPENAPI_OUTPUT_FILE: ./shared-data/openapi.json
+      POSTGRES_URL: postgresql://postgres:password@db:5432/mydatabase
       # NextAuth configuration
       NEXTAUTH_SECRET: dev_nextauth_secret_do_not_use_in_production
       NEXTAUTH_URL: http://localhost:3000
-      BACKEND_URL: http://backend:8000
     volumes:
       - ./nextjs-frontend:/app
       - /app/node_modules
-    # depends_on:
-    #   backend:
-    #     condition: service_healthy
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
     name: postgres-data
-  fastapi-venv:
-    name: fastapi-virtualenv
-  nextjs-node-modules:
-    name: nextjs-modules
 
 networks:
   my_network:

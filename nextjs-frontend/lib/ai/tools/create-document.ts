@@ -1,12 +1,12 @@
-import {
-  artifactKinds,
-  documentHandlersByArtifactKind,
-} from '@/lib/artifacts/server';
+import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 import type { ChatMessage } from '@/lib/types';
 import { generateUUID } from '@/lib/utils';
 import { tool, type UIMessageStreamWriter } from 'ai';
 import type { Session } from 'next-auth';
 import { z } from 'zod';
+
+// 'graph' is left out until its handler runs on the new compute runner instead of FastAPI.
+const creatableKinds = ['text', 'code', 'image', 'sheet', 'pdf'] as const;
 
 interface CreateDocumentProps {
   session: Session;
@@ -19,7 +19,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
     inputSchema: z.object({
       title: z.string(),
-      kind: z.enum(artifactKinds),
+      kind: z.enum(creatableKinds),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();

@@ -39,7 +39,7 @@ const uploadLimiter = rateLimit({
 
 /**
  * API route handler for bioflow file uploads
- * This route proxies large file uploads to the FastAPI backend with proper streaming
+ * Stores bioinformatics files in Blob storage and records them as documents
  *
  * @param request - The incoming request object
  * @returns NextResponse with upload result or error information
@@ -122,17 +122,6 @@ export async function POST(request: NextRequest) {
       // Still allow upload but log the warning
     }
 
-    // Extract metadata from form data to help backend processing
-    const metadata = {
-      fileType: (formData.get('fileType') as string) || '',
-      isCompressed: formData.get('isCompressed') === 'true',
-      needsProcessing: formData.get('needsProcessing') === 'true',
-      fileSizeMB: Number.parseFloat(
-        (formData.get('fileSizeMB') as string) || '0',
-      ),
-      uploadedBy: userId,
-    };
-
     // Log beginning of upload process with useful debug info
     console.log(
       `[${requestId}] Processing upload: ${filename} (${fileSize / 1024 / 1024}MB) of type ${contentType}`,
@@ -163,148 +152,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Trigger backend processing with proper retry logic and timeout
-    let backendTask: {
-      error: string;
-      details: string;
-      status?: string;
-      queued?: boolean;
-      task_id?: string;
-    } | null = null;
-
-    // Use environment-aware backend URL selection
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.BACKEND_SERVICE_URL ||
-      'http://fastapi_backend:8000'; // Docker service name
-
-    const processFromBlobUrl = `${backendUrl}/bioflow/process-from-blob/`;
-
-    // Use a controller to handle timeouts for the backend request
-    const controller = new AbortController();
-    const backendTimeout = setTimeout(() => controller.abort(), 30000); // 30-second timeout
-
-    try {
-      console.log(
-        `[${requestId}] Triggering backend processing at ${processFromBlobUrl}`,
-      );
-
-      // Add retries for backend connection
-      const MAX_RETRIES = 3;
-      let attempt = 0;
-      let lastError = null;
-
-      while (attempt < MAX_RETRIES) {
-        try {
-          const backendResp = await fetch(processFromBlobUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Request-ID': requestId,
-            },
-            body: JSON.stringify({
-              url: blobResult.url,
-              filename,
-              content_type: contentType,
-              user_id: userId, // Pass user ID directly in payload
-              metadata: metadata,
-            }),
-            signal: controller.signal,
-          });
-
-          clearTimeout(backendTimeout);
-
-          if (!backendResp.ok) {
-            const errorText = await backendResp.text();
-            console.error(
-              `[${requestId}] Backend processing error (${backendResp.status}):`,
-              errorText,
-            );
-
-            // Still continue with the upload, but note the backend processing issue
-            backendTask = {
-              error: `Backend processing failed with status ${backendResp.status}`,
-              details: errorText.substring(0, 500), // Limit error text length
-            };
-          } else {
-            backendTask = await backendResp.json();
-            console.log(
-              `[${requestId}] Backend processing task created:`,
-              backendTask?.task_id,
-            );
-          }
-
-          // If we successfully made the request, exit the retry loop
-          break;
-        } catch (fetchError) {
-          attempt++;
-          lastError = fetchError;
-
-          // Only log detailed errors on final attempt
-          if (attempt >= MAX_RETRIES) {
-            console.error(
-              `[${requestId}] Failed to trigger backend processing after ${MAX_RETRIES} attempts:`,
-              fetchError,
-            );
-          } else {
-            console.warn(
-              `[${requestId}] Backend connection attempt ${attempt} failed, retrying...`,
-            );
-            // Wait with exponential backoff before retrying (1s, 2s, 4s...)
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** (attempt - 1)),
-            );
-          }
-        }
-      }
-
-      // If we exhausted all retries without success
-      if (attempt >= MAX_RETRIES) {
-        backendTask = {
-          error: 'Failed to connect to backend for processing',
-          details:
-            lastError instanceof Error ? lastError.message : String(lastError),
-          status: 'connection_error',
-        };
-
-        // Add file to processing queue for later retry if appropriate
-        try {
-          await saveDocument({
-            id: crypto.randomUUID(),
-            title: `pending_processing_${filename}`,
-            kind: 'text',
-            content: JSON.stringify({
-              blobUrl: blobResult.url,
-              filename,
-              contentType,
-              uploadTime: new Date().toISOString(),
-              status: 'pending_processing',
-            }),
-            userId,
-          });
-          console.log(`[${requestId}] File queued for later processing`);
-          backendTask.queued = true;
-        } catch (queueError) {
-          console.error(
-            `[${requestId}] Failed to queue file for later processing:`,
-            queueError,
-          );
-        }
-      }
-    } catch (err) {
-      clearTimeout(backendTimeout);
-      console.error(
-        `[${requestId}] Critical error in backend processing flow:`,
-        err,
-      );
-      backendTask = {
-        error: 'Failed to trigger backend processing',
-        details: err instanceof Error ? err.message : String(err),
-      };
-      // Still continue with the flow - don't fail the whole request
-    }
-
-    // 8. Save document in database for tracking
+    // 7. Save document in database for tracking
     const kind = inferFileKind(contentType, filename);
     const docId = crypto.randomUUID();
 
@@ -326,13 +174,12 @@ export async function POST(request: NextRequest) {
       // Continue execution - don't fail the upload if DB save fails
     }
 
-    // 9. Return comprehensive response with performance metrics
+    // 8. Return comprehensive response with performance metrics
     const duration = Date.now() - startTime;
     console.log(`[${requestId}] Upload completed in ${duration}ms`);
 
     return NextResponse.json({
       ...blobResult,
-      backendTask,
       document: {
         id: docId,
         title: filename,
@@ -340,9 +187,9 @@ export async function POST(request: NextRequest) {
         content: blobResult.url,
         userId,
       },
-      processingStatus: backendTask?.status || 'pending',
+      processingStatus: 'uploaded',
       uploadDuration: duration,
-      message: 'File uploaded successfully and processing initiated.',
+      message: 'File uploaded successfully.',
     });
   } catch (error) {
     const duration = Date.now() - startTime;

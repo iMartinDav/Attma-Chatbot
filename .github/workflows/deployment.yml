@@ -37,21 +37,3 @@ jobs:
           vercel-project-name: 'attma-chatbot'
           working-directory: ./nextjs-frontend
           vercel-args: '--prod'
-
-  deploy-backend:
-    runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.modified, 'fastapi_backend/') || contains(github.event.head_commit.added, 'fastapi_backend/') }}
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Railway CLI
-        run: npm install -g @railway/cli
-      
-      - name: Deploy to Railway
-        run: |
-          cd fastapi_backend
-          railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

@@ -1,10 +1,10 @@
-You are an expert in **Python, FastAPI, Next.js, TypeScript, React, Tailwind CSS, Bioinformatics Analysis, and AI Integration**.
+You are an expert in **Next.js, TypeScript, React, Tailwind CSS, the AI SDK, Python (scanpy) and bioinformatics analysis**.
 
 ### Key Principles
 
 - Write concise, technical responses focusing on bioinformatics and data analysis.
 - Use **functional programming patterns** with TypeScript and Python.
-- Follow **strict type safety** in both frontend and backend.
+- Follow **strict type safety** everywhere.
 - Implement **proper error handling** and validation at all levels.
 - Use descriptive variable names (e.g., `isAnalysisRunning`, `hasValidSequence`).
 
@@ -31,21 +31,7 @@ You are an expert in **Python, FastAPI, Next.js, TypeScript, React, Tailwind CSS
     - `lib/`: Shared utilities and configurations
     - `types/`: TypeScript type definitions
 
-- **Backend (FastAPI)**:
-  - **Language**: Python 3.11+
-  - **Framework**: FastAPI
-  - **Database**: PostgreSQL (Neon)
-  - **Key Features**:
-    - Async API endpoints
-    - Bioinformatics analysis
-    - Data preparation pipelines
-  - **Directory Structure**:
-    - `app/`: Core application
-    - `api/`: API routes and endpoints
-    - `bioflow/`: Bioinformatics workflows
-    - `dataprep/`: Data preparation utilities
-    - `models/`: Database models
-    - `services/`: Business logic
+- **Compute (planned)**: single-cell analysis runs as stateless Python (scanpy) operations in sandboxes, called by AI SDK tools. There is no separate API server. See the architecture plan linked in README.md.
 
 ### Code Style and Best Practices
 
@@ -86,73 +72,31 @@ You are an expert in **Python, FastAPI, Next.js, TypeScript, React, Tailwind CSS
    - Support multiple languages
    - Implement SEO for each locale
 
-**Backend (FastAPI/Python)**:
+**Compute (Python)**:
 
-1. **API Design**:
-   - Use async endpoints for better performance
-   - Implement proper request validation
-   - Return structured responses
-
-2. **Data Processing**:
-   ```python
-   # Use type hints consistently
-   async def process_sequence(
-       sequence: str,
-       params: AnalysisParams
-   ) -> AnalysisResult:
-       # ...
-   ```
-
-3. **Error Handling**:
-   - Use custom exception classes
-   - Implement proper error responses
-   - Log errors appropriately
-
-4. **Database Operations**:
-   - Use async SQLAlchemy
-   - Implement proper migrations
-   - Handle connections efficiently
-
-5. **Testing**:
-   - Write comprehensive unit tests
-   - Use pytest fixtures
-   - Implement integration tests
+1. Each operation takes an AnnData object and parameters and returns an AnnData object plus a small JSON summary. No global state.
+2. Use type hints, `ruff` for linting and `pytest` with a small fixture `.h5ad` for every operation.
 
 ### Performance Best Practices
 
-1. **Frontend**:
+**Frontend**:
    - Optimize images and assets
    - Implement proper code splitting
    - Use proper caching strategies
 
-2. **Backend**:
-   - Use async operations
-   - Implement proper database indexing
-   - Cache expensive computations
-
 ### Security Guidelines
 
-1. **Frontend**:
+**Frontend**:
    - Implement CSRF protection
    - Sanitize user inputs
    - Use proper authentication flow
 
-2. **Backend**:
-   - Use proper rate limiting
-   - Implement input validation
-   - Follow security best practices
-
 ### Testing Requirements
 
-1. **Frontend**:
+**Frontend**:
    - Unit tests for components
    - Integration tests for features
    - E2E tests for critical flows
-
-2. **Backend**:
-   - Unit tests for services
-   - Integration tests for APIs
-   - Performance tests for critical endpoints
 
 ### Docker and Deployment
 

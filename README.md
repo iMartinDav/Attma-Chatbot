@@ -1,231 +1,63 @@
-# Attma Chatbot
+# Attma
+
 <p align="center">
-    <em>Attma: Advanced Chatbot Platform for Bioinformatics Analysis with Next.js and FastAPI</em>
+    <em>An AI bioinformatician: chat with your data, literature and pathways.</em>
 </p>
 
----
+Attma is a Next.js app where an AI agent answers biology questions with real tools: literature search (PubMed, Semantic Scholar), gene and pathway databases (KEGG, Reactome, STRING, GO), and documents it writes for you. Single-cell analysis on your own data is being rebuilt on sandboxed scanpy compute; see the architecture plan.
 
-# Attma Chatbot Platform
+## Stack
 
-Attma is an advanced bioinformatics analysis platform combining the power of Python backend services with a modern TypeScript frontend. The platform facilitates complex bioinformatics data processing, analysis, and visualization through an intuitive chatbot interface.
-
-## Table of Contents
-* [About](#about)
-* [Features](#features)
-* [Architecture](#architecture)
-* [Setup](#local-setup)
-  * [Installing Required Tools](#installing-required-tools)
-  * [Setting Up Environment Variables](#setting-up-environment-variables)
-  * [Running the Database](#running-the-database)
-  * [Building the Project](#building-the-project)
-* [Running the Application](#running-the-application)
-* [Email Setup](#email-setup)
-* [Testing](#testing)
-* [Deployment](#deployment)
-* [BioFlow Module](#bioflow-module)
-
-## About
-
-Attma integrates Next.js with FastAPI to create a powerful bioinformatics analysis platform. It uses a shared database approach where the frontend's Neon PostgreSQL database is also accessed by the backend, ensuring data consistency across the entire application.
-
-## Features
-
-### User Interface
-- Modern, responsive chat interface built with Next.js
-- Real-time data processing feedback
-- Interactive visualizations for bioinformatics data
-- Dark/light mode support
-- Internationalization ready
-
-### Backend Capabilities
-- FastAPI-powered API for high-performance bioinformatics processing
-- Unified database layer for consistent data access
-- Robust authentication system
-- Email notification system
-- BioFlow module for specialized bioinformatics workflows
-
-### Data Processing
-- Single-cell RNA-seq analysis
-- Genomic sequence processing
-- Matrix data manipulation
-- Customizable bioinformatics workflows
+- **App:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS 4, shadcn/ui
+- **AI:** AI SDK 7 with OpenAI models; tools live in `nextjs-frontend/lib/ai/tools`
+- **Data:** Neon Postgres via Drizzle ORM, Vercel Blob for files
+- **Auth:** Auth.js (NextAuth v5) with Google and email/password
+- **Tooling:** bun, ESLint, Prettier, Jest
+- **Hosting:** Vercel (project `attma-chatbot`)
 
 ## Architecture
 
-Attma employs a modern architecture with separate but interconnected frontend and backend services:
+The plan for the analysis backend (TypeScript agent, sandboxed Python compute, natural-language SQL over results, Nextflow/nf-core for raw sequencing data) is in the [Attma Platform Architecture](https://claude.ai/artifact/MLG5XsxTWduLuqA7oe2jKz) document.
 
-### Frontend (Next.js)
-- Next.js 15+ with App Router
-- TypeScript for type safety
-- Tailwind CSS with Shadcn UI components
-- React Server Components for optimal performance
-- NextAuth.js for authentication management
-- Drizzle ORM for database interaction
+## Local setup
 
-### Backend (FastAPI)
-- FastAPI for high-performance API endpoints
-- Python 3.11+ for reliable execution
-- Unified database connection layer
-- BioFlow module for bioinformatics workflows
-- Asynchronous processing for compute-intensive tasks
-
-### Database
-- Neon PostgreSQL for data persistence
-- Shared between frontend and backend
-- Type-safe queries with Drizzle
-
-## Local Setup
-
-### Installing Required Tools
-
-#### 1. Python and uv
-The backend requires Python 3.11+ and uv for dependency management:
-```bash
-# Install uv
-curl -sSf https://astral.sh/uv/install.sh | bash
-```
-
-#### 2. Node.js and Bun
-The frontend requires Node.js 22+ and Bun:
-```bash
-# Install Node.js from https://nodejs.org/
-# Install Bun
-curl -fsSL https://bun.sh/install | bash
-```
-
-#### 3. Docker and Docker Compose
-For containerized development:
-```bash
-# Install Docker from https://docs.docker.com/get-docker/
-# Docker Compose is included with Docker Desktop
-```
-
-### Setting Up Environment Variables
-
-**Backend (`fastapi_backend/.env`):**
-```bash
-cd fastapi_backend && cp .env.example .env
-```
-
-**Frontend (`nextjs-frontend/.env.local`):**
-```bash
-cd nextjs-frontend && cp .env.example .env.local
-```
-
-### Running the Database
-```bash
-# Start the database container
-docker compose up -d db
-# Apply database migrations
-make docker-migrate-db
-```
-
-### Building the Project
-
-#### Without Docker:
-
-For the backend:
-```bash
-cd fastapi_backend && uv sync
-```
-
-For the frontend:
-```bash
-cd nextjs-frontend && bun install
-```
-
-#### With Docker:
-```bash
-make docker-build
-```
-
-## Running the Application
-
-### Without Docker:
-```bash
-# Start backend
-make start-backend
-# Start frontend
-make start-frontend
-```
-
-### With Docker:
-```bash
-# Start backend
-make docker-start-backend
-# Start frontend
-make docker-start-frontend
-```
-
-Access the application at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
-
-## Email Setup
+Requirements: Node.js 22+ and [Bun](https://bun.sh).
 
 ```bash
-# Start the MailHog service for local email testing
-make docker-up-mailhog
+cd nextjs-frontend
+bun install
+vercel link --project attma-chatbot   # once per machine
+vercel env pull .env.local --environment development
+bun dev
 ```
 
-Access the email client at http://localhost:8025
+The app runs at http://localhost:3000. `.env.development.local` can override pulled values for local work (for example `NEXTAUTH_URL=http://localhost:3000`); it is gitignored.
 
-## Testing
+To run against a local Postgres instead of Neon:
 
 ```bash
-# Start the test database
-make docker-up-test-db
-
-# Run backend tests
-make test-backend
-
-# Run frontend tests
-make test-frontend
+docker compose up db
 ```
+
+## Scripts
+
+Run from `nextjs-frontend/`:
+
+| Command | What it does |
+|---|---|
+| `bun dev` | Dev server |
+| `bun run build` | Apply migrations, then production build |
+| `bun run build:skip-migrate` | Production build without touching the database |
+| `bun run lint` / `lint:fix` | ESLint |
+| `bun run format` / `format:check` | Prettier |
+| `bun run test` | Jest |
+| `bun run db:generate` / `db:migrate` | Drizzle migrations |
+| `bun run email:dev` | Preview email templates |
 
 ## Deployment
 
-Attma is configured for deployment on Vercel for both frontend and backend services.
+Pushes to `main` deploy to Vercel production (www.attma.bio). Vercel installs with `bun install --frozen-lockfile` and builds with `bun run build`, which applies pending Drizzle migrations first.
 
-### Frontend Deployment
-```bash
-cd nextjs-frontend
-vercel --prod
-```
+## License
 
-### Backend Deployment
-```bash
-cd fastapi_backend
-railway up
-```
-
-The backend is deployed to Railway at: [attma-chatbot-production.up.railway.app](https://attma-chatbot-production.up.railway.app)
-
-For detailed deployment instructions, refer to the [Deployment Guide](./docs/deployment.md).
-
-## BioFlow Module
-
-Attma includes a specialized BioFlow module for bioinformatics data processing:
-
-### Features
-- Matrix file parsing and manipulation
-- Support for sparse and dense matrices
-- Compression handling (gzip, zip, tar.gz)
-- Remote file access
-- Workflow-based processing
-
-### Usage Example
-```python
-# Analyze a matrix file
-from fastapi_backend.bioflow.biodata import MatrixStructure
-matrix = MatrixStructure("path/to/matrix.mtx.gz")
-print(matrix.get_dimensions())
-
-# Run a workflow
-from fastapi_backend.bioflow import WorkflowRunner
-runner = WorkflowRunner()
-result = runner.run_workflow("normalize_data", {"input": "path/to/file"})
-```
-
-For more details, see the [BioFlow README](./fastapi_backend/bioflow/README.md).
+Apache-2.0
