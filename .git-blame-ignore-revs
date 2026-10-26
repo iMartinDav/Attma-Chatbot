@@ -1,0 +1,3 @@
+# Bulk formatting commits; use: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# style: format the frontend with Prettier
+3e6badc43b7cfd9e636df2f67d1072dd1d166a4c
