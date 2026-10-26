@@ -223,7 +223,6 @@ export function FeatureComparisonTable({
         <TableBody>
           {features.map((feature, index) => (
             <TableRow
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
               key={index}
               className="transition-colors hover:bg-muted/50"
             >

@@ -29,7 +29,6 @@ const nonLocalizedAppRoutes = ['/chat', '/settings'];
 function getLocaleFromRequest(request: NextRequest): string {
   // Negotiator expects plain object so we need to transform headers
   const negotiatorHeaders: Record<string, string> = {};
-  // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
   // Use negotiator and intl-localematcher to get best locale

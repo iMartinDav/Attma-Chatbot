@@ -61,7 +61,6 @@ export function PricingCard({
 
       <ul className="space-y-3 mb-8 grow">
         {features.map((feature, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
           <li key={i} className="flex items-start gap-3 text-sm">
             <CheckCircle className="size-5 text-[#25C6A3] shrink-0 mt-0.5" />
             <span>{feature}</span>

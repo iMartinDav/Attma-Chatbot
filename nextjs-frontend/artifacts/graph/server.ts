@@ -25,9 +25,7 @@ export type GraphContent = {
   graphType?: string;
   title?: string;
   status?: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   parameters?: Record<string, any>;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   metadata?: Record<string, any>;
 };
 
@@ -207,7 +205,6 @@ export const graphDocumentHandler = createDocumentHandler<'graph'>({
 // Helper function to parse graph title to extract visualization parameters
 function parseGraphTitle(title: string): {
   visType: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   parameters: Record<string, any>;
   dataDescription: string;
 } | null {
@@ -218,7 +215,6 @@ function parseGraphTitle(title: string): {
   const visType = visTypeMatch ? visTypeMatch[0].toLowerCase() : 'umap';
 
   // Extract any parameters mentioned in the title
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const parameters: Record<string, any> = {};
 
   // Simple parameter extraction logic
@@ -248,7 +244,6 @@ function parseGraphTitle(title: string): {
 // Helper function to parse graph description for updates
 function parseGraphDescription(description: string): {
   visType?: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   parameters?: Record<string, any>;
   dataDescription?: string;
 } | null {
@@ -259,7 +254,6 @@ function parseGraphDescription(description: string): {
   const visType = visTypeMatch ? visTypeMatch[0].toLowerCase() : undefined;
 
   // Extract parameters
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const parameters: Record<string, any> = {};
 
   // Simple parameter extraction

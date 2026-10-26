@@ -239,7 +239,6 @@ export function ContactForm({ dictionary, locale }: ContactFormProps) {
           <div className="grid gap-6 mt-4">
             {benefits.map((benefit, index) => (
               <motion.div
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

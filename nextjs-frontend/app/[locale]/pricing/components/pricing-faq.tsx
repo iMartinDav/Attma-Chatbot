@@ -40,7 +40,6 @@ export function PricingFAQ({ dictionary }: FAQProps) {
 
       <Accordion type="single" collapsible className="w-full">
         {faqItems.map((faq, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
           <AccordionItem
             key={index}
             value={`item-${index}`}

@@ -41,7 +41,6 @@ function SidebarUserNavComponent({ user }: SidebarUserNavProps) {
   const formatEmail = (email: string | null | undefined): string => {
     if (!email) return '';
     if (email.length > 20) {
-      // biome-ignore lint/style/useTemplate: <explanation>
       return email.substring(0, 20) + '...';
     }
     return email;

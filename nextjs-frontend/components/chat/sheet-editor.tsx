@@ -560,7 +560,6 @@ const PageSizeSelector = ({
 );
 
 // Sort button component
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const SortButton = ({ column }: { column: any }) => (
   <Button
     variant="ghost"

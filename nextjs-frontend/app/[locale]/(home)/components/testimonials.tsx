@@ -165,7 +165,6 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ dictionary }) => {
               {items.map((_, i) => (
                 <button
                   type="button"
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                   key={i}
                   onClick={() => setCurrentSlide(i)}
                   className={`size-2 rounded-full transition-all ${

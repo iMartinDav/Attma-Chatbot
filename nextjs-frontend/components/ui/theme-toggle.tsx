@@ -7,7 +7,6 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    // biome-ignore lint/a11y/useButtonType: <explanation>
     <button
       className="rounded-full p-2 bg-transparent hover:bg-muted transition-colors"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

@@ -93,7 +93,6 @@ export function PricingTiers({ dictionary, locale }: PricingTiersProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
       {pricingPlans.map((plan, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
         <PricingCard key={index} {...plan} />
       ))}
 

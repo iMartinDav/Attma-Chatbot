@@ -1532,7 +1532,6 @@ export const BarChartAnimatedIcon = ({ size = 16 }: { size?: number }) => {
       {[30, 60, 45, 75, 50].map((height, i) => (
         <rect
           key={`bar-${
-            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             i
           }`}
           x={i * 20 + 5}
