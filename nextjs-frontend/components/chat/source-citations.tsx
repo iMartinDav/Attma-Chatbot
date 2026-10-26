@@ -118,20 +118,20 @@ function PureSourcePanel({
 }: SourcePanelProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-  // Don't render if no sources
-  if (!sources || sources.length === 0) {
-    return null;
-  }
-
   // Deduplicate sources by URL
   const uniqueSources = useMemo(() => {
     const seen = new Set<string>();
-    return sources.filter(source => {
+    return (sources ?? []).filter(source => {
       if (seen.has(source.url)) return false;
       seen.add(source.url);
       return true;
     });
   }, [sources]);
+
+  // Don't render if no sources
+  if (!sources || sources.length === 0) {
+    return null;
+  }
 
   return (
     <div className={cn(
