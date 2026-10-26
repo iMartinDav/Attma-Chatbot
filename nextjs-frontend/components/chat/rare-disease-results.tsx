@@ -43,7 +43,7 @@ export function RareDiseaseResult({
     const variants = input?.variants?.length ?? 0;
     const message =
       toolName === 'rankDiagnoses'
-        ? `Matching ${phenotypes || 'the'} phenotypes against rare diseases in Monarch…`
+        ? `Comparing ${phenotypes || 'the'} phenotypes with 12,900 rare diseases…`
         : `Annotating ${variants || 'the'} variants with VEP, gnomAD, ClinVar and AlphaMissense…`;
     return (
       <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
@@ -124,7 +124,7 @@ function DiagnosisCard({ ranking }: { ranking: DiagnosisRanking }) {
   return (
     <Card
       title="Differential diagnosis"
-      meta={`Monarch Initiative · ${ranking.phenotypes.length} HPO terms · ${(ranking.elapsedMs / 1000).toFixed(1)} s`}
+      meta={`HPO semantic similarity · ${ranking.phenotypes.length} terms · ${ranking.elapsedMs} ms`}
     >
       <ul className="flex flex-wrap gap-1.5" aria-label="HPO terms used">
         {ranking.phenotypes.map((p) => (

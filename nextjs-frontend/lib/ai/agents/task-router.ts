@@ -287,7 +287,7 @@ export function getDomainInstructions(domain: AgentDomain): string {
       The results already appear to the user as interactive tables, so do not repeat them.
       Answer in under 250 words: the leading hypothesis and why (which findings and which
       variant evidence support it), what argues against the runners-up, and 2-4 concrete next
-      steps (confirmatory testing, segregation in parents, specialist referral). Cite Monarch,
+      steps (confirmatory testing, segregation in parents, specialist referral). Cite HPO, OMIM or Orphanet,
       ClinVar, gnomAD, AlphaMissense and PubMed inline. This is decision support for research
       use: never state a final diagnosis.
     `,

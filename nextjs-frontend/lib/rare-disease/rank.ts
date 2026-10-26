@@ -1,23 +1,19 @@
 /**
  * Phenotype-driven diagnosis ranking and variant prioritization.
  *
- * Diseases are ranked by HPO profile similarity (Monarch semsim). Each gene's
- * phenotype score is the best normalized score of a disease it causes. Variants
- * get a deleteriousness score from consequence, AlphaMissense, CADD, gnomAD
- * frequency and ClinVar, and the final rank is the geometric mean of the two,
- * in the spirit of Exomiser. Every number returned is traceable to its source.
+ * Diseases are ranked locally by HPO semantic similarity (see hpo-engine.ts).
+ * Each gene's phenotype score is the best normalized score of a disease it
+ * causes. Variants get a deleteriousness score from consequence, AlphaMissense,
+ * CADD, gnomAD frequency and ClinVar, and the final rank is the geometric mean
+ * of the two, in the spirit of Exomiser. Every number is traceable to its source.
  */
 
+import { annotateWithVep, type VepResult, type VepTranscript } from './clients';
 import {
-  annotateWithVep,
-  causalGenes,
-  getHpoTerm,
-  type HpoTerm,
-  matchDiseases,
-  searchHpoTerm,
-  type VepResult,
-  type VepTranscript,
-} from './clients';
+  type EngineTerm,
+  getHpoEngine,
+  type SimilarityMode,
+} from './hpo-engine';
 
 export interface PhenotypeInput {
   label: string;
@@ -40,75 +36,69 @@ export interface GeneCandidate {
 }
 
 export interface DiagnosisRanking {
-  phenotypes: HpoTerm[];
+  phenotypes: EngineTerm[];
   unresolved: string[];
   diseases: RankedDisease[];
   genes: GeneCandidate[];
+  hpoVersion: string;
   elapsedMs: number;
 }
 
-const DISEASES_FOR_GENES = 50;
+// Every disease contributes its genes; ranking all of them takes ~50 ms.
+const DISEASES_FOR_GENES = Number.POSITIVE_INFINITY;
 
-/** Validates each term against HPO; falls back to a label search. */
-export async function resolvePhenotypes(
-  phenotypes: PhenotypeInput[],
-): Promise<{ terms: HpoTerm[]; unresolved: string[] }> {
-  const resolved = await Promise.all(
-    phenotypes.map(async (p) => {
-      const byId = p.hpoId ? await getHpoTerm(p.hpoId.trim()) : null;
-      return byId ?? (await searchHpoTerm(p.label));
-    }),
-  );
-  const terms = new Map<string, HpoTerm>();
+function diseaseUrl(id: string): string {
+  const [prefix, accession] = id.split(':');
+  if (prefix === 'OMIM') return `https://omim.org/entry/${accession}`;
+  if (prefix === 'ORPHA') {
+    return `https://www.orpha.net/en/disease/detail/${accession}`;
+  }
+  return `https://monarchinitiative.org/${id}`;
+}
+
+/** Maps each finding to a live HPO term by ID, exact label or synonym, then text search. */
+export function resolvePhenotypes(phenotypes: PhenotypeInput[]): {
+  terms: EngineTerm[];
+  unresolved: string[];
+} {
+  const engine = getHpoEngine();
+  const terms = new Map<string, EngineTerm>();
   const unresolved: string[] = [];
-  resolved.forEach((term, i) => {
+  for (const p of phenotypes) {
+    const term = engine.resolve(p.hpoId, p.label);
     if (term) terms.set(term.id, term);
-    else unresolved.push(phenotypes[i].label);
-  });
+    else unresolved.push(p.label);
+  }
   return { terms: [...terms.values()], unresolved };
 }
 
 export async function rankDiagnoses(
   phenotypes: PhenotypeInput[],
   limit = 10,
+  mode?: SimilarityMode,
 ): Promise<DiagnosisRanking> {
-  const started = Date.now();
-  const { terms, unresolved } = await resolvePhenotypes(phenotypes);
-  if (terms.length === 0) {
-    return {
-      phenotypes: [],
-      unresolved,
-      diseases: [],
-      genes: [],
-      elapsedMs: 0,
-    };
-  }
-
-  const matches = await matchDiseases(
+  const started = performance.now();
+  const engine = getHpoEngine();
+  const { terms, unresolved } = resolvePhenotypes(phenotypes);
+  const matches = engine.rankDiseases(
     terms.map((t) => t.id),
     DISEASES_FOR_GENES,
+    mode,
   );
-  const associations = await causalGenes(matches.map((m) => m.id));
   const topScore = matches[0]?.score || 1;
-
-  const genesByDisease = new Map<string, string[]>();
-  for (const a of associations) {
-    genesByDisease.set(a.diseaseId, [
-      ...(genesByDisease.get(a.diseaseId) ?? []),
-      a.symbol,
-    ]);
-  }
 
   const genes = new Map<string, GeneCandidate>();
   for (const match of matches) {
-    const normalized = match.score / topScore;
-    for (const symbol of genesByDisease.get(match.id) ?? []) {
+    for (const symbol of match.genes) {
       const gene = genes.get(symbol) ?? {
         symbol,
         phenotypeScore: 0,
         diseases: [],
       };
-      gene.phenotypeScore = Math.max(gene.phenotypeScore, round(normalized));
+      gene.phenotypeScore = Math.max(
+        gene.phenotypeScore,
+        round(match.score / topScore),
+      );
       gene.diseases.push(match.name);
       genes.set(symbol, gene);
     }
@@ -121,14 +111,15 @@ export async function rankDiagnoses(
       rank: i + 1,
       id: m.id,
       name: m.name,
-      score: round(m.score),
-      genes: [...new Set(genesByDisease.get(m.id) ?? [])],
-      url: `https://monarchinitiative.org/${m.id}`,
+      score: m.score,
+      genes: m.genes,
+      url: diseaseUrl(m.id),
     })),
     genes: [...genes.values()].sort(
       (a, b) => b.phenotypeScore - a.phenotypeScore,
     ),
-    elapsedMs: Date.now() - started,
+    hpoVersion: engine.version,
+    elapsedMs: Math.round(performance.now() - started),
   };
 }
 

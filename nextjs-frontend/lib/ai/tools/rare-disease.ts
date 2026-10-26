@@ -21,7 +21,7 @@ const phenotypeSchema = z.object({
 export const rankDiagnosesTool = tool({
   description: `Rank rare diseases and candidate genes for a patient's phenotypes.
 Pass only findings the patient HAS (not negated ones), mapped to HPO terms.
-Returns a differential diagnosis from Monarch Initiative phenotype similarity and the causal genes of each disease.`,
+Ranks all ~12,900 OMIM, Orphanet and DECIPHER diseases by HPO semantic similarity and returns the differential diagnosis with each disease's causal genes.`,
   inputSchema: z.object({
     phenotypes: z.array(phenotypeSchema).min(1).max(40),
   }),

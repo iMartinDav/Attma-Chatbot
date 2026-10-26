@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // The rare-disease engine reads its HPO index from disk at runtime.
+  outputFileTracingIncludes: {
+    '/api/chat': ['./lib/rare-disease/data/hpo-index.json'],
+  },
   reactStrictMode: false, // Temporarily disabled to debug multiple mounting
   // Next.js telemetry is disabled via NEXT_TELEMETRY_DISABLED environment variable
   experimental: {

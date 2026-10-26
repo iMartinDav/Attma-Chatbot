@@ -1,12 +1,8 @@
 /**
- * Thin clients for the public services behind the rare-disease tools:
- * HPO (JAX ontology API), Monarch Initiative (phenotype similarity and
- * gene-disease associations) and Ensembl VEP (variant annotation, gnomAD,
- * ClinVar, AlphaMissense, CADD). Responses are cached in memory per instance.
+ * Ensembl VEP client for variant annotation (consequence, gnomAD, ClinVar,
+ * AlphaMissense, CADD). Each variant's annotation is cached in memory per instance.
  */
 
-const HPO_API = 'https://ontology.jax.org/api/hp';
-const MONARCH_API = 'https://api-v3.monarchinitiative.org/v3/api';
 const VEP_API = 'https://rest.ensembl.org/vep/human';
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -23,100 +19,64 @@ function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
   return value;
 }
 
-async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: { Accept: 'application/json', ...init?.headers },
-    signal: init?.signal ?? AbortSignal.timeout(30_000),
-  });
-  if (!response.ok) {
-    throw new Error(`${new URL(url).host} returned ${response.status}`);
+const MAX_CONCURRENT_REQUESTS = 2;
+const MAX_ATTEMPTS = 4;
+let active = 0;
+const waiting: (() => void)[] = [];
+
+async function withSlot<T>(task: () => Promise<T>): Promise<T> {
+  if (active >= MAX_CONCURRENT_REQUESTS) {
+    await new Promise<void>((resolve) => waiting.push(resolve));
   }
-  return response.json() as Promise<T>;
+  active++;
+  try {
+    return await task();
+  } finally {
+    active--;
+    waiting.shift()?.();
+  }
 }
 
-// HPO
-
-export interface HpoTerm {
-  id: string;
-  label: string;
-}
-
-export function getHpoTerm(id: string): Promise<HpoTerm | null> {
-  return cached(`hpo:${id}`, async () => {
+/**
+ * POSTs JSON with at most two requests in flight, retrying rate limits (429),
+ * server errors and timeouts with backoff that honors Retry-After.
+ */
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    let response: Response;
     try {
-      const term = await getJson<{ id: string; name: string }>(
-        `${HPO_API}/terms/${encodeURIComponent(id)}`,
+      response = await withSlot(() =>
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(60_000),
+        }),
       );
-      return { id: term.id, label: term.name };
-    } catch {
-      return null;
+    } catch (error) {
+      // Network failure or timeout: retry.
+      lastError = error;
+      if (attempt < MAX_ATTEMPTS) await sleep(1000 * 2 ** attempt);
+      continue;
     }
-  });
+    if (response.ok) return (await response.json()) as T;
+
+    lastError = new Error(`${new URL(url).host} returned ${response.status}`);
+    if (response.status !== 429 && response.status < 500) throw lastError;
+    const retryAfter = Number(response.headers.get('retry-after'));
+    if (attempt < MAX_ATTEMPTS) {
+      await sleep(retryAfter > 0 ? retryAfter * 1000 : 1000 * 2 ** attempt);
+    }
+  }
+  throw lastError;
 }
 
-export function searchHpoTerm(label: string): Promise<HpoTerm | null> {
-  return cached(`hpo-search:${label.toLowerCase()}`, async () => {
-    const result = await getJson<{ terms?: { id: string; name: string }[] }>(
-      `${HPO_API}/search?q=${encodeURIComponent(label)}&limit=1`,
-    );
-    const term = result.terms?.[0];
-    return term ? { id: term.id, label: term.name } : null;
-  });
-}
-
-// Monarch
-
-export interface DiseaseMatch {
-  id: string;
-  name: string;
-  score: number;
-}
-
-export function matchDiseases(
-  hpoIds: string[],
-  limit: number,
-): Promise<DiseaseMatch[]> {
-  const termset = [...new Set(hpoIds)].sort();
-  return cached(`semsim:${termset.join(',')}:${limit}`, async () => {
-    const results = await getJson<
-      { score: number; subject: { id: string; name: string } }[]
-    >(`${MONARCH_API}/semsim/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ termset, group: 'Human Diseases', limit }),
-    });
-    return results.map((r) => ({
-      id: r.subject.id,
-      name: r.subject.name,
-      score: r.score,
-    }));
-  });
-}
-
-export interface CausalGene {
-  diseaseId: string;
-  geneId: string;
-  symbol: string;
-}
-
-export function causalGenes(diseaseIds: string[]): Promise<CausalGene[]> {
-  const ids = [...new Set(diseaseIds)].sort();
-  return cached(`causal:${ids.join(',')}`, async () => {
-    const params = new URLSearchParams({
-      category: 'biolink:CausalGeneToDiseaseAssociation',
-      limit: '500',
-    });
-    for (const id of ids) params.append('object', id);
-    const result = await getJson<{
-      items: { subject: string; subject_label: string; object: string }[];
-    }>(`${MONARCH_API}/association?${params}`);
-    return result.items.map((a) => ({
-      diseaseId: a.object,
-      geneId: a.subject,
-      symbol: a.subject_label,
-    }));
-  });
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Ensembl VEP
@@ -174,35 +134,66 @@ const VEP_BODY_KEY: Record<VariantKind, string> = {
   hgvs: 'hgvs_notations',
 };
 
-/** Annotates variants with VEP, one request per input kind, in parallel. */
+const VEP_BATCH_SIZE = 50;
+
+interface PendingVariant {
+  input: string;
+  query: string;
+  resolve: (result: VepResult | undefined) => void;
+  reject: (error: unknown) => void;
+}
+
+/**
+ * Annotates variants with VEP. Each variant is cached on its own; only uncached
+ * ones are sent, in batches of up to 200 per input kind, in parallel.
+ */
 export async function annotateWithVep(
   inputs: string[],
 ): Promise<Map<string, VepResult>> {
-  const byKind = new Map<VariantKind, { input: string; query: string }[]>();
-  for (const input of inputs) {
+  const pending = new Map<VariantKind, PendingVariant[]>();
+  const lookups = inputs.map((input) => {
     const { kind, query } = classifyVariant(input);
-    byKind.set(kind, [...(byKind.get(kind) ?? []), { input, query }]);
+    const result = cached(
+      `vep:${kind}:${query}`,
+      () =>
+        new Promise<VepResult | undefined>((resolve, reject) => {
+          const batch = pending.get(kind) ?? [];
+          batch.push({ input, query, resolve, reject });
+          pending.set(kind, batch);
+        }),
+    );
+    return result.then(
+      (r) => [input, r] as const,
+      () => [input, undefined] as const,
+    );
+  });
+
+  for (const [kind, items] of pending) {
+    for (let i = 0; i < items.length; i += VEP_BATCH_SIZE) {
+      const batch = items.slice(i, i + VEP_BATCH_SIZE);
+      postJson<VepResult[]>(`${VEP_API}/${kind}?${VEP_PARAMS}`, {
+        [VEP_BODY_KEY[kind]]: batch.map((b) => b.query),
+      }).then(
+        (results) => {
+          for (const item of batch) {
+            item.resolve(
+              results.find(
+                (r) => r.input === item.query || r.input === item.input,
+              ),
+            );
+          }
+        },
+        // A failed request is not cached, so the next call retries it.
+        (error) => {
+          for (const item of batch) item.reject(error);
+        },
+      );
+    }
   }
 
   const annotated = new Map<string, VepResult>();
-  await Promise.all(
-    [...byKind].map(async ([kind, items]) => {
-      const queries = items.map((i) => i.query);
-      const results = await cached(`vep:${kind}:${queries.join('|')}`, () =>
-        getJson<VepResult[]>(`${VEP_API}/${kind}?${VEP_PARAMS}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [VEP_BODY_KEY[kind]]: queries }),
-          signal: AbortSignal.timeout(60_000),
-        }).catch(() => [] as VepResult[]),
-      );
-      for (const item of items) {
-        const match = results.find(
-          (r) => r.input === item.query || r.input === item.input,
-        );
-        if (match) annotated.set(item.input, match);
-      }
-    }),
-  );
+  for (const [input, result] of await Promise.all(lookups)) {
+    if (result) annotated.set(input, result);
+  }
   return annotated;
 }
