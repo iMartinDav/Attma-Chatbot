@@ -1,6 +1,6 @@
 import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
-import { experimental_generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 export const imageDocumentHandler = createDocumentHandler<'image'>({
   kind: 'image',
@@ -9,7 +9,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     try {
       // Use DALL-E 3 for high quality scientific image generation
-      const { image } = await experimental_generateImage({
+      const { image } = await generateImage({
         model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
         prompt: title,
         n: 1,
@@ -34,7 +34,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     let draftContent = '';
 
     try {
-      const { image } = await experimental_generateImage({
+      const { image } = await generateImage({
         model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
         prompt: description,
         n: 1,

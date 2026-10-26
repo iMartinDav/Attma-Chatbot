@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Github, Linkedin, Send } from 'lucide-react';
-import { XIcon } from '@/components/icons';
+import { Send } from 'lucide-react';
+import { GitIcon, LinkedInIcon, XIcon } from '@/components/icons';
 import type { Locale } from '@/lib/internationalization/config';
 
 interface FooterProps {
@@ -104,7 +104,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 aria-label="GitHub"
                 className="text-foreground/60 hover:text-primary transition-colors duration-300 hover:scale-110"
               >
-                <Github className="size-5" />
+                <GitIcon />
               </a>
               <a
                 href="https://x.com"
@@ -118,7 +118,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 aria-label="LinkedIn"
                 className="text-foreground/60 hover:text-primary transition-colors duration-300 hover:scale-110"
               >
-                <Linkedin className="size-5" />
+                <LinkedInIcon />
               </a>
             </div>
           </div>

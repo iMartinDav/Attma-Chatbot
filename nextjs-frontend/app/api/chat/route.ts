@@ -55,8 +55,9 @@ import type { ChatMessage } from '@/lib/types';
 import {
     createUIMessageStream,
     createUIMessageStreamResponse,
-    stepCountIs,
+    isStepCount,
     streamText,
+    toUIMessageStream,
     ToolSet
 } from 'ai';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
@@ -186,7 +187,7 @@ export async function POST(request: Request) {
     if (!isNewChat) {
       try {
         const dbMessages = await getMessagesByChatId({ id: chatId });
-        existingMessages = convertMessagesToAIFormat(dbMessages);
+        existingMessages = convertMessagesToAIFormat(dbMessages).filter(m => m.role !== 'system');
       } catch {
         // Continue with empty history if messages can't be loaded
       }
@@ -289,11 +290,11 @@ export async function POST(request: Request) {
         const streamingResult = streamText({
           model: myProvider.languageModel(finalModelKey),
           messages: allMessages,
-          system,
+          instructions: system,
           tools: Object.keys(finalTools).length > 0 ? (finalTools as ToolSet) : undefined,
           providerOptions,
-          stopWhen: stepCountIs(maxSteps),
-          onFinish: async (result) => {
+          stopWhen: isStepCount(maxSteps),
+          onEnd: async (result) => {
             if (session?.user?.id) {
               try {
                 // Create chat for new conversations
@@ -363,17 +364,12 @@ export async function POST(request: Request) {
           },
         });
 
-        const uiStream = streamingResult.toUIMessageStream({ sendReasoning: isReasoningModel });
-        const reader = uiStream.getReader();
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            writer.write(value);
-          }
-        } finally {
-          reader.releaseLock();
-        }
+        writer.merge(
+          toUIMessageStream<ToolSet, ChatMessage>({
+            stream: streamingResult.stream,
+            sendReasoning: isReasoningModel,
+          })
+        );
       },
     });
 

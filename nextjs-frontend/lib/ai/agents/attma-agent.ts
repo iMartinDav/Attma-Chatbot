@@ -4,7 +4,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import {
-    stepCountIs,
+    isStepCount,
     streamText,
     tool,
     type ToolSet,
@@ -164,10 +164,10 @@ export async function executeAgent(options: AgentExecutionOptions) {
   // Execute with streaming and multi-step support
   const result = streamText({
     model: openai.chat(modelId),
-    system: systemPrompt,
+    instructions: systemPrompt,
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: stepCountIs(maxSteps),
+    stopWhen: isStepCount(maxSteps),
   });
 
   return result;

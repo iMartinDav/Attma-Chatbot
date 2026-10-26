@@ -1,8 +1,7 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { sql } from 'drizzle-orm';
-import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm/expressions';
+import { and, asc, desc, eq, gt, gte, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 

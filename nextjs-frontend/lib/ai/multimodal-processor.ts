@@ -108,8 +108,9 @@ Respond in JSON format:
 }`,
             },
             {
-              type: 'image',
-              image: base64Data,
+              type: 'file',
+              data: base64Data,
+              mediaType: 'image'
             },
           ],
         },
@@ -305,8 +306,9 @@ export async function prepareMessageWithFiles(
     if (fileType === 'image') {
       // Images go directly to the vision model
       parts.push({
-        type: 'image',
-        image: file.base64,
+        type: 'file',
+        data: file.base64,
+        mediaType: 'image'
       });
     } else if (fileType === 'pdf') {
       // PDFs can be sent as files to GPT-4o

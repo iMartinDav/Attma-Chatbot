@@ -16,8 +16,5 @@ export async function uploadToBlob({
     access: 'public',
     contentType,
   });
-  return {
-    contentType,
-    ...blobData,
-  };
+  return blobData;
 }

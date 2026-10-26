@@ -9,6 +9,7 @@ const nextConfig = {
     largePageDataBytes: 300 * 1024 * 1024, // Equivalent to 300MB
   },
   images: {
+    qualities: [75, 100],
     remotePatterns: [
       {
         protocol: 'https',

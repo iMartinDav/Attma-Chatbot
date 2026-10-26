@@ -626,7 +626,7 @@ async function generatePDFContent(
 
     const { fullStream } = streamText({
       model: myProvider.languageModel(chatModels[0].id), // Use primary chat model
-      system: templateWithTableSupport,
+      instructions: templateWithTableSupport,
       prompt: `Write a professional ${docType} document about: ${title}. Include tables for any relevant data.`,
     });
 

@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }
 
     // Map template name to the actual React component
-    let emailComponent: JSX.Element;
+    let emailComponent: React.JSX.Element;
     switch (template) {
       case 'magic-link':
         emailComponent = NotionMagicLinkEmail(templateData);

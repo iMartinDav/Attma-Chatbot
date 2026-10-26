@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. Upload to Blob storage with proper error handling
-    let blobResult: { url: string; [key: string]: unknown };
+    let blobResult: Awaited<ReturnType<typeof uploadToBlob>>;
     try {
       blobResult = await uploadToBlob({
         file,

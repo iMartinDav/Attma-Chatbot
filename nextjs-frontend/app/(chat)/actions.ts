@@ -42,7 +42,7 @@ export async function generateTitleFromUserMessage({
 
   const { text: title } = await generateText({
     model: myProvider.languageModel(chatModels[0].id), // Use the first/primary chat model for title generation
-    system: `
+    instructions: `
     - you will generate a short, descriptive title based on the user's first message
     - if it is a search or research query, focus on the core topic (e.g., "CRISPR gene editing" instead of "Search for CRISPR")
     - ensure it is not more than 60 characters long
