@@ -38,9 +38,10 @@ const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   'default': BrainIcon,
 };
 
-const getToolIcon = (tool: string) => {
-  return TOOL_ICONS[tool] || TOOL_ICONS.default;
-};
+function ToolIcon({ tool, className }: { tool?: string; className?: string }) {
+  const Icon = (tool && TOOL_ICONS[tool]) || TOOL_ICONS.default;
+  return <Icon className={className} />;
+}
 
 export function AgentStatus({
   isActive,
@@ -52,8 +53,6 @@ export function AgentStatus({
   className,
 }: AgentStatusProps) {
   if (!isActive) return null;
-
-  const ToolIcon = currentTool ? getToolIcon(currentTool) : BrainIcon;
 
   return (
     <AnimatePresence>
@@ -80,7 +79,7 @@ export function AgentStatus({
           >
             <div className="h-4 w-4 rounded-full border border-purple-500/30 border-t-purple-500" />
           </motion.div>
-          <ToolIcon className="h-3 w-3 text-purple-400" />
+          <ToolIcon tool={currentTool} className="h-3 w-3 text-purple-400" />
         </div>
 
         {/* Status Text */}
@@ -160,7 +159,6 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
       )}
     >
       {actions.map((action, index) => {
-        const Icon = getToolIcon(action.tool);
         return (
           <motion.div
             key={action.id}
@@ -172,9 +170,9 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
             {action.status === 'running' ? (
               <Loader2Icon className="h-3 w-3 animate-spin text-blue-400" />
             ) : action.status === 'complete' ? (
-              <Icon className="h-3 w-3 text-green-400" />
+              <ToolIcon tool={action.tool} className="h-3 w-3 text-green-400" />
             ) : (
-              <Icon className="h-3 w-3 text-red-400" />
+              <ToolIcon tool={action.tool} className="h-3 w-3 text-red-400" />
             )}
             <span className={cn(
               action.status === 'running' && 'text-blue-300',

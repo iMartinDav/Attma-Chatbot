@@ -292,7 +292,7 @@ export const ResetPasswordEmail = ({
                       margin: '5px 0',
                     }}
                   >
-                    This link will expire in 1 hour. If you didn't request a
+                    This link will expire in 1 hour. If you didn&apos;t request a
                     password reset, you can safely ignore this email.
                   </div>
                 </td>

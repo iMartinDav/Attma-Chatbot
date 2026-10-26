@@ -290,7 +290,7 @@ export const WelcomeEmail = ({
             </tr>
             <tr>
               <td style={styles.text} className="mobile-text">
-                Thank you for joining Attma! We're excited to have you on board.
+                Thank you for joining Attma! We&apos;re excited to have you on board.
                 {signupMethod === 'google'
                   ? ' You signed up using your Google account.'
                   : ' Your account has been successfully created.'}
@@ -325,7 +325,7 @@ export const WelcomeEmail = ({
                   padding: '0 0 12px',
                 }}
               >
-                Here's what you can do with Attma:
+                Here&apos;s what you can do with Attma:
               </td>
             </tr>
             <tr>

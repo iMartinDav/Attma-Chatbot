@@ -22,13 +22,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [recentChats, setRecentChats] = useState<ChatHistoryItem[]>([]);
 
-  // Fetch recent chats on mount
-  useEffect(() => {
-    if (open) {
-      fetchRecentChats();
-    }
-  }, [open]);
-
   const fetchRecentChats = async () => {
     try {
       const response = await fetch('/api/history');
@@ -47,6 +40,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
       console.error('Failed to fetch recent chats:', error);
     }
   };
+
+  // Fetch recent chats on mount
+  useEffect(() => {
+    if (open) {
+      fetchRecentChats();
+    }
+  }, [open]);
 
   // Search chats
   const searchChats = useCallback(async (searchQuery: string) => {
