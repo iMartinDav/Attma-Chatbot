@@ -32,6 +32,7 @@ import {
   getModelConfig,
   modelSupports,
   myProvider,
+  supportsOpenAIBuiltInTools,
 } from '@/lib/ai/providers';
 import {
   bioinformaticsTools,
@@ -41,6 +42,7 @@ import {
 } from '@/lib/ai/tools';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { rareDiseaseTools } from '@/lib/ai/tools/rare-disease';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import {
@@ -105,6 +107,9 @@ function buildToolsForModel(
   Object.assign(tools, researchTools);
   Object.assign(tools, pathwayTools);
   Object.assign(tools, bioinformaticsTools);
+  Object.assign(tools, rareDiseaseTools);
+
+  if (!supportsOpenAIBuiltInTools) return tools;
 
   if (modelSupports(modelId, 'webSearch')) {
     const openaiTools = buildOpenAITools({
@@ -273,6 +278,7 @@ export async function POST(request: Request) {
     if (selectedAgentId && selectedAgentId !== 'auto') {
       // Map UI IDs to AgentDomain
       const idMap: Record<string, any> = {
+        'rare-disease': 'rare_disease',
         'single-cell': 'single_cell',
         'variant-analysis': 'variant',
         'pathway-analysis': 'pathway',

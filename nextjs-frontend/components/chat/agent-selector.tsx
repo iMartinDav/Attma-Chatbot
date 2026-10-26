@@ -25,6 +25,11 @@ const AGENTS: Agent[] = [
     description: 'Chooses the best agent',
   },
   {
+    id: 'rare-disease',
+    name: 'Rare disease',
+    description: 'Phenotype-driven diagnosis',
+  },
+  {
     id: 'general',
     name: 'General',
     description: 'All-purpose assistant',

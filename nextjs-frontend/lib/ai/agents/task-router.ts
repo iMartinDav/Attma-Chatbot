@@ -80,6 +80,11 @@ const TASK_PATTERNS: Record<TaskCategory, RegExp[]> = {
 
 /** Domain-specific keywords for specialist routing */
 const DOMAIN_PATTERNS: Record<AgentDomain, RegExp[]> = {
+  rare_disease: [
+    /rare\s+disease|undiagnosed|syndrom/i,
+    /phenotype|hpo|dysmorph|developmental\s+delay/i,
+    /differential\s+diagnos|which\s+(gene|disease)/i,
+  ],
   single_cell: [
     /single[\s-]?cell/i,
     /scrna[\s-]?seq/i,
@@ -187,6 +192,7 @@ export function detectTaskCategory(query: string): TaskCategory {
 /** Detects the specialist domain from a user prompt */
 export function detectAgentDomain(query: string): AgentDomain {
   const priorityOrder: AgentDomain[] = [
+    'rare_disease',
     'single_cell',
     'variant',
     'pathway',
@@ -269,6 +275,22 @@ export function getSuggestedTools(category: TaskCategory): string[] {
 /** Get domain specialist instructions */
 export function getDomainInstructions(domain: AgentDomain): string {
   const instructions: Record<AgentDomain, string> = {
+    rare_disease: `
+      You are a rare disease diagnostic specialist supporting a clinical geneticist.
+      Workflow:
+      1. Map the patient's findings to HPO terms. Use only findings the patient has;
+         list negated or absent findings separately and do not send them to tools.
+      2. Call rankDiagnoses with those phenotypes.
+      3. If the user gave variants, call prioritizeVariants with the variants and the same phenotypes.
+      4. For the leading candidate gene, search PubMed for supporting case reports.
+      Call rankDiagnoses and prioritizeVariants in the same step when both apply.
+      The results already appear to the user as interactive tables, so do not repeat them.
+      Answer in under 250 words: the leading hypothesis and why (which findings and which
+      variant evidence support it), what argues against the runners-up, and 2-4 concrete next
+      steps (confirmatory testing, segregation in parents, specialist referral). Cite Monarch,
+      ClinVar, gnomAD, AlphaMissense and PubMed inline. This is decision support for research
+      use: never state a final diagnosis.
+    `,
     single_cell: `
       You are a single-cell RNA-seq specialist. Focus on:
       - Scanpy/Seurat workflows

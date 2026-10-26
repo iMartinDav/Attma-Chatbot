@@ -19,6 +19,7 @@ import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
 import { SearchingMessage, type SearchMessage } from './message-search';
 import { PreviewAttachment } from './preview-attachment';
+import { RareDiseaseResult } from './rare-disease-results';
 import { Weather } from './weather';
 
 // New components
@@ -510,6 +511,22 @@ const PurePreviewMessage = ({
                           </div>
                         );
                       }
+                    }
+
+                    if (
+                      toolName === 'rankDiagnoses' ||
+                      toolName === 'prioritizeVariants'
+                    ) {
+                      return (
+                        <RareDiseaseResult
+                          key={toolCallId}
+                          toolName={toolName}
+                          state={state}
+                          input={part.input}
+                          output={part.output}
+                          errorText={part.errorText}
+                        />
+                      );
                     }
 
                     // NEW: Handle additional tools

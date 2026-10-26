@@ -17,7 +17,12 @@ export type TaskCategory =
 
 /** Specialist agent domains */
 export type AgentDomain =
-  'general' | 'single_cell' | 'variant' | 'pathway' | 'structural';
+  | 'general'
+  | 'rare_disease'
+  | 'single_cell'
+  | 'variant'
+  | 'pathway'
+  | 'structural';
 
 /** Model tier based on capability and cost */
 export type ModelTier = 'fast' | 'standard' | 'advanced' | 'reasoning';
