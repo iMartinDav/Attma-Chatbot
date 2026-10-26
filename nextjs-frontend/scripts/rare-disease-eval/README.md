@@ -24,14 +24,14 @@ The **held-out** evaluation rebuilds the index without every annotation whose on
 
 ## Results (2026-10-26)
 
-| | Full release | Held-out |
-|---|---|---|
-| Causal gene, top-1 / top-5 / top-10 | 72.5% / 88% / 90.5% | 20% / 31% / 38% |
-| Causal gene, MRR | 0.809 | 0.264 |
-| Causal variant of 20, with phenotypes: top-1 / top-5 | 82% / 87.5% | **50.5% / 63%** |
-| Causal variant of 20, variant evidence only: top-1 / top-5 | 0% / 32% | 0% / 32% |
-| Variant MRR, with / without phenotypes | 0.853 / 0.143 | **0.580 / 0.143** |
-| Phenotype ranking time, median / p95 | 53 / 175 ms | 53 / 175 ms |
+|                                                            | Full release        | Held-out          |
+| ---------------------------------------------------------- | ------------------- | ----------------- |
+| Causal gene, top-1 / top-5 / top-10                        | 72.5% / 88% / 90.5% | 20% / 31% / 38%   |
+| Causal gene, MRR                                           | 0.809               | 0.264             |
+| Causal variant of 20, with phenotypes: top-1 / top-5       | 82% / 87.5%         | **50.5% / 63%**   |
+| Causal variant of 20, variant evidence only: top-1 / top-5 | 0% / 32%            | 0% / 32%          |
+| Variant MRR, with / without phenotypes                     | 0.853 / 0.143       | **0.580 / 0.143** |
+| Phenotype ranking time, median / p95                       | 53 / 175 ms         | 53 / 175 ms       |
 
 The patient→disease similarity was selected on the tuning set (held-out MRR 0.278 against 0.271 for the symmetric best-match average). In the held-out run, 44 causal genes have no remaining annotated disease and cannot be ranked from phenotypes; for those, literature search is the only source.
 
