@@ -105,8 +105,8 @@ Developed by Attma TechBio, Inc., this intelligent platform brings specialized k
 
 ## 📋 Prerequisites
 
-- **Node.js** (v18 or newer)
-- **pnpm** package manager (recommended)
+- **Node.js** (v22 or newer)
+- **Bun** package manager
 - **API keys** for AI service integrations
 
 ---
@@ -121,17 +121,17 @@ git clone https://github.com/yourusername/Genie-chatbot.git
 cd Attma -chatbot
 
 # Install dependencies
-pnpm install
+bun install
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and configuration
 
 # Run development server
-pnpm dev
+bun dev
 
 # Run email preview server (available at http://localhost:3001/preview)
-pnpm email:dev
+bun email:dev
 ```
 
 After running the development server, open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -186,10 +186,10 @@ This application can be deployed to various platforms such as Vercel (preferred)
 
 ```bash
 # Build for production
-pnpm build
+bun run build
 
 # Start production server
-pnpm start
+bun start
 ```
 
 ---

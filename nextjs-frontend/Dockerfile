@@ -1,16 +1,16 @@
-FROM node:20-bookworm
+FROM node:24-bookworm
 
 # Set the working directory
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install bun globally
+RUN npm install -g bun
 
 # Copy dependency files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json bun.lock* ./
 
 # Install dependencies
-RUN pnpm install
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .

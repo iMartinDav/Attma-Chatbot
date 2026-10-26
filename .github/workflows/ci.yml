@@ -37,29 +37,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 9
+          bun-version: 1.3.13
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: 'pnpm'
-          cache-dependency-path: 'nextjs-frontend/pnpm-lock.yaml'
+          node-version: "24"
       
       - name: Install dependencies
         working-directory: ./nextjs-frontend
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
       
       - name: Run linting
         working-directory: ./nextjs-frontend
-        run: pnpm run lint
+        run: bun run lint
       
       - name: Run tests with coverage
         working-directory: ./nextjs-frontend
-        run: pnpm run coverage || echo "No coverage data generated, but continuing anyway"
+        run: bun run coverage || echo "No coverage data generated, but continuing anyway"
       
       - name: Check if coverage files exist
         id: check_coverage
@@ -80,7 +78,7 @@ jobs:
       
       - name: Build frontend
         working-directory: ./nextjs-frontend
-        run: pnpm run build
+        run: bun run build
   
   backend_tests:
     needs: determine_changes

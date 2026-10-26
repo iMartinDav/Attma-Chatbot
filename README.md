@@ -85,12 +85,12 @@ The backend requires Python 3.11+ and uv for dependency management:
 curl -sSf https://astral.sh/uv/install.sh | bash
 ```
 
-#### 2. Node.js and pnpm
-The frontend requires Node.js and pnpm:
+#### 2. Node.js and Bun
+The frontend requires Node.js 22+ and Bun:
 ```bash
 # Install Node.js from https://nodejs.org/
-# Install pnpm
-npm install -g pnpm
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
 ```
 
 #### 3. Docker and Docker Compose
@@ -131,7 +131,7 @@ cd fastapi_backend && uv sync
 
 For the frontend:
 ```bash
-cd nextjs-frontend && pnpm install
+cd nextjs-frontend && bun install
 ```
 
 #### With Docker:
