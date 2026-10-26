@@ -113,13 +113,15 @@ function PureMultimodalInput({
     }
   }, []);
 
-  // Initialize with saved input
+  // Restore a saved draft once, on mount. Re-running this on every
+  // localStorage write made fast typing loop between input and storage.
+  const draftRestored = useRef(false);
   useEffect(() => {
-    if (textareaRef.current) {
-      const finalValue = textareaRef.current.value || localStorageInput || '';
-      setInput(finalValue);
-      adjustHeight();
-    }
+    if (draftRestored.current || !textareaRef.current) return;
+    draftRestored.current = true;
+    const finalValue = textareaRef.current.value || localStorageInput || '';
+    setInput(finalValue);
+    adjustHeight();
   }, [adjustHeight, localStorageInput, setInput]);
 
   useEffect(() => {
