@@ -128,7 +128,7 @@ const ReasoningThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex items-center gap-2 text-primary/70 animate-pulse text-xs">
+          <div className="flex items-center gap-2 text-primary-ink/70 animate-pulse text-xs">
             <SparklesIcon size={12} />
             <span>Thinking...</span>
           </div>

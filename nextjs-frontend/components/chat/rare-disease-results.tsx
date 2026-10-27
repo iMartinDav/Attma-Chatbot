@@ -59,7 +59,7 @@ export function RareDiseaseResult({
     const message = messages[toolName];
     return (
       <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-        <div className="animate-spin text-primary">
+        <div className="animate-spin text-primary-ink">
           <LoaderIcon size={14} />
         </div>
         <TextShimmer duration={3}>{message}</TextShimmer>

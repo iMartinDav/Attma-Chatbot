@@ -47,7 +47,7 @@ export function ModelSelector({
         {triggerType === 'header' ? (
           <Button
             variant="ghost"
-            className="md:px-2 md:h-[34px] opacity-50 hover:opacity-100 transition-all duration-200 hover:bg-accent/10"
+            className="md:px-2 md:h-[34px] opacity-50 hover:opacity-100 transition-all duration-200 hover:bg-accent"
           >
             {selectedChatModel?.name}
             <ChevronDownIcon />
@@ -85,7 +85,7 @@ export function ModelSelector({
               }}
               className={cn(
                 'gap-4 group/item flex flex-row justify-between items-start py-3 cursor-pointer',
-                'focus:bg-accent/10 hover:bg-accent/10 transition-all duration-200',
+                'focus:bg-accent hover:bg-accent transition-all duration-200',
               )}
               data-active={isActive}
             >
@@ -106,25 +106,25 @@ export function ModelSelector({
                 {/* Capabilities badges */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {capabilities.webSearch && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                       <Globe size={10} />
                       <span>Search</span>
                     </div>
                   )}
                   {capabilities.imageGeneration && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                       <ImageIcon size={10} />
                       <span>Image</span>
                     </div>
                   )}
                   {capabilities.codeInterpreter && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                       <Code size={10} />
                       <span>Code</span>
                     </div>
                   )}
                   {capabilities.reasoning && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                       <Brain size={10} />
                       <span>Reason</span>
                     </div>
@@ -133,7 +133,7 @@ export function ModelSelector({
               </div>
 
               {isActive && (
-                <div className="text-primary mt-1">
+                <div className="text-primary-ink mt-1">
                   <CheckCircleFillIcon />
                 </div>
               )}

@@ -91,7 +91,7 @@ export function Greeting({ name }: { name: string }) {
     hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   return (
     <div className="relative mb-8 flex flex-col items-center text-center">
-      <Helix className="absolute -top-6 w-[min(640px,92vw)] text-primary opacity-60 [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]" />
+      <Helix className="absolute -top-6 w-[min(640px,92vw)] text-primary-ink opacity-60 [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]" />
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -178,7 +178,7 @@ export function WorkflowCards({
             className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-card/40 p-3.5 text-left transition-colors hover:border-primary/40 hover:bg-card"
           >
             <span className="flex items-center gap-2 text-sm font-medium">
-              <Icon className="size-4 text-primary" />
+              <Icon className="size-4 text-primary-ink" />
               {workflow.title}
             </span>
             <span className="text-[13px] leading-snug text-muted-foreground">
@@ -191,7 +191,7 @@ export function WorkflowCards({
                   className={cn(
                     'rounded-full border px-1.5 py-px text-[10px]',
                     run.startsWith('Muse')
-                      ? 'border-primary/30 bg-primary/10 text-primary'
+                      ? 'border-primary/30 bg-primary/10 text-primary-ink'
                       : 'text-muted-foreground',
                   )}
                 >

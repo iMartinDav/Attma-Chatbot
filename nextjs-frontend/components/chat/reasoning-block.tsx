@@ -54,7 +54,7 @@ function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
           isStreaming && 'animate-pulse',
         )}
       >
-        <Brain className="size-4 text-primary" />
+        <Brain className="size-4 text-primary-ink" />
         {isStreaming && (
           <motion.div
             className="absolute inset-0 rounded-full bg-primary/20"
@@ -66,13 +66,13 @@ function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
       <span
         className={cn(
           'text-sm font-medium',
-          isStreaming ? 'text-primary' : 'text-muted-foreground',
+          isStreaming ? 'text-primary-ink' : 'text-muted-foreground',
         )}
       >
         {isStreaming ? 'Thinking...' : 'Reasoning'}
       </span>
       {isStreaming && (
-        <Sparkles className="size-3 text-primary animate-pulse" />
+        <Sparkles className="size-3 text-primary-ink animate-pulse" />
       )}
     </div>
   );

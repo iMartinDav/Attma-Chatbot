@@ -93,7 +93,7 @@ export function LanguageSwitcher({
   const itemBaseClasses = cn(
     'rounded-lg py-2.5 cursor-pointer transition-colors duration-150',
     'hover:bg-primary/10 focus:bg-primary/10',
-    'data-[state=checked]:bg-primary/15 data-[state=checked]:text-primary',
+    'data-[state=checked]:bg-primary/15 data-[state=checked]:text-primary-ink',
     'flex items-center',
   );
 

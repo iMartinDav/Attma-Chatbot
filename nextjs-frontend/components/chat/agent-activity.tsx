@@ -173,6 +173,7 @@ function runnerOf(part: AnyPart): { label: string; muse: boolean } {
     proteinStructure: 'UniProt · AlphaFold',
     predictVariantEffect: 'AlphaGenome',
     enrichGenes: 'g:Profiler',
+    enrichGO: 'PANTHER',
     searchPubMed: 'PubMed',
     searchReactome: 'Reactome',
     searchKEGG: 'KEGG',
@@ -264,7 +265,7 @@ export function AgentSteps({
                 className={cn(
                   'shrink-0 rounded-full border px-1.5 py-px text-[10px] font-medium',
                   runner.muse
-                    ? 'border-primary/30 bg-primary/10 text-primary'
+                    ? 'border-primary/30 bg-primary/10 text-primary-ink'
                     : 'text-muted-foreground',
                 )}
               >

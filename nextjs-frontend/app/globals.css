@@ -4,11 +4,11 @@
 
 @theme {
   --font-*: initial;
-  --font-sans: geist;
-  --font-mono: geist-mono;
-
-  --animate-fade-in: fadeIn 0.5s ease-in-out;
-  --animate-slide-up: slideUp 0.5s ease-out 0.2s both;
+  --font-sans:
+    'geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+    sans-serif;
+  --font-mono:
+    'geist-mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -16,28 +16,23 @@
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-
+  /* Mint as text: the brand mint on dark, a deeper mint on light, where
+     the fill shade is too pale to read (1.8:1 on white). */
+  --color-primary-ink: hsl(var(--primary-ink));
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -57,78 +52,156 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --color-attma-primary: #25c6a3;
-  --color-attma-accent: #4ef9db;
   --color-attma-logo: #80f1e5;
-  --color-attma-muted: rgba(37, 198, 163, 0.1);
-  --color-attma-border: rgba(37, 198, 163, 0.2);
-
-  --backdrop-blur-sidebar: 16px;
-  --backdrop-blur-sidebar-desktop: 20px;
-
-  --backdrop-saturate-sidebar: 180%;
-  --backdrop-saturate-sidebar-desktop: 180%;
-
-  --shadow-dark-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --shadow-dark-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
-  --shadow-dark-lg:
-    0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
-  --shadow-soft-sm: 0 2px 4px rgba(37, 198, 163, 0.06);
-  --shadow-soft-md: 0 4px 6px rgba(37, 198, 163, 0.1);
-  --shadow-soft-lg: 0 10px 15px rgba(37, 198, 163, 0.1);
-  --shadow-attma-subtle:
-    0 0 0 1px rgba(37, 198, 163, 0.12), 0 2px 8px rgba(37, 198, 163, 0.08);
-  --shadow-glass:
-    0 0 0 1px rgba(37, 198, 163, 0.05), 0 4px 6px rgba(37, 198, 163, 0.1);
-
-  --background-color-dark-card-hover: hsl(240 17% 12%);
-  --background-color-dark-highlight: hsl(164 84% 59% / 0.1);
-
-  --background-color-scientific-subtle: hsl(164 84% 98%);
-  --background-color-scientific-hover: hsl(164 84% 97%);
-  --background-color-scientific-active: hsl(164 84% 96%);
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-  @keyframes slideUp {
-    0% {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
 }
 
 /*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Surfaces, darkest to lightest in dark mode: sidebar, page, card, popover.
+  The sidebar sits a step below the page and has its own border, so the two
+  read as separate regions. Neutrals keep the brand hues (navy 240 on dark,
+  a mint-leaning gray on light). Text contrast (WCAG 2.2): foreground over
+  16:1, muted text over 6:1 on every surface, mint text over 4.5:1.
 */
 @layer base {
+  :root {
+    --radius: 0.5rem;
+
+    --background: 180 20% 98.5%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 164 84% 47%;
+    --primary-foreground: 240 17% 9%;
+    --primary-ink: 164 84% 27%;
+    --secondary: 180 14% 94.5%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 180 14% 94.5%;
+    --muted-foreground: 222 12% 38%;
+    --accent: 170 22% 92%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 180 12% 87%;
+    --input: 180 10% 78%;
+    --ring: 164 84% 38%;
+
+    --chart-1: 164 84% 40%;
+    --chart-2: 187 75% 45%;
+    --chart-3: 201 96% 32%;
+    --chart-4: 150 84% 34%;
+    --chart-5: 176 56% 38%;
+
+    --sidebar-background: 180 14% 95.5%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 164 84% 47%;
+    --sidebar-primary-foreground: 240 17% 9%;
+    --sidebar-accent: 175 16% 89.5%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 180 12% 86%;
+    --sidebar-ring: 164 84% 38%;
+
+    /* Set by components/ui/sidebar and hooks/use-keyboard-visibility. */
+    --app-height: 100dvh;
+    --keyboard-offset: 0px;
+  }
+
+  .dark {
+    --background: 240 17% 9%;
+    --foreground: 240 20% 96%;
+    --card: 240 15% 11.5%;
+    --card-foreground: 240 20% 96%;
+    --popover: 240 15% 12.5%;
+    --popover-foreground: 240 20% 96%;
+    --primary: 164 84% 59%;
+    --primary-foreground: 240 17% 9%;
+    --primary-ink: 164 84% 59%;
+    --secondary: 240 13% 15%;
+    --secondary-foreground: 240 20% 96%;
+    --muted: 240 13% 15%;
+    --muted-foreground: 240 7% 70%;
+    /* Hover and selected surfaces; mint is kept for actions and state. */
+    --accent: 240 13% 17%;
+    --accent-foreground: 240 20% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 10% 18%;
+    --input: 240 10% 24%;
+    --ring: 164 84% 59%;
+
+    --chart-1: 164 84% 59%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 269 75% 64%;
+    --chart-4: 316 72% 52%;
+    --chart-5: 150 84% 50%;
+
+    --sidebar-background: 240 20% 6%;
+    --sidebar-foreground: 240 15% 90%;
+    --sidebar-primary: 164 84% 59%;
+    --sidebar-primary-foreground: 240 17% 9%;
+    --sidebar-accent: 240 14% 12.5%;
+    --sidebar-accent-foreground: 240 20% 96%;
+    --sidebar-border: 240 10% 15%;
+    --sidebar-ring: 164 84% 59%;
+  }
+
+  @font-face {
+    font-family: 'geist';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url(/fonts/geist.woff2) format('woff2');
+  }
+
+  @font-face {
+    font-family: 'geist-mono';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url(/fonts/geist-mono.woff2) format('woff2');
+  }
+
+  /* Tailwind 4 defaults borders to currentcolor; the app expects the token. */
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizelegibility;
+    text-size-adjust: none;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 30%);
+  }
+
+  a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Sidebar links take the sidebar's text color, not the link color. */
+  [data-sidebar] a {
+    color: inherit;
+    text-decoration: none;
   }
 }
 
 @utility text-ultra-bold {
-  /* Ultra-bold text effect for Attma logo */
+  /* The Attma wordmark on the marketing header. */
   text-shadow:
     0 0 1px currentColor,
     0 0 1px currentColor,
@@ -138,398 +211,48 @@
   -webkit-text-stroke: 0.45px currentColor;
 }
 
-@utility text-balance {
-  text-wrap: balance;
-  text-wrap: balance;
-}
-
+/* Marketing page headings (app/[locale]/(home)). */
 @utility feature-title-gradient {
-  /* Feature title text gradients - Safari compatible */
+  display: inline-block;
   background-image: linear-gradient(to right, #111827, #581c87);
-  background-size: 100%;
   -webkit-background-clip: text;
-  -moz-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  -moz-text-fill-color: transparent;
   color: transparent;
-  display: inline-block; /* This helps with Safari rendering */
 
-  /* Dark mode variant - Safari compatible */
   .dark & {
     background-image: linear-gradient(to right, #ffffff, #d8b4fe);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    color: transparent;
   }
-
-  /* Large screen text alignment */
-}
-
-@utility dark {
-  /* Dark mode variant - Safari compatible */
-  & .feature-title-gradient {
-    background-image: linear-gradient(to right, #ffffff, #d8b4fe);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    color: transparent;
-  }
-
-  /* Dark mode variant for subtitle - Safari compatible */
-  & .feature-subtitle-gradient {
-    background-image: linear-gradient(to right, #60a5fa, #c4b5fd);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    color: transparent;
-  }
-
-  /* Dark mode styles for feature description */
-  & .feature-description {
-    color: #d1d5db; /* dark:text-gray-300 */
-  }
-
-  /* Large screen text alignment */
 }
 
 @utility feature-subtitle-gradient {
-  /* Subtitle text gradient - Safari compatible */
+  display: inline-block;
   background-image: linear-gradient(to right, #2563eb, #7c3aed);
-  background-size: 100%;
   -webkit-background-clip: text;
-  -moz-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  -moz-text-fill-color: transparent;
   color: transparent;
-  display: inline-block; /* This helps with Safari rendering */
 
-  /* Dark mode variant for subtitle - Safari compatible */
   .dark & {
     background-image: linear-gradient(to right, #60a5fa, #c4b5fd);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    color: transparent;
   }
-
-  /* Large screen text alignment */
 }
 
 @utility feature-description {
-  /* Feature description text - Fix @apply syntax */
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  color: #1f2937; /* text-gray-800 */
-  text-align: center;
   max-width: 32rem;
   margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
 
-  /* Dark mode styles for feature description */
-  .dark & {
-    color: #d1d5db; /* dark:text-gray-300 */
-  }
-
-  /* Large screen text alignment */
   @media (min-width: 1024px) {
     text-align: left;
   }
 }
 
-@layer utilities {
-  :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
-
-    /* Mobile viewport adjustment - fixes iOS address bar issues */
-    --app-height: 100dvh;
-    --keyboard-offset: 0px;
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-
-    /* Typography system - centralized variable definitions */
-    --font-family-base:
-      'geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-family-mono:
-      'geist-mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-    /* Font weights using the variable font range */
-    --font-weight-light: 300;
-    --font-weight-regular: 400;
-    --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
-
-    /* Typography spacing and metrics */
-    --letter-spacing-tight: -0.02em;
-    --letter-spacing-normal: 0;
-    --letter-spacing-wide: 0.05em;
-    --line-height-tight: 1.2;
-    --line-height-normal: 1.5;
-    --line-height-loose: 1.75;
-
-    /* Home page specific typography */
-    --home-heading-font-size: 48px;
-    --home-heading-line-height: var(--line-height-tight);
-    --home-body-font-size: 16px;
-    --home-body-line-height: var(--line-height-normal);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --foreground-rgb: 255, 255, 255;
-      --background-start-rgb: 0, 0, 0;
-      --background-end-rgb: 0, 0, 0;
-    }
-  }
-
-  @media (max-width: 768px) {
-    :root {
-      --home-heading-font-size: 36px;
-      --home-body-font-size: 14px;
-    }
-  }
-
-  @media (max-width: 640px) {
-    :root {
-      --home-heading-font-size: 32px;
-      --home-body-font-size: 14px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    :root {
-      --home-heading-font-size: 28px;
-      --home-body-font-size: 13px;
-    }
-  }
-}
-
-@layer base {
-  :root {
-    /* Core theme colors - Light Mode with refined scientific aesthetic */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 164 84% 47%; /* Attma primary - slightly adjusted for light mode */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 164 84% 97%; /* Subtle primary-tinted background */
-    --secondary-foreground: 222 47% 11%;
-    --muted: 164 84% 97%;
-    --muted-foreground: 215 25% 27%;
-    --accent: 164 84% 95%; /* Subtle interaction highlight */
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 164 84% 92%; /* Refined border color */
-    --input: 164 84% 92%;
-    --ring: 164 84% 47%; /* Match primary for focus states */
-    --radius: 0.5rem;
-
-    /* Chart colors - Light Mode - Scientific palette */
-    --chart-1: 164 84% 47%; /* Attma primary */
-    --chart-2: 187 75% 53%; /* Ocean blue */
-    --chart-3: 201 96% 32%; /* Deep marine */
-    --chart-4: 150 84% 40%; /* Forest green */
-    --chart-5: 176 56% 42%; /* Sage */
-
-    /* Sidebar - Light Mode - Professional glass effect */
-    --sidebar-background: 164 84% 98% / 85%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 164 84% 47%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 164 84% 96% / 70%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 164 84% 92% / 40%;
-    --sidebar-ring: 164 84% 47%;
-    --sidebar-background-desktop: 164 84% 98% / 75%;
-    --sidebar-accent-desktop: 164 84% 96% / 60%;
-  }
-
-  .dark {
-    /* Core theme colors - Dark Mode */
-    --background: 240 17% 9%;
-    --foreground: 0 0% 98%;
-    --card: 240 17% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 17% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 164 84% 59%; /* Using the accent color as primary for better contrast */
-    --primary-foreground: 240 17% 9%;
-    --secondary: 240 17% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 17% 14%;
-    --muted-foreground: 240 5% 75%; /* Increased contrast for better readability */
-    --accent: 164 84% 59%;
-    --accent-foreground: 240 17% 9%;
-    --destructive: 0 84% 60%; /* More visible destructive action */
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 17% 12%;
-    --ring: 164 84% 59%; /* Matching ring with accent for consistency */
-
-    /* Chart colors - Dark Mode - More vibrant for dark backgrounds */
-    --chart-1: 164 84% 59%; /* Primary/Accent color */
-    --chart-2: 199 89% 48%; /* Complementary blue */
-    --chart-3: 269 75% 64%; /* Supporting purple */
-    --chart-4: 316 72% 52%; /* Supporting pink */
-    --chart-5: 150 84% 50%; /* Supporting green */
-
-    /* Sidebar - Dark Mode - More refined glass effect */
-    --sidebar-background: 240 17% 9% / 85%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 164 84% 59%;
-    --sidebar-primary-foreground: 240 17% 9%;
-    --sidebar-accent: 240 17% 12% / 50%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9% / 30%;
-    --sidebar-ring: 164 84% 59%;
-    --sidebar-background-desktop: 240 17% 9% / 75%;
-    --sidebar-accent-desktop: 240 17% 12% / 40%;
-  }
-
-  * {
-    border-color: hsl(var(--border));
-  }
-
-  /* Theme transition settings */
-  :root {
-    --theme-transition-duration: 200ms;
-  }
-
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    transition:
-      background-color var(--theme-transition-duration) ease,
-      color var(--theme-transition-duration) ease;
-    font-family: var(--font-family-base);
-    font-variation-settings: 'wght' var(--font-weight-regular);
-    font-weight: var(--font-weight-regular);
-    letter-spacing: var(--letter-spacing-tight);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    -webkit-text-size-adjust: none;
-    -moz-text-size-adjust: none;
-    text-size-adjust: none;
-  }
-
-  /* Global transition properties */
-  button,
-  a,
-  [class*='bg-'],
-  [class*='text-'],
-  [class*='border-'] {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: ease;
-    transition-duration: var(--theme-transition-duration);
-  }
-
-  /* Font definitions */
-  @font-face {
-    font-family: 'geist';
-    font-style: normal;
-    font-weight: 100 900;
-    src: url(/fonts/geist.woff2) format('woff2');
-  }
-
-  @font-face {
-    font-family: 'geist-mono';
-    font-style: normal;
-    font-weight: 100 900;
-    src: url(/fonts/geist-mono.woff2) format('woff2');
-  }
-
-  /* Home page typography classes */
-  h2.home-title {
-    font-family: var(--font-family-base);
-    font-variation-settings: 'wght' var(--font-weight-bold);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--home-heading-font-size);
-    line-height: var(--home-heading-line-height);
-    letter-spacing: var(--letter-spacing-tight);
-    text-align: center;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-  }
-
-  p.home-description {
-    font-family: var(--font-family-base);
-    font-variation-settings: 'wght' var(--font-weight-regular);
-    font-weight: var(--font-weight-regular);
-    font-size: var(--home-body-font-size);
-    line-height: var(--home-body-line-height);
-    letter-spacing: var(--letter-spacing-tight);
-    text-align: center;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    color: hsl(var(--muted-foreground));
-  }
-
-  /* Attma-themed link styles - only for standalone links, not navigation */
-  a:not([class*='sidebar']):not([class*='Sidebar']) {
-    transition:
-      color 0.2s ease,
-      opacity 0.2s ease;
-  }
-
-  a:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
-    border-radius: 2px;
-  }
-
-  /* Sidebar links should inherit color from parent (not bright teal) */
-  [data-sidebar] a,
-  .sidebar a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  [data-sidebar] a:hover,
-  .sidebar a:hover {
-    color: hsl(var(--sidebar-foreground));
-    opacity: 0.8;
-  }
-}
-
-@layer utilities {
-  /* Multimodal input improvements for artifact panel */
-  [data-testid='multimodal-input'] {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    white-space: pre-wrap !important;
-  }
-
-  /* Artifact panel input container - prevent nested appearance */
-  .artifact-input-container {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  /* Better responsive input sizing in artifact panel */
-
-  /* Skeleton loading styles */
+@layer components {
+  /* Loading placeholders in tool cards (components/chat/weather.tsx). */
   .skeleton {
     * {
       pointer-events: none !important;
@@ -553,7 +276,7 @@
     }
   }
 
-  /* Editor styles */
+  /* Text and code artifact editors. */
   .ProseMirror {
     outline: none;
   }
@@ -564,24 +287,16 @@
     outline: none;
   }
 
-  /* Style selection inside code editor */
   .cm-editor ::selection,
-  .cm-gutters ::selection {
-    background-color: hsl(var(--background));
-  }
-
-  .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
-  .ͼo.cm-selectionBackground,
-  .ͼo.cm-content::selection {
-    background-color: hsl(var(--background));
+  .cm-gutters ::selection,
+  .cm-editor .cm-selectionBackground,
+  .cm-editor.cm-focused .cm-selectionBackground {
+    background-color: hsl(var(--primary) / 25%);
   }
 
   .cm-activeLine,
   .cm-activeLineGutter {
     background-color: transparent;
-  }
-
-  .cm-activeLine {
     border-radius: 0.125rem;
   }
 
@@ -593,125 +308,10 @@
     min-width: 0.75rem;
   }
 
-  .cm-lineNumbers .cm-activeLineGutter {
-    border-radius: 0.125rem;
-  }
-
+  /* Suggested edits in the text artifact (lib/editor/functions.tsx). */
   .suggestion-highlight {
-    background-color: hsl(210, 100%, 80%);
-    color: hsl(210, 100%, 95%);
-  }
-
-  /* Desktop sidebar glass effect */
-  @media (min-width: 768px) {
-    .sidebar-desktop-only {
-      background-color: hsl(var(--sidebar-background-desktop)) !important;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-    }
-
-    /* Decorative gradient backgrounds */
-    .sidebar-backdrop::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(
-          circle at 100% 50%,
-          hsla(var(--background), 0.4) 0%,
-          transparent 50%
-        ),
-        radial-gradient(
-          circle at 0% 0%,
-          hsla(336, 30%, 95%, 0.1) 0%,
-          transparent 40%
-        );
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .sidebar-backdrop::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -2;
-      background: linear-gradient(
-        135deg,
-        hsla(336, 20%, 98%, 0.03) 0%,
-        transparent 50%
-      );
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    :root .sidebar-backdrop::before {
-      background-blend-mode: soft-light;
-    }
-  }
-
-  /* Feature component styles - OUTSIDE OF LAYER for Safari compatibility */
-  /* Feature title text gradients - Safari compatible */
-  .feature-title-gradient {
-    /* Safari requires these to be outside @layer for reliability */
-    background-image: linear-gradient(to right, #111827, #581c87);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent; /* Fallback for non-webkit browsers */
-  }
-
-  /* Dark mode variant - Safari compatible */
-  .dark .feature-title-gradient {
-    background-image: linear-gradient(to right, #ffffff, #d8b4fe);
-  }
-
-  /* Subtitle text gradient - Safari compatible */
-  .feature-subtitle-gradient {
-    /* Safari requires these to be outside @layer for reliability */
-    background-image: linear-gradient(to right, #2563eb, #7c3aed);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent; /* Fallback for non-webkit browsers */
-  }
-
-  /* Dark mode variant for subtitle - Safari compatible */
-  .dark .feature-subtitle-gradient {
-    background-image: linear-gradient(to right, #60a5fa, #c4b5fd);
-  }
-
-  /* Feature description text */
-  .feature-description {
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-    color: #1f2937; /* text-gray-800 */
-    text-align: center;
-    max-width: 32rem;
-    margin-top: 0.5rem;
-  }
-
-  /* Dark mode styles for feature description */
-  .dark .feature-description {
-    color: #d1d5db; /* dark:text-gray-300 */
-  }
-
-  /* Large screen text alignment */
-  @media (min-width: 1024px) {
-    .feature-description {
-      text-align: left;
-    }
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--primary) / 22%);
+    border-radius: 2px;
   }
 }
 

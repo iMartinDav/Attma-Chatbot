@@ -83,7 +83,7 @@ export function ProjectDialog({
           <DialogHeader className="pb-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-                <FolderIcon className="size-5 text-primary" />
+                <FolderIcon className="size-5 text-primary-ink" />
               </div>
               <div>
                 <DialogTitle className="text-lg font-semibold">
@@ -119,7 +119,7 @@ export function ProjectDialog({
                 className="text-sm font-medium text-muted-foreground"
               >
                 Description{' '}
-                <span className="text-muted-foreground/50">(optional)</span>
+                <span className="text-muted-foreground">(optional)</span>
               </Label>
               <Textarea
                 id="description"

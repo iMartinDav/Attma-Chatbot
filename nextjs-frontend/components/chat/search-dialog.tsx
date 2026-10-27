@@ -130,7 +130,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search conversations..."
-              className="flex-1 bg-transparent border-none outline-none text-base placeholder:text-muted-foreground/50"
+              className="flex-1 bg-transparent border-none outline-none text-base placeholder:text-muted-foreground"
               autoFocus
             />
             {query && (
@@ -177,17 +177,17 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               </div>
             ) : query.trim() ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <SearchIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
+                <SearchIcon className="w-10 h-10 text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">
                   No results found
                 </p>
-                <p className="text-xs text-muted-foreground/50 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Try a different search term
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <MessageSquareIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
+                <MessageSquareIcon className="w-10 h-10 text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">
                   No recent conversations
                 </p>

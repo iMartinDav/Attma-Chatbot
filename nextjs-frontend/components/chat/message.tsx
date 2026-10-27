@@ -592,7 +592,7 @@ const PurePreviewMessage = ({
                           key={toolCallId}
                           className="flex items-center gap-2 text-sm text-muted-foreground p-2"
                         >
-                          <div className="animate-spin text-primary">
+                          <div className="animate-spin text-primary-ink">
                             <LoaderIcon size={14} />
                           </div>
                           <TextShimmer duration={4}>

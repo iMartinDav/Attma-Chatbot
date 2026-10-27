@@ -102,7 +102,7 @@ export function PricingTiers({ dictionary, locale }: PricingTiersProps) {
             'All plans include our core analysis platform.'}{' '}
           <Link
             href="#feature-comparison"
-            className="text-primary underline underline-offset-4 transition-colors hover:text-primary/80"
+            className="text-primary-ink underline underline-offset-4 transition-colors hover:text-primary-ink/80"
           >
             {dictionary.comparison?.viewComparison ||
               'View full feature comparison'}

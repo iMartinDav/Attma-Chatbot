@@ -94,7 +94,7 @@ function PureSourceChip({ source, index, className }: SourceChipProps) {
 
       {/* Source number badge */}
       {typeof index === 'number' && (
-        <span className="flex items-center justify-center size-4 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+        <span className="flex items-center justify-center size-4 rounded-full bg-primary/10 text-primary-ink text-[10px] font-medium">
           {index + 1}
         </span>
       )}
@@ -150,7 +150,7 @@ function PureSourcePanel({
         )}
       >
         <div className="flex items-center gap-2">
-          <Link2 className="size-4 text-primary" />
+          <Link2 className="size-4 text-primary-ink" />
           <span className="text-sm font-medium text-foreground">Sources</span>
           <span className="text-xs text-muted-foreground">
             ({uniqueSources.length})
@@ -226,7 +226,7 @@ function SourceListItem({ source, index }: { source: Source; index: number }) {
       transition={{ delay: index * 0.03 }}
     >
       {/* Index Badge */}
-      <span className="flex-shrink-0 flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+      <span className="flex-shrink-0 flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary-ink text-xs font-medium">
         {index + 1}
       </span>
 
@@ -249,7 +249,7 @@ function SourceListItem({ source, index }: { source: Source; index: number }) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+        <p className="text-sm font-medium text-foreground truncate group-hover:text-primary-ink transition-colors">
           {source.title || hostname}
         </p>
         <p className="text-xs text-muted-foreground truncate">{hostname}</p>

@@ -133,7 +133,7 @@ export function SourcesSelector() {
                     <span className="block truncate text-xs text-muted-foreground">
                       {connector.provider}
                     </span>
-                    <span className="block text-xs text-muted-foreground/80">
+                    <span className="block text-xs text-muted-foreground">
                       {locked
                         ? `Needs ${connector.requires} on the server`
                         : connector.description}

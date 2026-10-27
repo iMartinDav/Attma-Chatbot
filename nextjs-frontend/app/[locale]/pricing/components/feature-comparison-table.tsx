@@ -124,7 +124,7 @@ export function FeatureComparisonTable({
       return (
         <div className="flex items-center justify-center w-full">
           <div className="size-7 flex items-center justify-center bg-primary/10 rounded-full transition-all duration-300">
-            <CheckCircle className="size-4 text-primary" />
+            <CheckCircle className="size-4 text-primary-ink" />
           </div>
         </div>
       );
@@ -168,7 +168,7 @@ export function FeatureComparisonTable({
         {/* Legend for the table - simplified for minimalism */}
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
-            <CheckCircle className="size-3.5 text-primary" />
+            <CheckCircle className="size-3.5 text-primary-ink" />
             <span className="text-muted-foreground">Included</span>
           </div>
           <div className="flex items-center gap-1.5">

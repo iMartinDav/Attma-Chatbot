@@ -167,7 +167,7 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
         <div className="flex items-center justify-between w-full px-3 py-1.5">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground/80 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             {isExpanded ? (
               <ChevronDown className="size-3" />
@@ -178,7 +178,7 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
           </button>
           <button
             onClick={() => setDialogOpen(true)}
-            className="p-1 rounded-md hover:bg-muted/60 transition-colors text-muted-foreground/60 hover:text-muted-foreground"
+            className="p-1 rounded-md hover:bg-muted/60 transition-colors text-muted-foreground hover:text-muted-foreground"
           >
             <Plus className="size-3.5" />
           </button>
@@ -195,7 +195,7 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
             >
               <div className="mt-1 space-y-0.5 px-1">
                 {isLoading ? (
-                  <div className="px-3 py-2 text-xs text-muted-foreground/50">
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
                     Loading...
                   </div>
                 ) : projects && projects.length > 0 ? (
@@ -215,7 +215,7 @@ export function SidebarProjects({ isCollapsed }: SidebarProjectsProps) {
                 ) : (
                   <button
                     onClick={() => setDialogOpen(true)}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-muted-foreground/50 hover:text-muted-foreground/70 hover:bg-muted/20 transition-all"
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted/20 transition-all"
                   >
                     <div className="flex items-center justify-center size-6 rounded-md border border-dashed border-muted-foreground/30">
                       <Plus className="size-3" />
@@ -304,7 +304,7 @@ function ProjectItem({
           className="flex items-center gap-2 flex-1 min-w-0"
           onClick={onToggle}
         >
-          <div className="flex items-center justify-center size-5 rounded bg-gradient-to-br from-primary/20 to-primary/5 text-primary shrink-0">
+          <div className="flex items-center justify-center size-5 rounded bg-gradient-to-br from-primary/20 to-primary/5 text-primary-ink shrink-0">
             <FolderIcon className="size-3" />
           </div>
           <span className="text-sm truncate text-foreground/80 group-hover:text-foreground transition-colors">
@@ -367,7 +367,7 @@ function ProjectItem({
                     onClick={() => router.push(getChatUrl(chat.id, project.id))}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-all ${
                       currentChatId === chat.id
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary-ink'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                     }`}
                   >
@@ -376,14 +376,14 @@ function ProjectItem({
                   </button>
                 ))
               ) : (
-                <div className="px-2 py-1.5 text-xs text-muted-foreground/50">
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
                   No chats yet
                 </div>
               )}
 
               <button
                 onClick={onNewChat}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/30 transition-all"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground hover:text-muted-foreground hover:bg-muted/30 transition-all"
               >
                 <Plus className="size-3" />
                 <span className="text-xs">New chat</span>

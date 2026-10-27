@@ -102,21 +102,21 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
               <a
                 href="https://github.com"
                 aria-label="GitHub"
-                className="text-foreground/60 hover:text-primary transition-colors duration-300 hover:scale-110"
+                className="text-foreground/60 hover:text-primary-ink transition-colors duration-300 hover:scale-110"
               >
                 <GitIcon />
               </a>
               <a
                 href="https://x.com"
                 aria-label="X (formerly Twitter)"
-                className="text-foreground/60 hover:text-primary transition-colors duration-300 hover:scale-110"
+                className="text-foreground/60 hover:text-primary-ink transition-colors duration-300 hover:scale-110"
               >
                 <XIcon />
               </a>
               <a
                 href="https://linkedin.com"
                 aria-label="LinkedIn"
-                className="text-foreground/60 hover:text-primary transition-colors duration-300 hover:scale-110"
+                className="text-foreground/60 hover:text-primary-ink transition-colors duration-300 hover:scale-110"
               >
                 <LinkedInIcon />
               </a>
@@ -134,7 +134,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/#features`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {featuresText}
                   </Link>
@@ -142,7 +142,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/pricing`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {pricingText}
                   </Link>
@@ -150,7 +150,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/#cases`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {casesText}
                   </Link>
@@ -158,7 +158,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/blog`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {blogText}
                   </Link>
@@ -166,7 +166,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/documentation`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {docs}
                   </Link>
@@ -183,7 +183,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/about`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {aboutUs}
                   </Link>
@@ -191,7 +191,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/careers`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {careers}
                   </Link>
@@ -199,7 +199,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/contact`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {contactText}
                   </Link>
@@ -214,7 +214,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/privacy`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {privacy}
                   </Link>
@@ -222,7 +222,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/terms`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {terms}
                   </Link>
@@ -230,7 +230,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                 <li>
                   <Link
                     href={`/${locale}/cookies`}
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary-ink transition-colors"
                   >
                     {cookies}
                   </Link>
@@ -256,7 +256,7 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="m-1 bg-background/70 hover:bg-primary/10 hover:text-primary rounded-lg"
+                    className="m-1 bg-background/70 hover:bg-primary/10 hover:text-primary-ink rounded-lg"
                   >
                     <Send className="size-4" />
                     <span className="sr-only">Subscribe</span>

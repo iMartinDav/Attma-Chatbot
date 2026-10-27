@@ -95,7 +95,7 @@ export function AgentStatus({
 
         {/* Step Counter */}
         {step !== undefined && totalSteps !== undefined && (
-          <span className="text-muted-foreground/60 ml-1">
+          <span className="text-muted-foreground ml-1">
             Step {step}/{totalSteps}
           </span>
         )}
@@ -190,7 +190,7 @@ export function AgentActions({ actions, className }: AgentActionsProps) {
               {formatToolName(action.tool)}
             </span>
             {action.duration && (
-              <span className="text-muted-foreground/50 ml-auto">
+              <span className="text-muted-foreground ml-auto">
                 {action.duration}ms
               </span>
             )}

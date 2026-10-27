@@ -45,7 +45,7 @@ export function PricingFAQ({ dictionary }: FAQProps) {
             value={`item-${index}`}
             className="border-b border-border"
           >
-            <AccordionTrigger className="text-left py-4 text-base font-medium hover:text-primary">
+            <AccordionTrigger className="text-left py-4 text-base font-medium hover:text-primary-ink">
               {faq.question}
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground pb-4 text-base leading-relaxed">
