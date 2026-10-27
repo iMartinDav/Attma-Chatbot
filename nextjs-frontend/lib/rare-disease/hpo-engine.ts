@@ -37,10 +37,16 @@ export interface EngineDisease {
   genes: string[];
 }
 
-/** HPO_INDEX_PATH lets the benchmark load its held-out evaluation index. */
-export const INDEX_PATH =
-  process.env.HPO_INDEX_PATH ??
-  join(process.cwd(), 'lib/rare-disease/data/hpo-index.json');
+/** The shipped index; a static path, so only this file is traced for deployment. */
+const INDEX_PATH = join(process.cwd(), 'lib/rare-disease/data/hpo-index.json');
+
+/** HPO_INDEX_PATH lets the benchmark load its held-out evaluation index instead. */
+function readIndex(): string {
+  const override = process.env.HPO_INDEX_PATH;
+  return override
+    ? readFileSync(/*turbopackIgnore: true*/ override, 'utf8')
+    : readFileSync(INDEX_PATH, 'utf8');
+}
 
 class HpoEngine {
   readonly version: string;
@@ -256,8 +262,6 @@ let engine: HpoEngine | undefined;
 
 /** Loads the HPO index once per process (about 0.3 s, then cached). */
 export function getHpoEngine(): HpoEngine {
-  engine ??= new HpoEngine(
-    JSON.parse(readFileSync(INDEX_PATH, 'utf8')) as HpoIndexFile,
-  );
+  engine ??= new HpoEngine(JSON.parse(readIndex()) as HpoIndexFile);
   return engine;
 }
