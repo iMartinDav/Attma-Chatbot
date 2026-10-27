@@ -456,6 +456,13 @@ const VERDICT_TONE: Record<LiteratureReview['verdict'], string> = {
   none: 'text-muted-foreground',
 };
 
+const VERDICT_LABEL: Record<LiteratureReview['verdict'], string> = {
+  strong: 'Strong evidence',
+  moderate: 'Moderate evidence',
+  limited: 'Limited evidence',
+  none: 'No supporting evidence',
+};
+
 const SUPPORT_MARK: Record<
   LiteratureReview['articles'][number]['supports'],
   string
@@ -473,7 +480,7 @@ function LiteratureCard({ review }: { review: LiteratureReview }) {
     >
       <p className="text-sm">
         <span className={cn('font-medium', VERDICT_TONE[review.verdict])}>
-          {review.verdict} evidence.
+          {VERDICT_LABEL[review.verdict]}.
         </span>{' '}
         {review.summary}
       </p>

@@ -109,22 +109,37 @@ class HpoEngine {
       ...new Set(
         normalize(label)
           .split(' ')
-          .filter((w) => w.length > 2 && !IGNORED_WORDS.has(w))
+          .filter(
+            (w) => (w.length > 2 || /\d/.test(w)) && !IGNORED_WORDS.has(w),
+          )
           .map(stem),
       ),
     ];
     if (words.length === 0) return undefined;
-    let best: { index: number; matched: number; length: number } | undefined;
+    let best:
+      | { index: number; matched: number; coverage: number; length: number }
+      | undefined;
     for (const { index, text } of this.searchable) {
+      const padded = ` ${text} `;
       let matched = 0;
-      for (const w of words) if (text.includes(w)) matched++;
+      for (const w of words) {
+        // Short tokens such as "7" must match a whole word, not a substring.
+        if (w.length > 3 ? text.includes(w) : padded.includes(` ${w} `)) {
+          matched++;
+        }
+      }
+      if (matched === 0) continue;
+      // Prefer labels the query explains fully: "decreased cholesterol" beats
+      // "decreased hdl cholesterol" for "low total cholesterol".
+      const coverage = matched / text.split(' ').length;
       if (
-        matched > 0 &&
-        (!best ||
-          matched > best.matched ||
-          (matched === best.matched && text.length < best.length))
+        !best ||
+        matched > best.matched ||
+        (matched === best.matched &&
+          (coverage > best.coverage ||
+            (coverage === best.coverage && text.length < best.length)))
       ) {
-        best = { index, matched, length: text.length };
+        best = { index, matched, coverage, length: text.length };
       }
     }
     if (!best) return undefined;
@@ -222,11 +237,19 @@ function stem(word: string): string {
   return word.replace(/ies$/, 'y').replace(/s$/, '');
 }
 
+// Clinical shorthand and HPO wording differ ("raised" vs "Elevated"); both
+// labels and queries fold these words to one form before matching.
+const SAME_MEANING: [RegExp, string][] = [
+  [/\b(raised|elevated|high|increased)\b/g, 'increased'],
+  [/\b(low|reduced|lowered|decreased)\b/g, 'decreased'],
+];
+
 function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
+  let result = text.toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+  for (const [pattern, word] of SAME_MEANING) {
+    result = result.replace(pattern, word);
+  }
+  return result.trim();
 }
 
 let engine: HpoEngine | undefined;

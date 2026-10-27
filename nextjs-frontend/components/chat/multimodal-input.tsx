@@ -131,8 +131,10 @@ function PureMultimodalInput({
   }, [isKeyboardVisible, scrollInputIntoView]);
 
   // Persist input to localStorage
+  // Saved once typing pauses, so each keystroke does not also write storage.
   useEffect(() => {
-    setLocalStorageInput(input);
+    const timer = setTimeout(() => setLocalStorageInput(input), 300);
+    return () => clearTimeout(timer);
   }, [input, setLocalStorageInput]);
 
   // Input handler

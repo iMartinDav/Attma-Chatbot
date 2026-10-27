@@ -10,6 +10,7 @@
 
 import { annotateWithVep, type VepResult, type VepTranscript } from './clients';
 import {
+  type EngineDisease,
   type EngineTerm,
   getHpoEngine,
   type SimilarityMode,
@@ -107,7 +108,7 @@ export async function rankDiagnoses(
   return {
     phenotypes: terms,
     unresolved,
-    diseases: matches.slice(0, limit).map((m, i) => ({
+    diseases: mergeSameDisease(matches, limit).map((m, i) => ({
       rank: i + 1,
       id: m.id,
       name: m.name,
@@ -354,6 +355,21 @@ export async function prioritizeVariants(
     notAnnotated: unique.filter((v) => !annotated.has(v)),
     elapsedMs: Date.now() - started,
   };
+}
+
+/** OMIM and Orphanet often list the same disease; show it once with both genes. */
+function mergeSameDisease(matches: EngineDisease[], limit: number) {
+  const merged = new Map<string, EngineDisease>();
+  for (const match of matches) {
+    const key = match.name.toLowerCase();
+    const existing = merged.get(key);
+    if (existing) {
+      existing.genes = [...new Set([...existing.genes, ...match.genes])];
+    } else if (merged.size < limit) {
+      merged.set(key, { ...match, genes: [...match.genes] });
+    }
+  }
+  return [...merged.values()];
 }
 
 function round(value: number): number {
