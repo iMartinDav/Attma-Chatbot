@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Attma - 人工智能生物信息学家",
-    "description": "借助人工智能驱动的分析技术革新您的生物学研究"
+    "title": "Attma - AI 生物信息学家",
+    "description": "描述一项分析或附上您的数据。Attma 会规划工作流程，在真实数据库和 Python 中运行每一步，并为所发现的结果提供引用。"
   },
   "common": {
     "nav": {
@@ -44,118 +44,128 @@
   },
   "home": {
     "hero": {
-      "title": "全球首个人工智能生物信息学家",
-      "subtitle": "利用前沿人工智能技术革新您的生物数据分析",
+      "title": "能实际运行分析的 AI 生物信息学家",
+      "subtitle": "描述您的需求或附上您的数据。Attma 会规划工作流程，运行每一步，并为每一项结果提供引用。",
       "ctaExplore": "探索功能",
-      "introducing": "隆重介绍 Attma",
-      "promptPlaceholder": "询问 Attma...",
+      "introducing": "为您介绍 Attma",
+      "promptPlaceholder": "向 Attma 提问...",
       "suggestionBubbles": {
-        "analyzeRna": "分析RNA-seq数据",
-        "explainSingleCell": "解释单细胞测序",
-        "compareProteins": "比较蛋白质结构",
-        "identifyMarkers": "识别基因标记物",
-        "visualizeGenomic": "可视化基因组数据",
-        "interpretCrispr": "解读CRISPR结果"
+        "analyzeRna": "对单细胞数据进行聚类",
+        "explainSingleCell": "对 VCF 中的变异进行优先级排序",
+        "compareProteins": "将变异映射到其蛋白质上",
+        "identifyMarkers": "根据症状对诊断进行排序",
+        "visualizeGenomic": "对基因列表进行富集分析",
+        "interpretCrispr": "查阅某个基因的相关文献"
       },
       "typingEffectPrompts": [
-        "分析这个RNA-seq数据集以查看差异基因表达...",
-        "您能在这个蛋白质序列比对中识别出哪些模式？",
-        "用简单的术语解释CRISPR-Cas9机制",
-        "帮我解读这些单细胞测序结果",
-        "您能告诉我关于这些基因组变异的信息吗？"
+        "对 PBMC 3k 数据集进行聚类并注释细胞类型...",
+        "这些变异中哪一个最能解释一名 18 个月大婴儿的热性惊厥？",
+        "SCN1A p.Arg1648His 位于蛋白质的什么位置，AlphaFold 在该位置的置信度如何？",
+        "对这些 B 细胞标志物进行通路富集分析...",
+        "阅读这份外显子组报告并对候选诊断进行排序"
       ]
     },
     "features": {
-      "title": "提升您的研究效率",
-      "subtitle": "前所未有的速度分析复杂生物数据",
+      "title": "Attma 的工作方式如同生物信息学家：规划步骤，在真实数据上运行，并展示其工作过程。",
+      "subtitle": "从问题到可重复的结果",
       "items": [
         {
           "id": "sequence-analysis",
-          "title": "DNA序列分析",
-          "description": "使用专为基因组数据设计的最先进人工智能算法分析DNA和RNA序列。"
+          "title": "变异解读",
+          "description": "使用 Ensembl VEP、gnomAD、ClinVar、AlphaMissense 和 CADD 注释变异，并将错义变化映射到 UniProt 结构域和 AlphaFold 结构上。"
         },
         {
           "id": "pattern-recognition",
-          "title": "智能模式识别",
-          "description": "识别生物数据中的复杂模式，发现传统方法可能遗漏的隐藏关联。"
+          "title": "在 Python 中进行单细胞和 RNA-seq 分析",
+          "description": "在每次对话的独立工作区中运行 scanpy、PyDESeq2 和 gseapy：质控、聚类、UMAP、标志基因和差异表达分析。"
         },
         {
           "id": "nl-interface",
-          "title": "自然语言交互界面",
-          "description": "使用日常语言提问，立即获得对您研究问题的准确回答。"
+          "title": "用您的语言提问",
+          "description": "以 25 种语言输入或语音口述，如有需要可在句子中间切换语言。Attma 会用您书写的语言回答。"
         },
         {
           "id": "data-viz",
-          "title": "数据可视化",
-          "description": "从复杂的基因组和蛋白质组数据生成富有洞察力的可视化和报告。"
+          "title": "可重复使用的图表",
+          "description": "每一步都会保留其代码、日志、图表和表格，便于您下载结果并自行重新运行分析。"
         },
         {
           "id": "literature-analysis",
-          "title": "文献分析",
-          "description": "在几秒钟内扫描、总结并提取数千篇研究论文中的见解。"
+          "title": "经分级的证据",
+          "description": "检索 PubMed 和网络，阅读摘要，并评估每篇论文是否支持某个基因与您的表型相关，同时在文中标注 PMID。"
         },
         {
           "id": "security",
-          "title": "安全与隐私",
-          "description": "通过企业级安全措施保护您的研究数据私密性和安全性。"
+          "title": "通过设计实现隔离",
+          "description": "每次对话都在其独立的沙盒 microVM 中运行代码，并且发送给语言模型的请求会关闭存储功能。"
         }
       ]
     },
     "cases": {
-      "title": "成功案例",
-      "subtitle": "了解领先研究人员如何利用Attma加速他们的发现。",
-      "viewAll": "查看所有案例研究",
-      "readCase": "阅读案例研究",
+      "title": "现可运行的工作流程",
+      "subtitle": "每个工作流程都能在一次对话中端到端运行，大约需要一到两分钟。",
+      "viewAll": "与我们讨论您的数据",
+      "readCase": "试用此工作流程",
       "items": [
         {
           "id": "rare-diseases",
-          "title": "罕见疾病的基因组分析",
-          "description": "斯坦福大学的研究人员如何使用Attma识别罕见疾病患者的新型基因变异，将分析时间从数周缩短至数小时。",
-          "tag": "基因组学"
+          "title": "罕见病病例审查",
+          "description": "粘贴临床记录或附上外显子组报告。Attma 会将检查结果映射到 HPO，对 12,900 种罕见病进行排序，并对候选变异进行优先级排序。在其索引之外保留的 200 个已发表病例中，它在 50.5% 的病例中将致病变异排在首位。",
+          "tag": "基因组学",
+          "prompt": "一名 18 个月大的女孩自 6 个月大起出现长时间的热性和非热性癫痫发作，现伴有全面发育迟缓、轻度肌张力减退和共济失调步态；MRI 正常。候选变异：ENSP00000501589.1:p.Arg1648His、rs1801133、NM_000546.6:c.215C>G。请对可能的诊断和变异进行排序，并提供证据。"
         },
         {
-          "id": "drug-discovery",
-          "title": "药物研发加速",
-          "description": "BioPharm公司利用Attma分析蛋白质-配体相互作用，仅在2个月内就发现了3种有前途的药物候选物，而不是传统的数年时间。",
-          "tag": "制药"
+          "id": "single-cell",
+          "title": "几分钟内完成单细胞图谱",
+          "description": "加载 PBMC 3k 或您自己的 .h5ad：质量控制、聚类、UMAP、标志基因、细胞类型注释和通路富集，并提供每一张图表和每一行代码。",
+          "tag": "单细胞",
+          "prompt": "加载公共 PBMC 3k 单细胞数据集，运行质控、标准化、聚类和 UMAP，查找每个簇的标志基因，根据经典标志物注释细胞类型，并对 B 细胞标志物进行通路富集分析。"
         },
         {
-          "id": "covid-tracking",
-          "title": "COVID-19变异追踪",
-          "description": "公共卫生研究人员使用Attma监测SARS-CoV-2突变并从序列数据实时预测变体特性。",
-          "tag": "病毒学"
-        }
-      ]
-    },
-    "testimonials": {
-      "title": "用户心声",
-      "subtitle": "全球研究人员信任Attma助力他们的工作",
-      "items": [
-        {
-          "id": "sarah-johnson",
-          "quote": "Attma彻底改变了我们的研究流程。过去需要数周的工作现在只需几分钟。",
-          "name": "Sarah Johnson博士",
-          "title": "基因组研究所首席研究员"
-        },
-        {
-          "id": "michael-chen",
-          "quote": "其模式识别能力无与伦比。我们发现了数据中的相关性，这些相关性通过人工方式是永远无法找到的。",
-          "name": "Michael Chen教授",
-          "title": "牛津大学计算生物学家"
-        },
-        {
-          "id": "emily-rodriguez",
-          "quote": "作为生物信息学经验有限的研究者，Attma的自然语言界面使复杂分析变得易于访问和直观理解。",
-          "name": "Emily Rodriguez博士",
-          "title": "BioTech实验室分子生物学家"
+          "id": "variant-structure",
+          "title": "从变异到结构",
+          "description": "从一个蛋白质变化出发，获取其人群频率、ClinVar 状态、AlphaMissense 分数、所影响的结构域、AlphaFold 在该残基处的置信度，以及报道该变异的论文。",
+          "tag": "蛋白质",
+          "prompt": "注释 SCN1A 变异 ENSP00000501589.1:p.Arg1648His：人群频率、ClinVar、AlphaMissense 和 CADD、它位于哪个蛋白质结构域以及 AlphaFold 结构在该位置的置信度如何，还有文献对它的描述。"
         }
       ]
     },
     "cta": {
-      "title": "准备好变革您的研究了吗？",
-      "subtitle": "加入数千名使用Attma加速发现的科学家",
-      "button": "免费开始",
-      "noCredit": "无需信用卡。立即从我们的免费计划开始。"
+      "title": "带上问题和数据集",
+      "subtitle": "Attma 处于测试阶段。登录后，只需几分钟即可运行您的第一个工作流程。",
+      "button": "开始分析",
+      "noCredit": "测试期间免费。供研究使用，不用于临床诊断。",
+      "viewPricing": "查看价格"
+    },
+    "stats": {
+      "title": "以实测数据为准，不作空泛承诺",
+      "subtitle": "数据来自 Attma 自身的基准测试及其连接的数据源。",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "50.5%",
+          "label": "致病变异排在首位",
+          "description": "基于在索引之外保留的 200 个已发表罕见病病例"
+        },
+        {
+          "id": "speed",
+          "number": "12,900",
+          "label": "完成排序的罕见病",
+          "description": "数据来自 HPO、OMIM 和 Orphanet，约需 50 ms"
+        },
+        {
+          "id": "papers",
+          "number": "8",
+          "label": "已连接的数据源",
+          "description": "包括 Ensembl VEP、UniProt、AlphaFold DB、PubMed 和 g:Profiler"
+        },
+        {
+          "id": "users",
+          "number": "25",
+          "label": "种语言",
+          "description": "支持输入和语音口述"
+        }
+      ]
     },
     "benefits": {
       "expertSupport": {
@@ -174,36 +184,6 @@
         "title": "数据隐私",
         "description": "您的研究数据和通信保持安全和保密"
       }
-    },
-    "stats": {
-      "title": "全球研究人员信赖之选",
-      "subtitle": "我们的人工智能平台正在帮助科学家加速研究并更快取得突破。",
-      "items": [
-        {
-          "id": "accuracy",
-          "number": "99.9%",
-          "label": "准确率",
-          "description": "在序列比对和分析中"
-        },
-        {
-          "id": "speed",
-          "number": "10倍",
-          "label": "分析速度更快",
-          "description": "与传统方法相比"
-        },
-        {
-          "id": "papers",
-          "number": "5,000+",
-          "label": "研究论文",
-          "description": "已处理和参考"
-        },
-        {
-          "id": "users",
-          "number": "1,000+",
-          "label": "科学家",
-          "description": "每日使用Attma"
-        }
-      ]
     }
   },
   "pricing": {

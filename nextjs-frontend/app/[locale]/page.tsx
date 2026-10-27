@@ -9,7 +9,6 @@ import { CTA } from './(home)/components/cta';
 import { Features } from './(home)/components/features';
 import { Hero } from './(home)/components/hero';
 import { Stats } from './(home)/components/stats';
-import { Testimonials } from './(home)/components/testimonials';
 
 // Define the props type according to Next.js App Router
 type Props = {
@@ -24,55 +23,23 @@ export default async function HomePage({ params }: Props) {
   // Extract locale with proper validation
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
 
-  // Fetch dictionary asynchronously
-  const rawDictionary = await getDictionary(locale);
-  const dictionary = (rawDictionary as unknown as HomePageDictionary) || {};
-
-  // Default content as fallback
-  const homeData: HomePageDictionary['home'] = {
-    hero: dictionary.home?.hero || {
-      title: "The World's First AI Bioinformatician",
-      subtitle:
-        'Revolutionize your biological data analysis with cutting-edge AI',
-    },
-    features: dictionary.home?.features || {
-      title: 'Supercharge Your Research',
-      subtitle: 'Analyze complex biological data faster than ever before',
-    },
-    cases: dictionary.home?.cases || {
-      title: 'Potential Applications',
-      subtitle: 'Discover how Attmacan revolutionize your research workflows',
-      viewAll: 'Join the beta program',
-      readCase: 'Learn more',
-    },
-    testimonials: dictionary.home?.testimonials || {
-      title: 'Hear from our users',
-      subtitle: 'Researchers around the world trust Attmafor their work',
-    },
-    cta: dictionary.home?.cta || {
-      title: 'Ready to transform your research?',
-      subtitle:
-        'Join thousands of scientists accelerating discoveries with Attma',
-    },
-  };
-
-  // Loading state check
-  if (!dictionary || Object.keys(dictionary).length === 0) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </main>
-    );
-  }
+  // A locale missing the home section falls back to English, never to
+  // copy that lives in code.
+  const dictionary = (await getDictionary(
+    locale,
+  )) as unknown as HomePageDictionary;
+  const home =
+    dictionary.home ??
+    ((await getDictionary(defaultLocale)) as unknown as HomePageDictionary)
+      .home;
 
   return (
     <main className="flex w-full flex-col items-center justify-center">
-      <Hero dictionary={homeData.hero} locale={locale} />
-      <Features dictionary={homeData.features} locale={locale} />
-      {homeData.cases && <Cases dictionary={homeData.cases} locale={locale} />}
+      <Hero dictionary={home.hero} locale={locale} />
+      <Features dictionary={home.features} locale={locale} />
+      {home.cases && <Cases dictionary={home.cases} locale={locale} />}
       <Stats locale={locale} />
-      <Testimonials dictionary={homeData.testimonials} locale={locale} />
-      <CTA dictionary={homeData.cta} locale={locale} />
+      <CTA dictionary={home.cta} locale={locale} />
     </main>
   );
 }

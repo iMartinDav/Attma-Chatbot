@@ -64,29 +64,14 @@ export interface DictionaryProps<T> {
 }
 
 // Component-specific types
-export interface TestimonialItem {
-  id: string;
-  quote: string;
-  name: string;
-  title: string;
-  avatar?: string;
-}
-
-export interface TestimonialsProps {
-  locale: Locale;
-  dictionary: {
-    title: string;
-    subtitle: string;
-    items?: TestimonialItem[];
-  };
-}
-
 export interface CaseStudyItem {
   id: string;
   title: string;
   description: string;
   image?: string;
   tag: string;
+  /** Opens the chat with this request when the card's button is pressed. */
+  prompt?: string;
 }
 
 export interface CasesProps {
@@ -144,7 +129,6 @@ export interface HomePageDictionary {
   home: {
     hero: HeroProps['dictionary'];
     features: FeaturesProps['dictionary'];
-    testimonials: TestimonialsProps['dictionary'];
     cases?: CasesProps['dictionary'];
     cta: CTAProps['dictionary'];
   };

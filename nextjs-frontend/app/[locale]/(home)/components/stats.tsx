@@ -36,7 +36,7 @@ const StatsClient = ({ title, subtitle, items }: StatsClientProps) => {
                 'hover:bg-accent/50 transition-colors duration-200',
               )}
             >
-              <p className="text-4xl  feature-title-gradient font-bold text-primary">
+              <p className="text-4xl  feature-title-gradient font-bold text-primary-ink">
                 {stat.number}
               </p>
               <h3 className="text-lg font-medium mt-2">{stat.label}</h3>

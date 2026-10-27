@@ -20,7 +20,7 @@ interface CTAProps {
 
 export const CTA: React.FC<CTAProps> = ({ dictionary, locale }) => {
   // Use button text from dictionary or provide fallback
-  const buttonText = dictionary.button || 'Start for Free';
+  const buttonText = dictionary.button || 'Start an analysis';
 
   return (
     <section className="py-20 w-full">
@@ -40,7 +40,7 @@ export const CTA: React.FC<CTAProps> = ({ dictionary, locale }) => {
               {dictionary.subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
-              <Link href={`/${locale}/chat`} className="w-full sm:w-auto">
+              <Link href="/chat" className="w-full sm:w-auto">
                 <Button size="lg" className="font-medium px-8 w-full">
                   {buttonText} <ArrowRight className="ml-2 size-4" />
                 </Button>

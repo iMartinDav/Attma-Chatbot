@@ -35,7 +35,7 @@ const Cases: React.FC<CasesProps> = ({ locale, dictionary = {} }) => {
           {caseStudies.map((caseStudy) => (
             <Card
               key={caseStudy.id}
-              className="overflow-hidden bg-background border-border/60 hover:border-[#25C6A3]/30 transition-colors duration-200 h-full flex flex-col"
+              className="overflow-hidden bg-background border-border/60 hover:border-primary/40 transition-colors duration-200 h-full flex flex-col"
             >
               <div className="relative w-full h-48">
                 {/* Handle image loading more gracefully */}
@@ -54,7 +54,7 @@ const Cases: React.FC<CasesProps> = ({ locale, dictionary = {} }) => {
                     }
                   }}
                 />
-                <div className="absolute top-2 left-2 bg-[#25C6A3] text-white px-2 py-1 text-xs rounded">
+                <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 text-xs font-medium rounded">
                   {caseStudy.tag}
                 </div>
               </div>
@@ -66,11 +66,20 @@ const Cases: React.FC<CasesProps> = ({ locale, dictionary = {} }) => {
                   {caseStudy.description}
                 </p>
                 <Button
+                  asChild
                   variant="link"
-                  className="p-0 h-auto font-medium justify-start text-[#25C6A3] hover:text-[#25C6A3]/80"
+                  className="p-0 h-auto font-medium justify-start text-primary-ink hover:text-primary-ink/80"
                 >
-                  {textContent.readCase}{' '}
-                  <ArrowRight className="ml-1.5 size-4" />
+                  <Link
+                    href={
+                      caseStudy.prompt
+                        ? `/chat?query=${encodeURIComponent(caseStudy.prompt)}`
+                        : '/chat'
+                    }
+                  >
+                    {textContent.readCase}{' '}
+                    <ArrowRight className="ml-1.5 size-4" />
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
@@ -82,7 +91,7 @@ const Cases: React.FC<CasesProps> = ({ locale, dictionary = {} }) => {
           <Link href={`/${locale}/contact`}>
             <Button
               variant="outline"
-              className="bg-background hover:bg-[#25C6A3]/5 border-[#25C6A3]/30 hover:border-[#25C6A3]/50 transition-colors duration-200"
+              className="bg-background hover:bg-primary/5 border-primary/30 hover:border-primary/50 transition-colors duration-200"
             >
               {textContent.viewAll} <ArrowRight className="ml-1.5 size-4" />
             </Button>

@@ -1,51 +1,19 @@
-import type { CaseStudyItem } from '../types';
-
-// Map case study IDs to their respective images
+// Images for the landing page workflow cards, by dictionary item id. Made
+// with Muse Image from the original genomic photo, so the set stays in one
+// style.
 export const CASE_STUDY_IMAGES: Record<string, string> = {
-  'genomic-research': '/images/case-genomic.jpg',
-  'drug-development': '/images/case-drug.jpg',
-  'disease-monitoring': '/images/case-covid.jpg',
-  'rare-diseases': '/images/case-genomic.jpg',
-  'drug-discovery': '/images/case-drug.jpg',
-  'covid-tracking': '/images/case-covid.jpg',
+  'rare-diseases': '/images/case-rare-disease.jpg',
+  'single-cell': '/images/case-single-cell.jpg',
+  'variant-structure': '/images/case-protein.jpg',
 };
 
-// Default placeholder for missing images
-export const DEFAULT_CASE_IMAGE = '/images/placeholder-case.jpg';
+export const DEFAULT_CASE_IMAGE = '/images/case-rare-disease.jpg';
 
-// Default case studies when translations are not available
-export const DEFAULT_CASE_STUDIES: CaseStudyItem[] = [
-  {
-    id: 'genomic-research',
-    title: 'Accelerate Genomic Research',
-    description:
-      'Analyze genomic data faster and with greater accuracy. Identify variants and patterns within DNA sequences that may impact disease susceptibility and treatment outcomes.',
-    image: CASE_STUDY_IMAGES['genomic-research'],
-    tag: 'Research',
-  },
-  {
-    id: 'drug-development',
-    title: 'Streamline Drug Development',
-    description:
-      'Predict protein-ligand interactions and identify potential therapeutic compounds more efficiently, potentially reducing the drug discovery timeline from years to months.',
-    image: CASE_STUDY_IMAGES['drug-development'],
-    tag: 'Pharma',
-  },
-  {
-    id: 'disease-monitoring',
-    title: 'Disease Variant Monitoring',
-    description:
-      'Track and predict pathogen mutations in real-time, helping predict outbreaks and develop targeted interventions before they become widespread health concerns.',
-    image: CASE_STUDY_IMAGES['disease-monitoring'],
-    tag: 'Public Health',
-  },
-];
-
-// Default text content when translations are not available
+// Used only if a dictionary lacks the section's text.
 export const DEFAULT_CASE_TEXT = {
-  title: 'Potential Applications',
+  title: 'Workflows You Can Run Today',
   subtitle:
-    'Discover how Attma can revolutionize your research workflows and accelerate scientific discoveries.',
-  viewAll: 'Join the beta program',
-  readCase: 'Learn more',
+    'Each one runs end to end in a single conversation, in about a minute or two.',
+  viewAll: 'Talk to us about your data',
+  readCase: 'Try this workflow',
 };

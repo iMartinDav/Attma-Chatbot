@@ -202,8 +202,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
                 width: '100%',
               }}
             >
-              {dictionary.subtitle ||
-                'Analyze complex biological data faster than ever before'}
+              {dictionary.subtitle || 'From Question to Reproducible Result'}
             </span>
           </p>
         </motion.div>

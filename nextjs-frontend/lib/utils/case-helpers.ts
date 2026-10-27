@@ -1,7 +1,6 @@
 import {
   CASE_STUDY_IMAGES,
   DEFAULT_CASE_IMAGE,
-  DEFAULT_CASE_STUDIES,
   DEFAULT_CASE_TEXT,
 } from '../constants/case-studies';
 import type { CaseStudyItem, CasesProps } from '../types/component-types';
@@ -47,7 +46,7 @@ export const prepareCaseStudies = (dictionary?: CasesProps['dictionary']) => {
           id: item.id || `case-${Math.random().toString(36).slice(2, 9)}`,
           image: resolveCaseImage(item),
         }))
-      : DEFAULT_CASE_STUDIES;
+      : [];
 
   return { textContent, caseStudies };
 };

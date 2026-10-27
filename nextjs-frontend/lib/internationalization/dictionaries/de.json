@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Attma - KI-Bioinformatiker",
-    "description": "Revolutionieren Sie Ihre biologische Forschung mit KI-gestützter Analyse"
+    "description": "Beschreiben Sie eine Analyse oder fügen Sie Ihre Daten bei. Attma plant den Arbeitsablauf, führt jeden Schritt mit echten Datenbanken und in Python aus und belegt, was es findet."
   },
   "common": {
     "nav": {
@@ -44,118 +44,128 @@
   },
   "home": {
     "hero": {
-      "title": "Der weltweit erste KI-Bioinformatiker",
-      "subtitle": "Revolutionieren Sie Ihre biologische Datenanalyse mit modernster KI",
+      "title": "Der KI-Bioinformatiker, der die Analyse ausführt",
+      "subtitle": "Beschreiben Sie, was Sie benötigen, oder fügen Sie Ihre Daten bei. Attma plant den Arbeitsablauf, führt jeden Schritt aus und belegt jedes Ergebnis.",
       "ctaExplore": "Funktionen entdecken",
-      "introducing": "Wir präsentieren Attma",
+      "introducing": "Wir stellen Attma vor",
       "promptPlaceholder": "Fragen Sie Attma...",
       "suggestionBubbles": {
-        "analyzeRna": "RNA-seq Daten analysieren",
-        "explainSingleCell": "Einzelzellsequenzierung erklären",
-        "compareProteins": "Proteinstrukturen vergleichen",
-        "identifyMarkers": "Gen-Marker identifizieren",
-        "visualizeGenomic": "Genomische Daten visualisieren",
-        "interpretCrispr": "CRISPR-Ergebnisse interpretieren"
+        "analyzeRna": "Einzelzelldaten clustern",
+        "explainSingleCell": "Varianten in einer VCF priorisieren",
+        "compareProteins": "Eine Variante auf ihrem Protein verorten",
+        "identifyMarkers": "Diagnosen anhand von Symptomen einordnen",
+        "visualizeGenomic": "Anreicherungsanalyse für eine Genliste",
+        "interpretCrispr": "Literatur zu einem Gen prüfen"
       },
       "typingEffectPrompts": [
-        "Analysieren Sie diesen RNA-seq-Datensatz auf differentielle Genexpression...",
-        "Welche Muster können Sie in diesem Protein-Sequenz-Alignment identifizieren?",
-        "Erklären Sie den CRISPR-Cas9-Mechanismus in einfachen Worten",
-        "Helfen Sie mir, diese Einzelzellsequenzierungsergebnisse zu interpretieren",
-        "Was können Sie mir über diese genomischen Varianten sagen?"
+        "Clustern Sie den PBMC 3k Datensatz und annotieren Sie die Zelltypen...",
+        "Welche dieser Varianten erklärt am besten Fieberkrämpfe bei einem 18 Monate alten Kind?",
+        "Wo liegt SCN1A p.Arg1648His im Protein, und wie zuverlässig ist AlphaFold an dieser Stelle?",
+        "Führen Sie eine Pathway-Anreicherungsanalyse mit diesen B-Zell-Markern durch...",
+        "Lesen Sie diesen Exombericht und ordnen Sie die möglichen Diagnosen nach Wahrscheinlichkeit"
       ]
     },
     "features": {
-      "title": "Beschleunigen Sie Ihre Forschung",
-      "subtitle": "Analysieren Sie komplexe biologische Daten schneller als je zuvor",
+      "title": "Attma arbeitet wie ein Bioinformatiker: Attma plant die Schritte, führt sie mit echten Daten aus und zeigt, wie die Ergebnisse zustande kommen.",
+      "subtitle": "Von der Frage zum reproduzierbaren Ergebnis",
       "items": [
         {
           "id": "sequence-analysis",
-          "title": "DNA-Sequenzanalyse",
-          "description": "Analysieren Sie DNA- und RNA-Sequenzen mit modernsten KI-Algorithmen, die speziell für genomische Daten entwickelt wurden."
+          "title": "Varianteninterpretation",
+          "description": "Annotiert Varianten mit Ensembl VEP, gnomAD, ClinVar, AlphaMissense und CADD und verortet Missense-Veränderungen auf UniProt-Domänen und AlphaFold-Strukturen."
         },
         {
           "id": "pattern-recognition",
-          "title": "Intelligente Mustererkennung",
-          "description": "Identifizieren Sie komplexe Muster in biologischen Daten und decken Sie verborgene Zusammenhänge auf, die herkömmliche Methoden möglicherweise übersehen."
+          "title": "Einzelzell- und RNA-seq-Analysen in Python",
+          "description": "Führt scanpy, PyDESeq2 und gseapy in einem isolierten Arbeitsbereich für jeden Chat aus: QC, Clustering, UMAP, Markergene und differenzielle Expression."
         },
         {
           "id": "nl-interface",
-          "title": "Natürlichsprachliche Schnittstelle",
-          "description": "Stellen Sie Fragen in natürlicher Sprache und erhalten Sie sofortige, präzise Antworten auf Ihre Forschungsfragen."
+          "title": "Fragen Sie in Ihrer Sprache",
+          "description": "Tippen oder diktieren Sie in 25 Sprachen und wechseln Sie auf Wunsch mitten im Satz. Attma antwortet in der Sprache, in der Sie schreiben."
         },
         {
           "id": "data-viz",
-          "title": "Datenvisualisierung",
-          "description": "Generieren Sie aufschlussreiche Visualisierungen und Berichte aus Ihren komplexen genomischen und proteomischen Daten."
+          "title": "Abbildungen, die Sie weiterverwenden können",
+          "description": "Jeder Schritt behält seinen Code, seine Protokolle, Abbildungen und Tabellen, sodass Sie die Ergebnisse herunterladen und die Analyse selbst erneut ausführen können."
         },
         {
           "id": "literature-analysis",
-          "title": "Literaturanalyse",
-          "description": "Scannen, zusammenfassen und extrahieren Sie Erkenntnisse aus tausenden von Forschungsarbeiten in Sekundenschnelle."
+          "title": "Evidenz, bewertet",
+          "description": "Durchsucht PubMed und das Web, liest die Abstracts und bewertet, ob jede Publikation ein Gen für Ihren Phänotyp stützt, mit PMIDs im Text."
         },
         {
           "id": "security",
-          "title": "Sicher & Privat",
-          "description": "Halten Sie Ihre Forschungsdaten mit unternehmensgerechten Sicherheitsmaßnahmen privat und geschützt."
+          "title": "Isolation als Designprinzip",
+          "description": "Jeder Chat führt seinen Code in einer eigenen Sandbox-MicroVM aus, und Anfragen an die Sprachmodelle werden mit deaktivierter Speicherung gesendet."
         }
       ]
     },
     "cases": {
-      "title": "Erfolgsgeschichten",
-      "subtitle": "Entdecken Sie, wie führende Forscher Attma nutzen, um ihre Entdeckungen zu beschleunigen.",
-      "viewAll": "Alle Fallstudien anzeigen",
-      "readCase": "Fallstudie lesen",
+      "title": "Arbeitsabläufe, die Sie heute ausführen können",
+      "subtitle": "Jeder läuft durchgängig in einer einzigen Unterhaltung, in etwa ein bis zwei Minuten.",
+      "viewAll": "Sprechen Sie mit uns über Ihre Daten",
+      "readCase": "Diesen Arbeitsablauf ausprobieren",
       "items": [
         {
           "id": "rare-diseases",
-          "title": "Genomische Analyse seltener Krankheiten",
-          "description": "Wie Forscher an der Stanford-Universität Attma nutzten, um neue genetische Varianten bei Patienten mit seltenen Krankheiten zu identifizieren und die Analysezeit von Wochen auf Stunden zu reduzieren.",
-          "tag": "Genomik"
+          "title": "Fallbesprechung zu seltenen Erkrankungen",
+          "description": "Fügen Sie eine klinische Notiz ein oder hängen Sie einen Exombericht an. Attma ordnet die Befunde HPO zu, bewertet 12,900 seltene Erkrankungen und priorisiert die Kandidatenvarianten. Bei 200 veröffentlichten Fällen, die nicht im Index enthalten waren, stand die ursächliche Variante in 50.5% der Fälle an erster Stelle.",
+          "tag": "Genomik",
+          "prompt": "Ein 18 Monate altes Mädchen hat seit dem Alter von 6 Monaten verlängerte febrile und afebrile Anfälle, jetzt mit globaler Entwicklungsverzögerung, leichter Hypotonie und einem ataktischen Gang; die MRT ist normal. Kandidatenvarianten: ENSP00000501589.1:p.Arg1648His, rs1801133, NM_000546.6:c.215C>G. Ordnen Sie die wahrscheinlichen Diagnosen und Varianten nach Wahrscheinlichkeit, mit Evidenz."
         },
         {
-          "id": "drug-discovery",
-          "title": "Beschleunigte Arzneimittelentwicklung",
-          "description": "BioPharm Inc. nutzte Attma zur Analyse von Protein-Ligand-Interaktionen, was zu 3 vielversprechenden Medikamentenkandidaten in nur 2 Monaten statt Jahren führte.",
-          "tag": "Pharma"
+          "id": "single-cell",
+          "title": "Einzelzellatlas in wenigen Minuten",
+          "description": "Laden Sie PBMC 3k oder Ihr eigenes .h5ad: Qualitätskontrolle, Clustering, UMAP, Markergene, Annotation der Zelltypen und Pathway-Anreicherungsanalyse, mit jeder Abbildung und jeder Codezeile.",
+          "tag": "Einzelzell",
+          "prompt": "Laden Sie den öffentlichen PBMC 3k Einzelzelldatensatz, führen Sie QC, Normalisierung, Clustering und UMAP aus, finden Sie Markergene pro Cluster, annotieren Sie die Zelltypen anhand kanonischer Marker und führen Sie eine Pathway-Anreicherungsanalyse mit den B-Zell-Markern durch."
         },
         {
-          "id": "covid-tracking",
-          "title": "COVID-19-Variantenverfolgung",
-          "description": "Forscher im öffentlichen Gesundheitswesen verwenden Attma, um SARS-CoV-2-Mutationen zu überwachen und Varianteneigenschaften aus Sequenzdaten in Echtzeit vorherzusagen.",
-          "tag": "Virologie"
-        }
-      ]
-    },
-    "testimonials": {
-      "title": "Das sagen unsere Nutzer",
-      "subtitle": "Forscher weltweit vertrauen bei ihrer Arbeit auf Attma",
-      "items": [
-        {
-          "id": "sarah-johnson",
-          "quote": "Attma hat unseren Forschungsablauf komplett transformiert. Was früher Wochen dauerte, geschieht jetzt in Minuten.",
-          "name": "Dr. Sarah Johnson",
-          "title": "Leitende Forscherin, Genomics Institute"
-        },
-        {
-          "id": "michael-chen",
-          "quote": "Die Musterkennungsfähigkeiten sind unübertroffen. Wir haben Korrelationen in unseren Daten entdeckt, die wir manuell nie gefunden hätten.",
-          "name": "Prof. Michael Chen",
-          "title": "Computerbiologie, Oxford Universität"
-        },
-        {
-          "id": "emily-rodriguez",
-          "quote": "Als jemand mit begrenzter bioinformatischer Erfahrung macht Attmas natürlichsprachliche Schnittstelle komplexe Analysen zugänglich und intuitiv.",
-          "name": "Dr. Emily Rodriguez",
-          "title": "Molekularbiologin, BioTech Labs"
+          "id": "variant-structure",
+          "title": "Von der Variante zur Struktur",
+          "description": "Beginnen Sie mit einer Proteinveränderung und erhalten Sie ihre Populationsfrequenz, den ClinVar-Status, den AlphaMissense-Score, die betroffene Domäne, die AlphaFold-Konfidenz an dieser Aminosäureposition und die Publikationen, die sie berichten.",
+          "tag": "Proteine",
+          "prompt": "Annotieren Sie die SCN1A Variante ENSP00000501589.1:p.Arg1648His: Populationsfrequenz, ClinVar, AlphaMissense und CADD, in welche Proteindomäne sie fällt und wie zuverlässig die AlphaFold-Struktur dort ist, und was die Literatur dazu sagt."
         }
       ]
     },
     "cta": {
-      "title": "Bereit, Ihre Forschung zu transformieren?",
-      "subtitle": "Schließen Sie sich tausenden von Wissenschaftlern an, die ihre Entdeckungen mit Attma beschleunigen",
-      "button": "Kostenlos starten",
-      "noCredit": "Keine Kreditkarte erforderlich. Starten Sie noch heute mit unserem kostenlosen Plan."
+      "title": "Bringen Sie eine Frage und einen Datensatz mit",
+      "subtitle": "Attma ist in der Beta-Phase. Melden Sie sich an und führen Sie Ihren ersten Arbeitsablauf in wenigen Minuten aus.",
+      "button": "Analyse starten",
+      "noCredit": "Während der Beta-Phase kostenlos. Für Forschungszwecke, nicht für die klinische Diagnostik.",
+      "viewPricing": "Preise ansehen"
+    },
+    "stats": {
+      "title": "Gemessen, nicht versprochen",
+      "subtitle": "Zahlen aus Attmas eigenem Benchmark und den Quellen, mit denen Attma verbunden ist.",
+      "items": [
+        {
+          "id": "accuracy",
+          "number": "50.5%",
+          "label": "Ursächliche Variante an erster Stelle",
+          "description": "Bei 200 veröffentlichten Fällen zu seltenen Erkrankungen, die nicht im Index enthalten waren"
+        },
+        {
+          "id": "speed",
+          "number": "12,900",
+          "label": "Seltene Erkrankungen bewertet",
+          "description": "Aus HPO, OMIM und Orphanet, in etwa 50 ms"
+        },
+        {
+          "id": "papers",
+          "number": "8",
+          "label": "Angebundene Quellen",
+          "description": "Darunter Ensembl VEP, UniProt, AlphaFold DB, PubMed und g:Profiler"
+        },
+        {
+          "id": "users",
+          "number": "25",
+          "label": "Sprachen",
+          "description": "Zum Tippen und Diktieren"
+        }
+      ]
     },
     "benefits": {
       "expertSupport": {
@@ -174,36 +184,6 @@
         "title": "Datenschutz",
         "description": "Ihre Forschungsdaten und Kommunikation bleiben sicher und vertraulich"
       }
-    },
-    "stats": {
-      "title": "Vertraut von Forschern weltweit",
-      "subtitle": "Unsere KI-gestützte Plattform hilft Wissenschaftlern, ihre Forschung zu beschleunigen und schneller Durchbrüche zu erzielen.",
-      "items": [
-        {
-          "id": "accuracy",
-          "number": "99,9%",
-          "label": "Genauigkeitsrate",
-          "description": "Bei Sequenzausrichtung und -analyse"
-        },
-        {
-          "id": "speed",
-          "number": "10x",
-          "label": "Schnellere Analyse",
-          "description": "Im Vergleich zu herkömmlichen Methoden"
-        },
-        {
-          "id": "papers",
-          "number": "5.000+",
-          "label": "Forschungsarbeiten",
-          "description": "Verarbeitet und referenziert"
-        },
-        {
-          "id": "users",
-          "number": "1.000+",
-          "label": "Wissenschaftler",
-          "description": "Nutzen Attma täglich"
-        }
-      ]
     }
   },
   "pricing": {

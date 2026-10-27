@@ -165,21 +165,13 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
     try {
       setIsSubmitting(true);
 
-      if (query.trim()) {
-        const encodedQuery = encodeURIComponent(query.trim());
-        const maxLength = 2000;
-        const safeQuery =
-          encodedQuery.length > maxLength
-            ? encodedQuery.substring(0, maxLength)
-            : encodedQuery;
-
-        router.push(`/${locale}/chat?prompt=${safeQuery}`);
-      } else {
-        router.push(`/${locale}/chat`);
-      }
+      // The chat reads ?query= and sends it as the first message. Text is cut
+      // before encoding so a %XX escape is never split.
+      const text = query.trim().slice(0, 2000);
+      router.push(text ? `/chat?query=${encodeURIComponent(text)}` : '/chat');
     } catch (error) {
       console.error('Navigation error:', error);
-      router.push(`/${locale}/chat`);
+      router.push('/chat');
       setIsSubmitting(false);
     }
   };
@@ -208,7 +200,7 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
             <span className="font-medium">
               {dictionary.introducing || 'Introducing Attma'}
             </span>
-            <Sparkles className="ml-1 size-3 sm:size-3.5 text-primary" />
+            <Sparkles className="ml-1 size-3 sm:size-3.5 text-primary-ink" />
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl xl:text-7xl max-w-3xl mx-auto bg-clip-text text-transparent bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-2">
