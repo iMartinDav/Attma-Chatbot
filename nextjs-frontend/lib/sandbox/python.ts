@@ -75,9 +75,6 @@ function sandboxFor(chatId: string): Promise<Sandbox> {
     snapshotExpiration: 7 * 24 * 60 * 60_000,
     env: { MPLBACKEND: 'Agg', PYTHONUNBUFFERED: '1' },
     tags: { app: 'attma' },
-    onCreate: async (sandbox) => {
-      await sandbox.runCommand('mkdir', ['-p', 'data', 'outputs', 'steps']);
-    },
   });
 }
 
@@ -143,7 +140,13 @@ export async function runPython({
   await sandbox.extendTimeout(5 * 60_000).catch(() => {});
   await stageInputs(sandbox, inputs);
 
-  const steps = await sandbox.runCommand('bash', ['-c', 'ls steps | wc -l']);
+  // scanpy's save= writes plots to figures/, so that points at outputs/ and
+  // they are published like any other figure. Checked on every run so
+  // workspaces created before this still get it.
+  const steps = await sandbox.runCommand('bash', [
+    '-c',
+    'mkdir -p data outputs steps && { [ -e figures ] || ln -s outputs figures; } && ls steps | wc -l',
+  ]);
   const step = Number((await steps.stdout()).trim() || 0) + 1;
   const script = `steps/${String(step).padStart(2, '0')}.py`;
   await sandbox.writeFiles([{ path: script, content: Buffer.from(code) }]);

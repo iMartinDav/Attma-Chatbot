@@ -18,7 +18,7 @@ export const runPythonTool = (chatId: string) =>
 - Installed: numpy, pandas, scipy, statsmodels, scikit-learn, matplotlib, seaborn, biopython, pysam, cyvcf2, anndata, scanpy (with leidenalg), pydeseq2, gseapy, pyarrow, openpyxl, requests. Network access to public APIs and datasets is available (e.g. scanpy.datasets.pbmc3k()).
 - The working directory persists across steps and messages in this chat, like a notebook whose variables do not persist: save intermediate results to files (e.g. .h5ad, .parquet) and reload them in the next step.
 - Attached files: list them in inputs; they are downloaded to data/<name> before the code runs.
-- Save every figure (PNG, dpi=150, tight bbox, readable labels and a title) and every result table (CSV) to outputs/; they are shown to the user. Do not call plt.show().
+- Save every figure (PNG, dpi=150, tight bbox, readable labels and a title) and every result table (CSV) to outputs/; they are shown to the user, so each analysis step should leave at least one figure. scanpy's save= also lands there. Do not call plt.show().
 - Print a short summary of what the step found (shapes, counts, top rows, key statistics), not whole tables.
 - Each step has a 150-second limit; split long analyses into steps.`,
     inputSchema: z.object({
