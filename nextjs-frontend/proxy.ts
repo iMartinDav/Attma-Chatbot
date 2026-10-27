@@ -106,7 +106,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip all internal paths but include all pages
-    '/((?!api|_next/static|_next/image|images|fonts|favicon.ico).*)',
+    // Skip internal paths and static files (anything with an extension, such
+    // as /demo/synthetic-exome-report.pdf); include all pages
+    '/((?!api|_next/static|_next/image|images|fonts|demo|favicon.ico|.*\\..*).*)',
   ],
 };
