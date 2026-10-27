@@ -6,13 +6,18 @@ import { PasswordInput } from '@/components/auth/password-input';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { FormEvent } from 'react';
-import { useRef, useState, useTransition } from 'react';
+import { Suspense, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-export default function LoginPage() {
+// Only same-site paths are followed after sign-in.
+const safeCallback = (value: string | null) =>
+  value?.startsWith('/') && !value.startsWith('//') ? value : '/chat';
+
+function LoginForm() {
   const router = useRouter();
+  const callbackUrl = safeCallback(useSearchParams().get('callbackUrl'));
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -36,7 +41,7 @@ export default function LoginPage() {
         if (result?.ok) {
           toast.success('Login successful!');
           // Replace setTimeout with a proper navigation after session is confirmed
-          router.push('/chat');
+          router.push(callbackUrl);
           router.refresh();
         } else {
           setError(
@@ -91,7 +96,10 @@ export default function LoginPage() {
             )}
 
             <div className="flex flex-col gap-4">
-              <GoogleSignInButton buttonText="Continue with Google" />
+              <GoogleSignInButton
+                buttonText="Continue with Google"
+                callbackUrl={callbackUrl}
+              />
 
               <div className="relative flex items-center justify-center gap-2">
                 <div className="flex-1 border-t border-dashed border-zinc-300 dark:border-zinc-700" />
@@ -154,5 +162,14 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// useSearchParams needs a Suspense boundary for the static render.
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

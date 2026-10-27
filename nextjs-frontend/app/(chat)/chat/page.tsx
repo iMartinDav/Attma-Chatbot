@@ -5,12 +5,22 @@ import { auth } from '@/app/(auth)/auth';
 import Chat from '@/components/chat/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ query?: string }>;
+}) {
   const id = 'new';
   const session = await auth();
 
+  // A question asked on the landing page survives the trip through sign-in.
   if (!session) {
-    redirect('/login');
+    const { query } = await searchParams;
+    redirect(
+      query
+        ? `/login?callbackUrl=${encodeURIComponent(`/chat?query=${encodeURIComponent(query)}`)}`
+        : '/login',
+    );
   }
 
   const cookieStore = await cookies();

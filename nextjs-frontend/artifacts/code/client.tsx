@@ -66,6 +66,27 @@ interface Metadata {
   outputs: Array<ConsoleOutput>;
 }
 
+// Pyodide (Python in the browser, about 10 MB) loads the first time a code
+// artifact runs, not on every chat page.
+const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/';
+type LoadPyodide = (options: { indexURL: string }) => Promise<any>;
+let pyodideScript: Promise<LoadPyodide> | undefined;
+
+function pyodideLoader(): Promise<LoadPyodide> {
+  pyodideScript ??= new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `${PYODIDE_URL}pyodide.js`;
+    script.onload = () =>
+      resolve((globalThis as { loadPyodide?: LoadPyodide }).loadPyodide!);
+    script.onerror = () => {
+      pyodideScript = undefined;
+      reject(new Error('Could not load the Python runtime.'));
+    };
+    document.head.append(script);
+  });
+  return pyodideScript;
+}
+
 export const codeArtifact = new Artifact<'code', Metadata>({
   kind: 'code',
   description:
@@ -133,9 +154,9 @@ export const codeArtifact = new Artifact<'code', Metadata>({
         }));
 
         try {
-          // @ts-expect-error - loadPyodide is not defined
-          const currentPyodideInstance = await globalThis.loadPyodide({
-            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+          const loadPyodide = await pyodideLoader();
+          const currentPyodideInstance = await loadPyodide({
+            indexURL: PYODIDE_URL,
           });
 
           currentPyodideInstance.setStdout({
