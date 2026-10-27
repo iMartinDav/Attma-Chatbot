@@ -1,5 +1,7 @@
 // From ElevenLabs UI (https://github.com/elevenlabs/ui), MIT License.
 // Copied from the registry, as `shadcn add` would, with imports adapted.
+// Attma change: an optional `stream` prop draws an existing capture (the
+// recorder's), so dictation opens the microphone once, not twice.
 'use client';
 
 import { useEffect, useRef, type HTMLAttributes } from 'react';
@@ -10,6 +12,8 @@ export type LiveWaveformProps = HTMLAttributes<HTMLDivElement> & {
   active?: boolean;
   processing?: boolean;
   deviceId?: string;
+  /** Draw this stream instead of opening the microphone. It is not stopped. */
+  stream?: MediaStream | null;
   barWidth?: number;
   barHeight?: number;
   barGap?: number;
@@ -33,6 +37,7 @@ export const LiveWaveform = ({
   active = false,
   processing = false,
   deviceId,
+  stream: externalStream,
   barWidth = 3,
   barGap = 1,
   barRadius = 1.5,
@@ -252,23 +257,32 @@ export const LiveWaveform = ({
       return;
     }
 
+    // The effect can be cleaned up before the microphone opens; a capture that
+    // arrives after that is stopped instead of left running.
+    let disposed = false;
     const setupMicrophone = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: deviceId
-            ? {
-                deviceId: { exact: deviceId },
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              }
-            : {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              },
-        });
-        streamRef.current = stream;
+        const stream =
+          externalStream ??
+          (await navigator.mediaDevices.getUserMedia({
+            audio: deviceId
+              ? {
+                  deviceId: { exact: deviceId },
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                }
+              : {
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                },
+          }));
+        if (disposed) {
+          if (!externalStream) stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (!externalStream) streamRef.current = stream;
         onStreamReady?.(stream);
 
         const AudioContextConstructor =
@@ -296,6 +310,7 @@ export const LiveWaveform = ({
     setupMicrophone();
 
     return () => {
+      disposed = true;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -316,6 +331,7 @@ export const LiveWaveform = ({
   }, [
     active,
     deviceId,
+    externalStream,
     fftSize,
     smoothingTimeConstant,
     onError,

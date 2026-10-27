@@ -37,8 +37,8 @@ import { PreviewAttachment } from './preview-attachment';
 import { SourcesSelector } from './sources-selector';
 import {
   DictationBar,
+  useMicrophone,
   useVoiceLanguage,
-  VoiceLanguageMenu,
 } from './voice-dictation';
 import type { VisibilityType } from './visibility-selector';
 
@@ -115,13 +115,20 @@ function PureMultimodalInput({
   }, [input, adjustHeight]);
 
   const [voiceLanguage] = useVoiceLanguage();
-  const dictation = useDictation((transcript) => {
-    setInput((current) => (current ? `${current} ${transcript}` : transcript));
-    requestAnimationFrame(() => {
-      adjustHeight();
-      textareaRef.current?.focus();
-    });
-  }, voiceLanguage);
+  const [microphone] = useMicrophone();
+  const dictation = useDictation(
+    (transcript) => {
+      setInput((current) =>
+        current ? `${current} ${transcript}` : transcript,
+      );
+      requestAnimationFrame(() => {
+        adjustHeight();
+        textareaRef.current?.focus();
+      });
+    },
+    voiceLanguage,
+    microphone,
+  );
   const dictating = dictation.state !== 'idle';
 
   const resetHeight = useCallback(() => {
@@ -303,6 +310,7 @@ function PureMultimodalInput({
               <DictationBar
                 state={dictation.state}
                 startedAt={dictation.startedAt}
+                stream={dictation.stream}
                 onCancel={dictation.cancel}
                 onStop={dictation.stop}
               />
@@ -319,7 +327,7 @@ function PureMultimodalInput({
                 'w-full min-h-[44px] max-h-[450px] resize-none bg-transparent border-0 shadow-none',
                 'focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-5',
                 dictating && 'hidden',
-                'text-base md:text-[15px] leading-[1.6] placeholder:text-muted-foreground/40',
+                'text-base md:text-[15px] leading-[1.6] placeholder:text-muted-foreground',
                 'font-normal transition-all',
                 className,
               )}
@@ -357,7 +365,6 @@ function PureMultimodalInput({
               onStop={dictation.stop}
               disabled={isLoading}
             />
-            <VoiceLanguageMenu disabled={dictating} />
           </div>
 
           <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1.5">

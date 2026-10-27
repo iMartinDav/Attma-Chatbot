@@ -219,9 +219,8 @@ export function Chat({
               }
             />
 
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-muted-foreground/60">
-              Runs on Meta Muse: Wonder plans · Spark reads · Voice listens ·
-              Image draws
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-muted-foreground">
+              Powered by Attma
             </div>
           </div>
         ) : (

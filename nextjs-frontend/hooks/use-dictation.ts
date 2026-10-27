@@ -18,24 +18,35 @@ export function useDictation(
   onTranscript: (text: string) => void,
   /** A VOICE_LANGUAGES code, or 'auto' to let Muse detect the language. */
   language = 'auto',
+  /**
+   * An input deviceId, or 'default' for the system default. Asked for
+   * explicitly because the browser's own pick can be a silent virtual device
+   * (audio apps such as Boom install aggregate inputs).
+   */
+  microphone = 'default',
 ) {
   const [state, setState] = useState<DictationState>('idle');
   const [startedAt, setStartedAt] = useState<number | null>(null);
+  // The live capture, shared with the waveform so the mic is opened once.
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const cancelledRef = useRef(false);
   const limitRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onTranscriptRef = useRef(onTranscript);
   const languageRef = useRef(language);
+  const microphoneRef = useRef(microphone);
+  const deviceLabelRef = useRef('');
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript;
     languageRef.current = language;
-  }, [onTranscript, language]);
+    microphoneRef.current = microphone;
+  }, [onTranscript, language, microphone]);
 
   const transcribe = useCallback(async (recording: Blob) => {
     setState('transcribing');
     try {
-      const wav = await toWav(recording);
+      const wav = await toWav(recording, deviceLabelRef.current);
       const form = new FormData();
       form.append('audio', wav, 'dictation.wav');
       form.append('language', languageRef.current);
@@ -60,13 +71,18 @@ export function useDictation(
 
   const start = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: await audioConstraints(microphoneRef.current),
+      });
+      deviceLabelRef.current = stream.getAudioTracks()[0]?.label ?? '';
+      setStream(stream);
       const recorder = new MediaRecorder(stream);
       const chunks: Blob[] = [];
       recorder.ondataavailable = (event) => chunks.push(event.data);
       recorder.onstop = () => {
         clearTimeout(limitRef.current);
         setStartedAt(null);
+        setStream(null);
         for (const track of stream.getTracks()) track.stop();
         if (cancelledRef.current) {
           setState('idle');
@@ -103,11 +119,35 @@ export function useDictation(
     [],
   );
 
-  return { state, startedAt, start, stop, cancel, maxSeconds: MAX_SECONDS };
+  return {
+    state,
+    startedAt,
+    stream,
+    start,
+    stop,
+    cancel,
+    maxSeconds: MAX_SECONDS,
+  };
+}
+
+/**
+ * Chrome ignores a preferred device given as `ideal` and keeps its own pick,
+ * so the device is asked for exactly when it exists. 'default' is the system
+ * default in Chrome; browsers without that entry get their usual device.
+ */
+async function audioConstraints(
+  deviceId: string,
+): Promise<MediaTrackConstraints | true> {
+  const inputs = (await navigator.mediaDevices.enumerateDevices()).filter(
+    (d) => d.kind === 'audioinput',
+  );
+  return inputs.some((d) => d.deviceId === deviceId)
+    ? { deviceId: { exact: deviceId } }
+    : true;
 }
 
 /** Decodes any browser recording and re-encodes it as 16 kHz mono PCM WAV. */
-async function toWav(recording: Blob): Promise<Blob> {
+async function toWav(recording: Blob, deviceLabel: string): Promise<Blob> {
   const context = new AudioContext();
   const decoded = await context.decodeAudioData(await recording.arrayBuffer());
   await context.close();
@@ -122,6 +162,16 @@ async function toWav(recording: Blob): Promise<Blob> {
   source.connect(offline.destination);
   source.start();
   const samples = (await offline.startRendering()).getChannelData(0);
+
+  // A muted or wrong input device records flat silence; say so instead of
+  // sending it and reporting that no speech was found.
+  let peak = 0;
+  for (const sample of samples) peak = Math.max(peak, Math.abs(sample));
+  if (peak < 0.003) {
+    throw new Error(
+      `${deviceLabel || 'The microphone'} recorded only silence. Choose another microphone in your account menu (Microphone).`,
+    );
+  }
 
   const buffer = new ArrayBuffer(44 + samples.length * 2);
   const view = new DataView(buffer);

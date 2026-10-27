@@ -59,8 +59,8 @@ function PureDictationButton({
   const label = recording
     ? 'Stop dictation'
     : state === 'transcribing'
-      ? 'Transcribing with Muse Voice'
-      : 'Dictate with Muse Voice';
+      ? 'Transcribing'
+      : 'Dictate';
   return (
     <Button
       className={cx('rounded-full size-8 p-0', {
@@ -122,11 +122,7 @@ export interface SendButtonProps {
   uploadQueue: string[];
 }
 
-function PureSendButton({
-  submitForm,
-  input,
-  uploadQueue,
-}: SendButtonProps) {
+function PureSendButton({ submitForm, input, uploadQueue }: SendButtonProps) {
   const hasInput = input.length > 0;
   const label = 'Send message';
 

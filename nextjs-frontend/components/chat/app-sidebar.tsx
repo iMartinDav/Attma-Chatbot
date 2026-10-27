@@ -9,6 +9,10 @@ import { SidebarProjects } from '@/components/chat/projects';
 import { SearchDialog } from '@/components/chat/search-dialog';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
 import {
+  MicrophoneSubmenu,
+  VoiceLanguageSubmenu,
+} from '@/components/chat/voice-dictation';
+import {
   ChevronUpIcon,
   LogOutIcon,
   NewChatIcon,
@@ -58,11 +62,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     <>
       <Sidebar
         collapsible="icon"
-        className={`bg-background transition-all duration-200 ${
-          isCollapsed
-            ? 'border-r-2 border-border/40 hover:border-border/60 cursor-pointer'
-            : 'border-r border-border/10'
-        }`}
+        className={`border-r border-sidebar-border ${isCollapsed ? 'cursor-pointer' : ''}`}
         onClick={handleCollapsedClick}
       >
         {/* Header */}
@@ -75,7 +75,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 onClick={toggleSidebar}
                 onMouseEnter={() => setLogoHovered(true)}
                 onMouseLeave={() => setLogoHovered(false)}
-                className={`relative flex items-center w-10 h-10 rounded-lg hover:bg-muted/60 transition-all duration-200 ${isCollapsed ? 'justify-center mx-auto' : 'justify-start'}`}
+                className={`relative flex items-center w-10 h-10 rounded-lg hover:bg-sidebar-accent transition-all duration-200 ${isCollapsed ? 'justify-center mx-auto' : 'justify-start'}`}
               >
                 {/* Logo - fades out on hover */}
                 <div
@@ -121,7 +121,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                         router.refresh();
                       }
                     }}
-                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-sidebar-accent transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
                   >
                     <NewChatIcon />
                     {!isCollapsed && <span className="text-sm">New chat</span>}
@@ -143,13 +143,13 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                         setSearchOpen(true);
                       }
                     }}
-                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-muted/60 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+                    className={`flex items-center gap-3 w-full h-10 rounded-lg hover:bg-sidebar-accent transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
                   >
                     <SearchIcon />
                     {!isCollapsed && (
                       <span className="text-sm flex-1 flex items-center justify-between">
                         Search chats
-                        <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
+                        <kbd className="hidden md:inline-flex h-5 items-center rounded border border-sidebar-border bg-sidebar-accent px-1.5 font-mono text-[10px] text-muted-foreground">
                           ⌘K
                         </kbd>
                       </span>
@@ -169,7 +169,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           {/* Chat History - only when expanded */}
           {!isCollapsed && (
             <SidebarGroup className="mt-4">
-              <div className="px-3 text-xs font-medium text-muted-foreground/60 mb-2">
+              <div className="px-3 text-xs font-medium text-muted-foreground mb-2">
                 Your chats
               </div>
               <SidebarHistory user={user} />
@@ -185,7 +185,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`flex items-center gap-3 w-full rounded-lg hover:bg-muted/60 transition-colors ${
+                      className={`flex items-center gap-3 w-full rounded-lg hover:bg-sidebar-accent transition-colors ${
                         isCollapsed
                           ? 'justify-center h-10 w-10 mx-auto p-0'
                           : 'h-14 px-3'
@@ -236,6 +236,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <DropdownMenuItem className="p-0 focus:bg-transparent hover:bg-transparent">
                     <ThemeSwitcher />
                   </DropdownMenuItem>
+
+                  <VoiceLanguageSubmenu />
+                  <MicrophoneSubmenu />
 
                   <DropdownMenuSeparator className="my-1" />
 

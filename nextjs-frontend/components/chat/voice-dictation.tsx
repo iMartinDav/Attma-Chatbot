@@ -1,27 +1,27 @@
 'use client';
 
 /**
- * Dictation UI for Muse Voice Transcribe: a language menu next to the mic
- * (auto-detect, or one of the 25 languages Muse recognizes, with code
- * switching), and a live waveform that takes the composer's place while the
- * user speaks, like dictation in ChatGPT or ElevenLabs' speech input.
+ * Dictation UI for Muse Voice Transcribe: a live waveform that takes the
+ * composer's place while the user speaks, like dictation in ChatGPT or
+ * ElevenLabs' speech input, and the dictation language setting for the user
+ * menu (auto-detect by default, or one of the 25 languages Muse recognizes).
  */
 
 import { LiveWaveform } from '@/components/elevenlabs/live-waveform';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { DictationState } from '@/hooks/use-dictation';
 import { VOICE_LANGUAGES, type VoiceLanguage } from '@/lib/voice/languages';
 import { cn } from '@/lib/utils';
-import { CheckIcon, LanguagesIcon, XIcon } from 'lucide-react';
+import { CheckIcon, LanguagesIcon, MicIcon, XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -35,35 +35,28 @@ export function useVoiceLanguage() {
 
 const languageLabel = (code: VoiceLanguage) =>
   code === 'auto'
-    ? 'Any language'
+    ? 'Auto-detect'
     : (VOICE_LANGUAGES.find((l) => l.code === code)?.native ?? code);
 
-export function VoiceLanguageMenu({ disabled }: { disabled?: boolean }) {
+/**
+ * The dictation language setting, in the user menu: auto-detect by default,
+ * or one language to bias toward when auto-detect misses short clips.
+ */
+export function VoiceLanguageSubmenu() {
   const [language, setLanguage] = useVoiceLanguage();
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          disabled={disabled}
-          className="h-8 gap-1 rounded-full px-2 text-xs text-muted-foreground"
-          aria-label={`Dictation language: ${languageLabel(language)}`}
-          title={`Dictation language: ${languageLabel(language)}`}
-        >
-          <LanguagesIcon className="size-4" />
-          <span className="uppercase">
-            {language === 'auto' ? 'Auto' : language}
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        side="top"
-        align="start"
-        className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] w-56 overflow-y-auto"
-      >
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="h-8 gap-2 px-3 text-sm">
+        <LanguagesIcon className="size-4 text-muted-foreground" />
+        <span>Dictation language</span>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {language === 'auto' ? 'Auto' : languageLabel(language)}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] w-60 overflow-y-auto">
         <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-          Muse Voice understands 25 languages and switches between them mid
-          sentence.
+          Attma detects 25 languages and follows switches mid sentence. Pick one
+          only if short clips come out in the wrong language.
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
@@ -84,8 +77,83 @@ export function VoiceLanguageMenu({ disabled }: { disabled?: boolean }) {
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
+
+export function useMicrophone() {
+  return useLocalStorage<string>('attma-microphone', 'default', {
+    initializeWithValue: false,
+  });
+}
+
+/**
+ * The input device for dictation, in the user menu. Device names are only
+ * visible once the site may use the microphone, so the list asks for access
+ * the first time if needed.
+ */
+export function MicrophoneSubmenu() {
+  const [microphone, setMicrophone] = useMicrophone();
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+
+  const list = async () => {
+    let inputs = (await navigator.mediaDevices.enumerateDevices()).filter(
+      (d) => d.kind === 'audioinput',
+    );
+    if (inputs.every((d) => !d.label)) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      for (const track of stream.getTracks()) track.stop();
+      inputs = (await navigator.mediaDevices.enumerateDevices()).filter(
+        (d) => d.kind === 'audioinput',
+      );
+    }
+    setDevices(inputs);
+  };
+
+  const systemDefault = devices.find((d) => d.deviceId === 'default');
+  const others = devices.filter(
+    (d) => d.deviceId !== 'default' && d.deviceId !== 'communications',
+  );
+  const current =
+    microphone === 'default'
+      ? 'Default'
+      : (devices.find((d) => d.deviceId === microphone)?.label ?? 'Custom');
+
+  return (
+    <DropdownMenuSub
+      onOpenChange={(open) => {
+        if (open) list().catch(() => setDevices([]));
+      }}
+    >
+      <DropdownMenuSubTrigger className="h-8 gap-2 px-3 text-sm">
+        <MicIcon className="size-4 text-muted-foreground" />
+        <span>Microphone</span>
+        <span className="ml-auto max-w-24 truncate text-xs text-muted-foreground">
+          {current}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="w-72">
+        <DropdownMenuRadioGroup
+          value={microphone}
+          onValueChange={setMicrophone}
+        >
+          <DropdownMenuRadioItem value="default">
+            <span className="truncate">
+              System default
+              {systemDefault
+                ? ` (${systemDefault.label.replace(/^Default - /, '')})`
+                : ''}
+            </span>
+          </DropdownMenuRadioItem>
+          {others.map((d) => (
+            <DropdownMenuRadioItem key={d.deviceId} value={d.deviceId}>
+              <span className="truncate">{d.label || 'Microphone'}</span>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }
 
@@ -107,11 +175,13 @@ function Elapsed({ since }: { since: number }) {
 export function DictationBar({
   state,
   startedAt,
+  stream,
   onCancel,
   onStop,
 }: {
   state: DictationState;
   startedAt: number | null;
+  stream: MediaStream | null;
   onCancel: () => void;
   onStop: () => void;
 }) {
@@ -126,13 +196,14 @@ export function DictationBar({
         )}
       />
       <LiveWaveform
-        active={recording}
+        active={recording && Boolean(stream)}
+        stream={stream}
         processing={!recording}
         mode="scrolling"
         height={36}
         barWidth={3}
         barGap={2}
-        className="min-w-0 flex-1 text-primary"
+        className="min-w-0 flex-1 text-primary-ink"
       />
       <span className="shrink-0 text-xs text-muted-foreground">
         {recording ? (
@@ -141,7 +212,7 @@ export function DictationBar({
             {startedAt && <Elapsed since={startedAt} />}
           </>
         ) : (
-          'Muse Voice is transcribing…'
+          'Transcribing…'
         )}
       </span>
       {recording && (
