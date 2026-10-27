@@ -8,9 +8,8 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     let draftContent = '';
 
     try {
-      // Use DALL-E 3 for high quality scientific image generation
       const { image } = await generateImage({
-        model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
+        model: myProvider.imageModel('image-model'),
         prompt: title,
         n: 1,
       });
@@ -35,7 +34,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     try {
       const { image } = await generateImage({
-        model: myProvider.imageModel('image-model-dalle'), // DALL-E 3
+        model: myProvider.imageModel('image-model'),
         prompt: description,
         n: 1,
       });

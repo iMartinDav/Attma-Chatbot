@@ -77,8 +77,3 @@ Uses Ensembl VEP with gnomAD, ClinVar, AlphaMissense and CADD. When phenotypes a
     };
   },
 });
-
-export const rareDiseaseTools = {
-  rankDiagnoses: rankDiagnosesTool,
-  prioritizeVariants: prioritizeVariantsTool,
-};

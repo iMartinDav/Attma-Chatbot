@@ -1,236 +1,194 @@
 /**
- * Attma Bioinformatics Agent - Orchestrates tools and model selection
+ * Attma: one orchestrating agent (Muse Wonder) that turns a researcher's
+ * question into a reproducible workflow. It plans, runs each step with the
+ * tools of the connectors the user enabled (knowledge bases, a Python
+ * workspace, AlphaGenome, Muse Spark sub-agents), checks the results, and
+ * reports what the data show with the source behind each claim.
  */
 
-import { openai } from '@ai-sdk/openai';
+import 'server-only';
+
+import { CONNECTORS, type ConnectorId } from '@/lib/ai/connectors/catalog';
+import { myProvider, webSearchTool } from '@/lib/ai/providers';
 import {
+  predictVariantEffectTool,
+  runPythonTool,
+} from '@/lib/ai/tools/compute';
+import { enrichGenesTool } from '@/lib/ai/tools/enrichment';
+import { pathwayTools } from '@/lib/ai/tools/pathway-tools';
+import { proteinStructureTool } from '@/lib/ai/tools/proteins';
+import {
+  readClinicalDocument,
+  readDocument,
+  reviewLiterature,
+} from '@/lib/ai/tools/subagents';
+import {
+  prioritizeVariantsTool,
+  rankDiagnosesTool,
+} from '@/lib/ai/tools/rare-disease';
+import {
+  geneLookupTool,
+  pubmedSearchTool,
+} from '@/lib/ai/tools/research-tools';
+import {
+  generateText,
   isStepCount,
-  streamText,
-  tool,
+  jsonSchema,
+  NoSuchToolError,
+  Output,
+  ToolLoopAgent,
+  type ToolCallRepairFunction,
   type ToolSet,
-  type UIMessage,
 } from 'ai';
-import { z } from 'zod';
 
-import { researchTools } from '../tools/research-tools';
-import {
-  detectAgentDomain,
-  detectTaskCategory,
-  getDomainInstructions,
-  hasFileAttachment,
-  routeToOptimalModel,
-} from './task-router';
-import type { AgentDomain, AgentState, TaskCategory } from './types';
-
-const BASE_INSTRUCTIONS = `You are Attma, an advanced AI Bioinformatician designed for cutting-edge biological data analysis.
-
-## Core Expertise
-- **RNA-seq Analysis**: DESeq2, edgeR, limma-voom for differential expression
-- **Single-cell RNA-seq**: Scanpy, Seurat for clustering, trajectory inference
-- **Genomic Variants**: VCF interpretation, variant annotation, GWAS
-- **Pathway Analysis**: GSEA, GO enrichment, KEGG, Reactome
-- **Protein Structure**: AlphaFold interpretation, structural biology
-
-## Tool Usage Strategy
-1. **For literature questions**: Use pubmed_search or semantic_scholar
-2. **For gene questions**: Use gene_lookup first, then search if needed
-3. **For web/protocol questions**: Use firecrawl_search
-4. **For code requests**: Create clear, runnable Python/R code
-
-## Response Guidelines
-- Be **concise** - researchers value efficiency
-- Include **code examples** with biology-focused comments
-- **Cite sources** with links when using search tools
-- Suggest **next steps** after each analysis
-- Consider **statistical rigor**: multiple testing, effect sizes
-
-## Multi-Step Reasoning
-When solving complex problems:
-1. Break down the problem into steps
-2. Use tools to gather information
-3. Synthesize findings
-4. Validate conclusions
-5. Provide actionable recommendations`;
-
-/** Get the appropriate model based on task and step */
-function getModelForStep(
-  taskCategory: TaskCategory,
-  stepNumber: number,
-  forceReasoning: boolean = false,
-): string {
-  const selection = routeToOptimalModel('', {
-    previousSteps: stepNumber,
-    forceReasoning,
-  });
-
-  // Map tier to actual model IDs
-  const modelMap: Record<string, string> = {
-    'chat-model': 'gpt-4o-mini',
-    'chat-model-standard': 'gpt-4o',
-    'chat-model-advanced': 'gpt-4o',
-    'chat-model-reasoning': 'o3-mini',
-  };
-
-  return modelMap[selection.modelKey] || 'gpt-4o-mini';
+interface ConnectorContext {
+  chatId: string;
 }
 
-/** Create the full tool set for the agent */
-function createAgentTools(): ToolSet {
-  return {
-    ...researchTools,
-
-    // Document creation tool for code artifacts
-    create_code_artifact: tool({
-      description:
-        'Create a code artifact (Python or R) to display to the user',
-      inputSchema: z.object({
-        title: z.string().describe('Title for the code artifact'),
-        language: z.enum(['python', 'r']).describe('Programming language'),
-        code: z.string().describe('The code content'),
-        description: z
-          .string()
-          .optional()
-          .describe('Brief description of what the code does'),
-      }),
-      execute: async (input: {
-        title: string;
-        language: 'python' | 'r';
-        code: string;
-        description?: string;
-      }) => {
-        return {
-          type: 'code_artifact',
-          title: input.title,
-          language: input.language,
-          code: input.code,
-          description: input.description,
-        };
-      },
+/** Each connector's tools, and the playbook line that tells the agent when to use them. */
+const CONNECTOR_TOOLS: Record<
+  ConnectorId,
+  { tools: (ctx: ConnectorContext) => ToolSet; playbook: string }
+> = {
+  phenotypes: {
+    tools: () => ({ rankDiagnoses: rankDiagnosesTool }),
+    playbook:
+      'Patient phenotype (+/- variants): rankDiagnoses once with HPO-coded findings the patient HAS and every candidate variant (it annotates them too).',
+  },
+  variants: {
+    tools: () => ({ prioritizeVariants: prioritizeVariantsTool }),
+    playbook:
+      'Variant list without phenotypes: prioritizeVariants (VEP with gnomAD, ClinVar, AlphaMissense, CADD). For a VCF, filter it in Python first, then annotate the shortlist.',
+  },
+  proteins: {
+    tools: () => ({ proteinStructure: proteinStructureTool }),
+    playbook:
+      'Missense variant in a leading gene: proteinStructure with the residue number, to see the domain or functional region it hits.',
+  },
+  literature: {
+    tools: () => ({
+      reviewLiterature,
+      searchPubMed: pubmedSearchTool,
     }),
-  };
+    playbook:
+      'Evidence for a gene-disease link: reviewLiterature (a sub-agent grades the abstracts); searchPubMed for general literature questions.',
+  },
+  pathways: {
+    tools: () => ({
+      lookupGene: geneLookupTool,
+      enrichGenes: enrichGenesTool,
+      searchReactome: pathwayTools.reactome_pathway_search,
+      searchKEGG: pathwayTools.kegg_pathway_search,
+      stringInteractions: pathwayTools.string_interactions,
+    }),
+    playbook:
+      'Gene list (e.g. markers or DE genes): enrichGenes (GO, Reactome, KEGG, WikiPathways in one call), stringInteractions for networks; lookupGene for a single gene.',
+  },
+  web: {
+    tools: () => ({ web_search: webSearchTool() }),
+    playbook:
+      'Recent tools, protocols, datasets or anything after your training: web_search, one or two focused searches, and cite the pages. Prefer the dedicated databases and Python for anything they cover.',
+  },
+  python: {
+    tools: ({ chatId }) => ({ runPython: runPythonTool(chatId) }),
+    playbook:
+      'Data files (VCF, CSV/TSV, counts matrices, .h5ad, FASTA) or any statistic, plot or transformation: runPython, one focused step at a time. Single-cell: QC and filtering, normalization, HVGs, PCA, neighbors, Leiden, UMAP, marker genes, then cell type annotation from canonical markers; bulk RNA-seq: PyDESeq2 then enrichment.',
+  },
+  documents: {
+    tools: () => ({ readClinicalDocument, readDocument }),
+    playbook:
+      'Attached PDFs or images: readClinicalDocument for clinical reports and letters (structured case), readDocument for papers, figures and tables. Read several in parallel.',
+  },
+  alphagenome: {
+    tools: ({ chatId }) => ({
+      predictVariantEffect: predictVariantEffectTool(chatId),
+    }),
+    playbook:
+      'Non-coding, splice-region or synonymous variant: predictVariantEffect (AlphaGenome) for expression, chromatin and splicing effects.',
+  },
+};
+
+export function availableConnectors(): ConnectorId[] {
+  return CONNECTORS.filter((c) => !c.requires || process.env[c.requires]).map(
+    (c) => c.id,
+  );
 }
 
-/** Execute the bioinformatics agent */
-export async function executeAgent(options: AgentExecutionOptions) {
-  const {
-    messages,
-    selectedModelId,
-    selectedAgentId,
-    maxSteps = 10,
-    onStateChange,
-  } = options;
+function instructions(enabled: ConnectorId[], artifacts: boolean) {
+  const playbooks = enabled.map((id) => `- ${CONNECTOR_TOOLS[id].playbook}`);
+  return `You are Attma, the bioinformatics agent of attma.bio. You run on Meta's Muse models, but your name is Attma: when asked who you are, say you are Attma and, in a sentence, what you can do with the sources enabled here.
 
-  // Get the last user message for task detection
-  const lastMessage = messages[messages.length - 1];
-  const lastMessageText = extractMessageText(lastMessage);
+You turn a researcher's question into a reproducible analysis. You plan it, run each step with your tools, check what comes back, and report what the data show, with the source of every claim.
 
-  // Detect task category and domain
-  const taskCategory = detectTaskCategory(lastMessageText);
-  const agentDomain = selectedAgentId
-    ? (selectedAgentId.replace('-agent', '') as AgentDomain)
-    : detectAgentDomain(lastMessageText);
+How you work:
+- For anything that takes more than one step, say the plan in one or two short lines first, then carry it out without waiting for approval. Ask a question only when an input is missing and cannot be inferred.
+- Compute instead of recalling. If an identifier, frequency, score, ranking, p-value or citation can come from a tool or from code, get it there. Never invent identifiers, numbers or PMIDs.
+- Run independent steps in parallel.
+- Check each result for plausibility (sample sizes, units, genome build GRCh38, multiple-testing correction). If a step fails, read the error, fix it and retry once; otherwise say what failed.
+- Tool results are shown to the user as cards, figures and tables, so do not repeat them. Interpret them.
+- Finish with: what you did (the workflow, one line per step), the key findings with sources, the main caveats, and 2-4 next steps. Stay under 250 words unless asked for more. Answer in the language the user writes in.
 
-  // Check for file attachments
-  const hasFiles = hasFileAttachment(lastMessage);
+Playbooks for the sources enabled in this chat:
+${playbooks.join('\n')}
+${artifacts ? '- A protocol, report, script or figure the user wants to keep and edit: createDocument (kind text, code, sheet, or image for an illustration made with Muse Image).\n' : ''}
+If a request needs a source that is not enabled, say which one in the Sources menu would help.
 
-  // Get model selection
-  const modelSelection = routeToOptimalModel(lastMessageText, {
-    hasAttachments: hasFiles,
-    forceReasoning: selectedModelId === 'chat-model-reasoning',
-  });
+Scope: research use. With patient data you prioritize hypotheses and evidence for a qualified clinician or geneticist; you do not diagnose or give treatment advice.`;
+}
 
-  // Build system prompt with domain specialization
-  const domainInstructions = getDomainInstructions(agentDomain);
-  const systemPrompt = `${BASE_INSTRUCTIONS}\n\n${domainInstructions}`;
-
-  // Determine model to use
-  let modelId = 'gpt-4o-mini';
-  if (selectedModelId === 'chat-model-standard') {
-    modelId = 'gpt-4o';
-  } else if (selectedModelId === 'chat-model-reasoning') {
-    modelId = 'o3-mini';
-  } else {
-    // Use auto-selection
-    const modelMap: Record<string, string> = {
-      'chat-model': 'gpt-4o-mini',
-      'chat-model-standard': 'gpt-4o',
-      'chat-model-advanced': 'gpt-4o',
-      'chat-model-reasoning': 'o3-mini',
-    };
-    modelId = modelMap[modelSelection.modelKey] || 'gpt-4o-mini';
+export function createAttmaAgent({
+  chatId,
+  connectors,
+  model = 'agent-model',
+  extraTools = {},
+}: {
+  chatId: string;
+  connectors: ConnectorId[];
+  model?: string;
+  /** Tools that need the request's stream, such as createDocument. */
+  extraTools?: ToolSet;
+}) {
+  const available = new Set(availableConnectors());
+  const enabled = connectors.filter((id) => available.has(id));
+  const tools: ToolSet = { ...extraTools };
+  for (const id of enabled) {
+    Object.assign(tools, CONNECTOR_TOOLS[id].tools({ chatId }));
   }
-
-  // Create tools
-  const tools = createAgentTools();
-
-  // Update state
-  onStateChange?.({
-    isProcessing: true,
-    currentStep: `Task: ${taskCategory}, Model: ${modelId}`,
-    steps: [],
-  });
-
-  // Execute with streaming and multi-step support
-  const result = streamText({
-    model: openai.chat(modelId),
-    instructions: systemPrompt,
-    messages: await convertToModelMessages(messages),
+  return new ToolLoopAgent({
+    model: myProvider.languageModel(model),
+    instructions: instructions(enabled, 'createDocument' in extraTools),
     tools,
-    stopWhen: isStepCount(maxSteps),
+    stopWhen: isStepCount(24),
+    repairToolCall,
   });
-
-  return result;
 }
 
 /**
- * Extract text content from a UI message
+ * Muse sometimes streams one of several parallel tool calls with empty
+ * arguments. Rather than fail the step, Muse Spark rebuilds that call's input
+ * from the conversation and the tool's schema; the call then runs as intended.
  */
-function extractMessageText(message: UIMessage): string {
-  if (!message) return '';
-
-  // UIMessage uses parts, not content
-  const parts = message.parts;
-  if (Array.isArray(parts)) {
-    return parts
-      .filter(
-        (part): part is { type: 'text'; text: string } => part.type === 'text',
-      )
-      .map((part) => part.text)
-      .join(' ');
-  }
-
-  return '';
-}
-
-export interface AgentExecutionOptions {
-  messages: UIMessage[];
-  selectedModelId?: string;
-  selectedAgentId?: string;
-  maxSteps?: number;
-  onStateChange?: (state: AgentState) => void;
-}
-
-/** Create initial agent state */
-export function createInitialAgentState(): AgentState {
-  return {
-    isProcessing: false,
-    currentStep: '',
-    steps: [],
-  };
-}
-
-export {
-  createAgentTools,
-  detectAgentDomain,
-  detectTaskCategory,
-  getDomainInstructions,
-  routeToOptimalModel,
+const repairToolCall: ToolCallRepairFunction<ToolSet> = async ({
+  toolCall,
+  messages,
+  inputSchema,
+  error,
+}) => {
+  if (NoSuchToolError.isInstance(error)) return null;
+  const schema = await inputSchema({ toolName: toolCall.toolName });
+  const { output } = await generateText({
+    model: myProvider.languageModel('subagent-model'),
+    instructions:
+      'You repair a tool call whose arguments were lost or invalid. Return the arguments the assistant meant to send, using only what the conversation states.',
+    messages: [
+      ...messages,
+      {
+        role: 'user',
+        content: `The assistant called the tool "${toolCall.toolName}" with invalid arguments ${toolCall.input || '(empty)'}: ${error.message}\nReturn the arguments for this one call.`,
+      },
+    ],
+    output: Output.object({ schema: jsonSchema(schema) }),
+  });
+  console.warn(`Repaired ${toolCall.toolName} input`, toolCall.input);
+  return { ...toolCall, input: JSON.stringify(output) };
 };
-
-/** Helper to convert UI messages to AI SDK CoreMessage format */
-function convertToModelMessages(messages: UIMessage[]) {
-  return messages.map((m) => ({
-    role: m.role as 'user' | 'assistant' | 'system',
-    content: extractMessageText(m),
-  }));
-}

@@ -112,10 +112,12 @@ export function getMessageSources(
   if (hasPartsStructure(message)) {
     // Check for source parts (AI SDK v6 standard)
     const sourceParts = message.parts
-      .filter((part: any) => part.type === 'source')
+      .filter(
+        (part: any) => part.type === 'source-url' || part.type === 'source',
+      )
       .map((part: any) => ({
-        url: part.source.url,
-        title: part.source.title,
+        url: part.url ?? part.source?.url,
+        title: part.title ?? part.source?.title,
       }));
 
     if (sourceParts.length > 0) return sourceParts;

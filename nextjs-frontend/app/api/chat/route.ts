@@ -1,49 +1,19 @@
 /**
- * @fileoverview Chat API Route Handler
- *
- * This is the main chat endpoint that handles:
- * - Message streaming with OpenAI models
- * - Tool execution (web search, image generation, code interpreter)
- * - Reasoning/thinking output for supported models
- * - Multi-step agent loops for complex tasks
- * - Auto-model selection based on task type
- * - Source citations from web search
- * - Chat persistence
- *
- * Architecture:
- * - Uses modular provider configuration from lib/ai/providers
- * - Tools are dynamically loaded based on model capabilities
- * - Task router detects optimal model from prompt
- * - Supports multiple response stream options (reasoning, sources)
+ * Chat endpoint. Every message goes to the Attma agent, which runs a workflow
+ * with the tools of the sources the user enabled and streams each step to the
+ * client as UI message parts. The finished assistant message is saved with all
+ * its parts (tool inputs and outputs, sources, reasoning), so a reloaded chat
+ * shows the same workflow and the agent can build on earlier results.
  */
 
 import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
+import { createAttmaAgent } from '@/lib/ai/agents/attma-agent';
 import {
-  detectAgentDomain,
-  detectTaskCategory,
-  getDomainInstructions,
-  routeToOptimalModel,
-} from '@/lib/ai/agents/task-router';
-import { multiModalProcessor } from '@/lib/ai/multimodal-processor';
-import { systemPrompt } from '@/lib/ai/prompts';
-import {
-  getDefaultProviderOptions,
-  getModelConfig,
-  modelSupports,
-  myProvider,
-  supportsOpenAIBuiltInTools,
-} from '@/lib/ai/providers';
-import {
-  bioinformaticsTools,
-  buildOpenAITools,
-  pathwayTools,
-  researchTools,
-} from '@/lib/ai/tools';
+  DEFAULT_CONNECTORS,
+  type ConnectorId,
+} from '@/lib/ai/connectors/catalog';
 import { createDocument } from '@/lib/ai/tools/create-document';
-import { rareDiseaseAgent } from '@/lib/ai/agents/rare-disease-agent';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import { rareDiseaseTools } from '@/lib/ai/tools/rare-disease';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import {
@@ -55,450 +25,242 @@ import {
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
+import { convertToUIMessages } from '@/lib/utils';
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
-  isStepCount,
-  streamText,
   toUIMessageStream,
-  ToolSet,
+  type ModelMessage,
+  type ToolSet,
 } from 'ai';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 
-export const maxDuration = 60;
+// Python steps and literature sub-agents make a full workflow run for minutes.
+export const maxDuration = 300;
 
-const MODEL_KEY_MAP: Record<string, string> = {
-  'chat-model': 'chat-model',
-  'chat-model-standard': 'chat-model-standard',
-  'chat-model-reasoning': 'chat-model-reasoning',
-  'gpt-4o-mini': 'chat-model',
-  'gpt-4o': 'chat-model-standard',
-  'gpt-5-mini': 'chat-model',
-  'gpt-5': 'chat-model-standard',
-  'o3-mini': 'chat-model-reasoning',
-} as const;
+// The model picker's choices; each is a Muse alias in lib/ai/providers.ts.
+const MODEL_LABELS: Record<string, string> = {
+  'chat-model': 'Muse Spark',
+  'chat-model-standard': 'Muse Wonder',
+  'chat-model-reasoning': 'Muse Wonder · high effort',
+  'agent-model': 'Muse Wonder',
+};
+const AGENT_MODELS = new Set(Object.keys(MODEL_LABELS));
 
-import type { Session } from 'next-auth';
+// Earlier steps go back to the model as a text log of each tool call and its
+// result, trimmed so one large table does not crowd out the conversation.
+// Muse's Responses API rejects replayed function_call items from an earlier
+// request (store: false), so the log is plain text, which works with any model.
+const MAX_STEP_INPUT_CHARS = 1_500;
+const MAX_STEP_OUTPUT_CHARS = 3_000;
 
-/** Build tool set based on model capabilities */
-function buildToolsForModel(
-  modelId: string,
-  session: Session,
-  dataStream?: { write: (data: any) => void },
-) {
-  const tools: Record<string, unknown> = {};
+type UIPart = ChatMessage['parts'][number] & {
+  type: string;
+  state?: string;
+  input?: unknown;
+  output?: unknown;
+  text?: string;
+};
 
-  const streamWriter = dataStream || { write: () => {} };
+const clip = (value: unknown, max: number) => {
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return text && text.length > max
+    ? `${text.slice(0, max)}… (truncated)`
+    : text;
+};
 
-  tools.getWeather = getWeather;
-  tools.createDocument = createDocument({
-    session,
-    dataStream: streamWriter as any,
-  });
-  tools.updateDocument = updateDocument({
-    session,
-    dataStream: streamWriter as any,
-  });
-  tools.requestSuggestions = requestSuggestions({
-    session,
-    dataStream: streamWriter as any,
-  });
-
-  Object.assign(tools, researchTools);
-  Object.assign(tools, pathwayTools);
-  Object.assign(tools, bioinformaticsTools);
-  Object.assign(tools, rareDiseaseTools);
-
-  if (!supportsOpenAIBuiltInTools) return tools;
-
-  if (modelSupports(modelId, 'webSearch')) {
-    const openaiTools = buildOpenAITools({
-      webSearch: { enabled: true, searchContextSize: 'high' },
-    });
-    Object.assign(tools, openaiTools);
-  }
-
-  if (modelSupports(modelId, 'imageGeneration')) {
-    Object.assign(
-      tools,
-      buildOpenAITools({
-        imageGeneration: { enabled: true, quality: 'medium' },
-      }),
-    );
-  }
-
-  if (modelSupports(modelId, 'codeInterpreter')) {
-    Object.assign(
-      tools,
-      buildOpenAITools({ codeInterpreter: { enabled: true } }),
-    );
-  }
-
-  return tools;
-}
-
-/** Converts database messages to AI SDK format */
-function convertMessagesToAIFormat(
-  messages: Array<{ id: string; role: string; content: unknown }>,
-): Array<{ role: 'user' | 'assistant' | 'system'; content: string }> {
-  return messages.map((msg) => {
-    let textContent = '';
-
-    if (Array.isArray(msg.content)) {
-      textContent = msg.content
-        .map((c: { text?: string; type?: string }) => c.text || '')
-        .join('');
-    } else if (typeof msg.content === 'string') {
-      textContent = msg.content;
-    } else {
-      textContent = JSON.stringify(msg.content);
-    }
-
-    return {
-      role: msg.role as 'user' | 'assistant' | 'system',
-      content: textContent,
+function partAsText(part: UIPart): string | null {
+  if (part.type === 'text') return part.text ?? null;
+  if (part.type === 'file') {
+    const file = part as UIPart & {
+      url: string;
+      mediaType: string;
+      filename?: string;
     };
+    return `Attached file: ${file.filename ?? 'file'} (${file.mediaType}): ${file.url}`;
+  }
+  if (part.type.startsWith('tool-') && part.state === 'output-available') {
+    return `[Earlier step: ${part.type.slice(5)}]\nInput: ${clip(part.input, MAX_STEP_INPUT_CHARS)}\nResult: ${clip(part.output, MAX_STEP_OUTPUT_CHARS)}`;
+  }
+  return null;
+}
+
+/**
+ * Saved messages as model input. Attachments become a line with their URL, as
+ * in the current message, since the agent opens files with its tools.
+ */
+async function historyFor(chatId: string): Promise<ModelMessage[]> {
+  const saved = convertToUIMessages(await getMessagesByChatId({ id: chatId }));
+  return saved.flatMap((m): ModelMessage[] => {
+    if (m.role !== 'user' && m.role !== 'assistant') return [];
+    const text = (m.parts as UIPart[])
+      .map(partAsText)
+      .filter(Boolean)
+      .join('\n\n');
+    return text ? [{ role: m.role, content: text }] : [];
   });
 }
 
-/** Extracts text from message parts */
-function extractTextFromParts(parts: unknown[]): string {
-  if (!Array.isArray(parts)) return '';
-
-  return parts
-    .filter(
-      (p: unknown): p is { type: string; text: string } =>
-        typeof p === 'object' &&
-        p !== null &&
-        'type' in p &&
-        (p as { type: string }).type === 'text',
-    )
+/** The user's text, with attached files listed by URL so tools can open them. */
+function describeMessage(message: PostRequestBody['message']) {
+  const parts = message.parts ?? [];
+  const text = parts
+    .filter((p) => p.type === 'text')
     .map((p) => p.text)
-    .join('');
+    .join('\n');
+  const files = parts.filter((p) => p.type === 'file');
+  if (files.length === 0) return text || message.content || '';
+  return `${text}\n\nAttached files:\n${files
+    .map(
+      (f) => `- ${f.filename ?? f.name ?? 'file'} (${f.mediaType}): ${f.url}`,
+    )
+    .join('\n')}`;
 }
 
 export async function POST(request: Request) {
+  let body: PostRequestBody;
   try {
-    const json = await request.json();
-    const parseResult = postRequestBodySchema.safeParse(json);
-
-    if (!parseResult.success) {
-      return new ChatSDKError('bad_request:api').toResponse();
-    }
-
-    const {
-      id,
-      message,
-      selectedChatModel,
-      selectedVisibilityType,
-      selectedAgentId,
-      projectId,
-    }: PostRequestBody & { selectedAgentId?: string } = parseResult.data;
-
-    // ... (rest of authentication and chat ID setup)
-
-    // ... (Authentication check)
-    const session = await auth();
-    if (!session?.user) {
-      return new ChatSDKError('unauthorized:chat').toResponse();
-    }
-
-    // Chat ID management
-    let chatId = id;
-    const isNewChat = id === 'new';
-    if (isNewChat) {
-      chatId = crypto.randomUUID();
-    }
-
-    // Load existing messages for context
-    let existingMessages: Array<{
-      role: 'user' | 'assistant' | 'system';
-      content: string;
-    }> = [];
-
-    if (!isNewChat) {
-      try {
-        const dbMessages = await getMessagesByChatId({ id: chatId });
-        existingMessages = convertMessagesToAIFormat(dbMessages).filter(
-          (m) => m.role !== 'system',
-        );
-      } catch {
-        // Continue with empty history if messages can't be loaded
-      }
-    }
-
-    // Build current message
-    // Build current message with multi-modal support
-    const userMessageText =
-      message.parts && Array.isArray(message.parts)
-        ? extractTextFromParts(message.parts)
-        : message.content || '';
-
-    // Handle file attachments for the current message
-    let currentUserMessageContent:
-      string | Array<{ type: string; [key: string]: unknown }> =
-      userMessageText;
-
-    // Check for experimental_attachments in the request body
-    const attachments = (message as any).experimental_attachments;
-    if (attachments && attachments.length > 0) {
-      // Process attachments using multiModalProcessor
-      currentUserMessageContent =
-        await multiModalProcessor.prepareMessageWithFiles(
-          userMessageText,
-          attachments.map((a: any) => ({
-            base64: a.content || '',
-            mimeType: a.contentType,
-            filename: a.name,
-          })),
-        );
-    }
-
-    const allMessages = [
-      ...existingMessages,
-      { role: 'user' as const, content: currentUserMessageContent as any }, // Cast as any to satisfy CoreMessage type
-    ];
-
-    // The agent opens attached documents itself, so it gets their URLs.
-    const attachedFiles = (message.parts ?? []).filter(
-      (part): part is Extract<typeof part, { type: 'file' }> =>
-        part.type === 'file',
-    );
-    const agentMessages = attachedFiles.length
-      ? [
-          ...existingMessages,
-          {
-            role: 'user' as const,
-            content: `${userMessageText}\n\nAttached documents:\n${attachedFiles
-              .map(
-                (f) =>
-                  `- ${f.filename ?? f.name ?? 'document'} (${f.mediaType}): ${f.url}`,
-              )
-              .join('\n')}`,
-          },
-        ]
-      : allMessages;
-
-    // Determine model configuration
-    const modelKey = MODEL_KEY_MAP[selectedChatModel] || 'chat-model';
-    const modelConfig = getModelConfig(selectedChatModel);
-    const isReasoningModel = modelConfig?.isReasoning ?? false;
-
-    // Build provider options
-    // Muse models carry their own reasoning settings (see providers.ts).
-    const providerOptions = !supportsOpenAIBuiltInTools
-      ? undefined
-      : getDefaultProviderOptions(selectedChatModel, {
-          reasoningSummary: isReasoningModel ? 'detailed' : undefined,
-          reasoningEffort: isReasoningModel ? 'medium' : undefined,
-        });
-
-    // Build tools
-    const tools = buildToolsForModel(selectedChatModel, session);
-
-    // Agent selection & instructions
-    let domain: any = 'general';
-    if (selectedAgentId && selectedAgentId !== 'auto') {
-      // Map UI IDs to AgentDomain
-      const idMap: Record<string, any> = {
-        'rare-disease': 'rare_disease',
-        'single-cell': 'single_cell',
-        'variant-analysis': 'variant',
-        'pathway-analysis': 'pathway',
-        bioinformatics: 'general',
-      };
-      domain = idMap[selectedAgentId] || 'general';
-    } else {
-      domain = detectAgentDomain(userMessageText);
-    }
-
-    const domainInstructions = getDomainInstructions(domain);
-    let system = systemPrompt({ selectedChatModel });
-
-    if (domain !== 'general') {
-      system = `ACTING AS SPECIALIST: ${domain.replace('_', ' ')}\n\n${domainInstructions}\n\n${system}`;
-    }
-
-    // Task detection for auto-model selection
-    const detectedTask = detectTaskCategory(userMessageText);
-    const modelRouting = routeToOptimalModel(userMessageText, {
-      hasAttachments: false,
-      forceReasoning: selectedChatModel === 'chat-model-reasoning',
-    });
-
-    // File attachment detection for model upgrade
-    const hasAttachments =
-      message.parts?.some(
-        (part: any) =>
-          part.type === 'image' ||
-          part.type === 'file' ||
-          (part.type === 'text' && part.experimental_attachments?.length > 0),
-      ) || (message as any).experimental_attachments?.length > 0;
-
-    let finalModelKey = modelKey;
-    if (selectedChatModel === 'chat-model' && detectedTask !== 'general') {
-      finalModelKey = modelRouting.modelKey;
-    }
-
-    if (hasAttachments && finalModelKey === 'chat-model') {
-      finalModelKey = 'chat-model-standard';
-    }
-
-    const maxSteps =
-      detectedTask === 'research'
-        ? 10
-        : detectedTask === 'reasoning'
-          ? 8
-          : detectedTask === 'data_analysis'
-            ? 6
-            : 5;
-
-    const stream = createUIMessageStream<ChatMessage>({
-      execute: async ({ writer }) => {
-        const toolsWithWriter = buildToolsForModel(
-          selectedChatModel,
-          session,
-          writer as any,
-        );
-        const finalTools = { ...tools, ...toolsWithWriter };
-
-        const persist = async (result: {
-          text?: string;
-          steps?: { toolCalls?: unknown[]; toolResults?: unknown[] }[];
-        }) => {
-          if (session?.user?.id) {
-            try {
-              // Create chat for new conversations
-              if (isNewChat) {
-                const title = await generateTitleFromUserMessage({ message });
-                await saveChat({
-                  id: chatId,
-                  title: title,
-                  userId: session.user.id,
-                  visibility: selectedVisibilityType as VisibilityType,
-                  projectId: projectId || null,
-                });
-              }
-
-              const assistantParts: Array<{
-                type: string;
-                [key: string]: unknown;
-              }> = [];
-
-              if (result.text) {
-                assistantParts.push({ type: 'text', text: result.text });
-              }
-
-              if (result.steps && result.steps.length > 0) {
-                for (const step of result.steps) {
-                  if (step.toolCalls?.length) {
-                    for (const tc of step.toolCalls as any[]) {
-                      assistantParts.push({
-                        type: 'tool-call',
-                        toolCallId: tc.toolCallId,
-                        toolName: tc.toolName,
-                        args: tc.args || tc.input,
-                      });
-                    }
-                  }
-                  if (step.toolResults?.length) {
-                    for (const tr of step.toolResults as any[]) {
-                      assistantParts.push({
-                        type: 'tool-result',
-                        toolCallId: tr.toolCallId,
-                        toolName: tr.toolName,
-                        result: tr.result || tr.output,
-                      });
-                    }
-                  }
-                }
-              }
-              if (assistantParts.length === 0) {
-                assistantParts.push({
-                  type: 'text',
-                  text: result.text || '',
-                });
-              }
-
-              const messagesToSave = [
-                {
-                  id: message.id,
-                  chatId: chatId,
-                  role: message.role,
-                  content: message.parts || [
-                    { type: 'text', text: userMessageText },
-                  ],
-                  createdAt: new Date(),
-                },
-                {
-                  id: crypto.randomUUID(),
-                  chatId: chatId,
-                  role: 'assistant' as const,
-                  content: assistantParts,
-                  createdAt: new Date(),
-                },
-              ];
-
-              await saveMessages({ messages: messagesToSave });
-            } catch (error) {
-              console.error('Error saving chat messages:', error);
-            }
-          }
-        };
-
-        // Rare disease cases run the autonomous agent (Muse Wonder with Muse Spark
-        // sub-agents); everything else uses the general chat loop.
-        const streamingResult =
-          domain === 'rare_disease'
-            ? await rareDiseaseAgent.stream({
-                messages: agentMessages,
-                onEnd: persist,
-              })
-            : streamText({
-                model: myProvider.languageModel(finalModelKey),
-                messages: allMessages,
-                instructions: system,
-                tools:
-                  Object.keys(finalTools).length > 0
-                    ? (finalTools as ToolSet)
-                    : undefined,
-                providerOptions,
-                stopWhen: isStepCount(maxSteps),
-                onEnd: persist,
-              });
-
-        writer.merge(
-          toUIMessageStream<ToolSet, ChatMessage>({
-            stream: streamingResult.stream,
-            sendReasoning: isReasoningModel || !supportsOpenAIBuiltInTools,
-          }),
-        );
-      },
-    });
-
-    return createUIMessageStreamResponse({
-      stream,
-      headers: { 'Cache-Control': 'no-cache', Connection: 'keep-alive' },
-    });
-  } catch (error) {
-    console.error('Chat API Error:', error);
-
-    if (error instanceof ChatSDKError) {
-      return error.toResponse();
-    }
-
-    return new Response(
-      JSON.stringify({
-        error: 'Internal Server Error',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    body = postRequestBodySchema.parse(await request.json());
+  } catch {
+    return new ChatSDKError('bad_request:api').toResponse();
   }
+  const {
+    id,
+    message,
+    selectedChatModel,
+    selectedVisibilityType,
+    projectId,
+    connectors,
+  } = body;
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new ChatSDKError('unauthorized:chat').toResponse();
+  }
+  const userId = session.user.id;
+
+  const chatId = id === 'new' ? crypto.randomUUID() : id;
+  const existing = await getChatById({ id: chatId });
+  if (existing && existing.userId !== userId) {
+    return new ChatSDKError('forbidden:chat').toResponse();
+  }
+
+  // Create the chat while the agent starts, so the title is not on the critical path.
+  const chatReady = existing
+    ? Promise.resolve()
+    : generateTitleFromUserMessage({ message: message as any }).then((title) =>
+        saveChat({
+          id: chatId,
+          title,
+          userId,
+          visibility: selectedVisibilityType as VisibilityType,
+          projectId: projectId || null,
+        }),
+      );
+
+  const history = existing ? await historyFor(chatId) : [];
+  const messages: ModelMessage[] = [
+    ...history,
+    { role: 'user', content: describeMessage(message) },
+  ];
+
+  const stream = createUIMessageStream<ChatMessage>({
+    execute: async ({ writer }) => {
+      const documentTools = {
+        createDocument: createDocument({ session, dataStream: writer }),
+        updateDocument: updateDocument({ session, dataStream: writer }),
+        requestSuggestions: requestSuggestions({ session, dataStream: writer }),
+      } as ToolSet;
+
+      const model = AGENT_MODELS.has(selectedChatModel)
+        ? selectedChatModel
+        : 'agent-model';
+      const agent = createAttmaAgent({
+        chatId,
+        connectors: (connectors ?? DEFAULT_CONNECTORS) as ConnectorId[],
+        model,
+        extraTools: documentTools,
+      });
+      const startedAt = Date.now();
+      const result = await agent.stream({
+        messages,
+        abortSignal: request.signal,
+      });
+      // Forwarded chunk by chunk so the run summary below lands after the
+      // agent's last part, inside the same assistant message.
+      for await (const chunk of toUIMessageStream<ToolSet, ChatMessage>({
+        stream: result.stream,
+        sendReasoning: true,
+        sendSources: true,
+        sendFinish: false,
+        // Tool errors reach the card and the log with their real message, so
+        // a failed step says why (the agent sees the same text and retries).
+        onError: (error) => {
+          const text = error instanceof Error ? error.message : String(error);
+          console.error('Agent step failed:', text);
+          return text;
+        },
+      })) {
+        writer.write(chunk);
+      }
+      const [steps, usage] = await Promise.all([
+        result.steps,
+        result.totalUsage,
+      ]);
+      writer.write({
+        type: 'data-run',
+        data: {
+          model: MODEL_LABELS[model] ?? 'Muse Wonder',
+          durationMs: Date.now() - startedAt,
+          toolCalls: steps.reduce((n, step) => n + step.toolCalls.length, 0),
+          totalTokens: usage.totalTokens,
+        },
+      });
+    },
+    onError: (error) => {
+      console.error('Agent run failed', error);
+      return 'The agent hit an error. Try again, or rephrase the request.';
+    },
+    onEnd: async ({ responseMessage }) => {
+      // A failed run streams no text or steps; saving it would leave an empty
+      // reply in the chat, so only the question is kept.
+      const answered = (responseMessage.parts as UIPart[]).some(
+        (p) => p.type === 'text' || p.type.startsWith('tool-'),
+      );
+      try {
+        await chatReady;
+        await saveMessages({
+          messages: [
+            {
+              id: message.id,
+              chatId,
+              role: 'user',
+              content: message.parts ?? [
+                { type: 'text', text: message.content ?? '' },
+              ],
+              createdAt: new Date(),
+            },
+            ...(answered
+              ? [
+                  {
+                    id: crypto.randomUUID(),
+                    chatId,
+                    role: 'assistant',
+                    content: responseMessage.parts,
+                    createdAt: new Date(),
+                  },
+                ]
+              : []),
+          ],
+        });
+      } catch (error) {
+        console.error('Failed to save the chat', error);
+      }
+    },
+  });
+
+  return createUIMessageStreamResponse({ stream });
 }
 
 export async function DELETE(request: Request) {

@@ -5,7 +5,8 @@
  * and display metadata. Updated for 2025 with latest OpenAI models.
  */
 
-export const DEFAULT_CHAT_MODEL: string = 'chat-model';
+// Muse Wonder orchestrates by default: it plans multi-step workflows best.
+export const DEFAULT_CHAT_MODEL: string = 'chat-model-standard';
 
 export interface ChatModel {
   id: string; // The ID sent to the API
@@ -30,8 +31,8 @@ export const chatModels: Array<ChatModel> = [
   // Default - Fast & capable
   {
     id: 'chat-model', // Maps to gpt-4o-mini or gpt-5-mini depending on API
-    name: 'Standard',
-    description: 'Muse Spark · fast for everyday tasks',
+    name: 'Fast',
+    description: 'Muse Spark · quick answers and lookups',
     capabilities: {
       webSearch: false,
       vision: true,
@@ -43,8 +44,8 @@ export const chatModels: Array<ChatModel> = [
   // Advanced - Most capable
   {
     id: 'chat-model-standard', // Maps to gpt-4o or gpt-5 depending on API
-    name: 'Advanced',
-    description: 'Muse Wonder · most capable for analysis',
+    name: 'Agent',
+    description: 'Muse Wonder · plans and runs workflows',
     capabilities: {
       webSearch: false,
       vision: true,
@@ -56,8 +57,8 @@ export const chatModels: Array<ChatModel> = [
   // Reasoning - For complex logic
   {
     id: 'chat-model-reasoning', // Maps to o3-mini
-    name: 'Reasoning',
-    description: 'Muse Wonder · deep reasoning',
+    name: 'Deep',
+    description: 'Muse Wonder · high effort for hard cases',
     capabilities: {
       reasoning: true,
       webSearch: false,

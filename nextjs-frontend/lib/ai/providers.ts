@@ -226,10 +226,16 @@ export const myProvider = customProvider({
     'chat-model-large': advanced(),
   },
   imageModels: {
-    'image-model': openai.image('gpt-image-1'),
-    'image-model-dalle': openai.image('dall-e-3'),
+    // Muse Image: $0.01 per image, OpenAI Images API compatible.
+    'image-model': USE_META
+      ? meta.image('muse-image-1.0')
+      : openai.image('gpt-image-1'),
   },
 });
+
+/** Muse search grounding: the Responses `web_search` tool, with citations. */
+export const webSearchTool = () =>
+  (USE_META ? meta : openai).tools.webSearch({ searchContextSize: 'medium' });
 
 export function getModelConfig(internalId: string): ModelConfig | undefined {
   const useFallback = process.env.USE_FALLBACK_MODEL === 'true';

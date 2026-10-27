@@ -1,27 +1,13 @@
 /**
- * Rare disease agent: Muse Wonder plans and decides; Muse Spark sub-agents read
- * clinical documents and review the literature; deterministic engines rank
- * diagnoses (local HPO similarity) and variants (VEP, gnomAD, ClinVar,
- * AlphaMissense). Research use: the agent never states a final diagnosis.
+ * Muse Spark sub-agents the orchestrator delegates to: reading attached
+ * documents (vision) and grading the literature for a candidate gene. Each
+ * returns structured output, so the orchestrator reasons over fields, not prose.
  */
 
 import { myProvider } from '@/lib/ai/providers';
-import {
-  prioritizeVariantsTool,
-  rankDiagnosesTool,
-} from '@/lib/ai/tools/rare-disease';
 import { searchPubMed } from '@/lib/rare-disease/pubmed';
-import { generateText, isStepCount, Output, ToolLoopAgent, tool } from 'ai';
+import { generateText, Output, tool } from 'ai';
 import { z } from 'zod';
-
-export const RARE_DISEASE_INSTRUCTIONS = `You are Attma's rare disease agent, supporting a clinical geneticist.
-Work through the case on your own, using tools, until you can give a well-supported answer:
-1. If documents are attached (lab reports, clinic letters, photos of them), call readClinicalDocument for each one, in parallel.
-2. Combine the note and the documents. Use only findings the patient HAS as phenotypes, with the HPO ID for each one you know (laboratory findings too, e.g. elevated 7-dehydrocholesterol); keep negated or absent findings out of the tools.
-3. Call rankDiagnoses once with the phenotypes and every candidate variant.
-4. Call reviewLiterature for the one or two leading candidate genes, in parallel.
-5. Answer in under 250 words: the leading hypothesis and why (which findings and which variant evidence), what argues against the runners-up, and 2-4 concrete next steps (confirmatory testing, segregation in parents, specialist referral, management cautions).
-The tool results already appear to the user as tables, so do not repeat them. Cite HPO, OMIM or Orphanet, ClinVar, gnomAD, AlphaMissense and PubMed (PMID) inline. Describe frequencies precisely (AF < 0.0001 is rare, > 0.01 is common). This is decision support for research use: never state a final diagnosis.`;
 
 const BLOB_HOST = /\.public\.blob\.vercel-storage\.com$/;
 
@@ -182,16 +168,35 @@ export const reviewLiterature = tool({
   },
 });
 
-export const rareDiseaseTools = {
-  readClinicalDocument,
-  rankDiagnoses: rankDiagnosesTool,
-  prioritizeVariants: prioritizeVariantsTool,
-  reviewLiterature,
-};
-
-export const rareDiseaseAgent = new ToolLoopAgent({
-  model: myProvider.languageModel('agent-model'),
-  instructions: RARE_DISEASE_INSTRUCTIONS,
-  tools: rareDiseaseTools,
-  stopWhen: isStepCount(10),
+/** Muse Spark answers a question about an attached PDF or image. */
+export const readDocument = tool({
+  description: `Read an attached PDF or image (paper, figure, gel, plot, table, slide, report) with a Muse Spark vision sub-agent and answer a specific question about it. For clinical reports and letters, use readClinicalDocument instead.`,
+  inputSchema: z.object({
+    url: z.string().url().describe('The attachment URL from the message'),
+    mediaType: z.string(),
+    question: z
+      .string()
+      .describe('What to extract or answer, e.g. "List the genes in Table 2"'),
+  }),
+  execute: async ({ url, mediaType, question }) => {
+    if (!BLOB_HOST.test(new URL(url).hostname)) {
+      throw new Error('Only files uploaded to this chat can be read.');
+    }
+    const started = Date.now();
+    const { text } = await generateText({
+      model: myProvider.languageModel('subagent-model'),
+      instructions:
+        'Answer only from what the document shows. Quote numbers, labels and identifiers exactly. Say so when the document does not contain the answer.',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: question },
+            { type: 'file', data: new URL(url), mediaType },
+          ],
+        },
+      ],
+    });
+    return { answer: text, elapsedMs: Date.now() - started };
+  },
 });

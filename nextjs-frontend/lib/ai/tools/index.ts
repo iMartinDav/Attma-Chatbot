@@ -34,9 +34,9 @@ export {
   semanticScholarTool,
 } from './research-tools';
 
-// Pathway Analysis Tools
+// Enrichment and Pathway Tools
+export { enrichGenesTool } from './enrichment';
 export {
-  goEnrichmentTool,
   keggPathwaySearchTool,
   pathwayTools,
   reactomePathwaySearchTool,

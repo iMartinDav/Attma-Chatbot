@@ -67,6 +67,7 @@
     "@streamdown/mermaid": "^1.0.3",
     "@tanstack/react-table": "^8.21.3",
     "@vercel/blob": "^2.8.2",
+    "@vercel/sandbox": "3.9.0",
     "ai": "7.0.153",
     "bcrypt-ts": "^9.0.2",
     "class-variance-authority": "^0.7.1",

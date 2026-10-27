@@ -1,3 +1,4 @@
+import { CONNECTOR_IDS, type ConnectorId } from '@/lib/ai/connectors/catalog';
 import { z } from 'zod';
 
 const textPartSchema = z.object({
@@ -6,15 +7,11 @@ const textPartSchema = z.object({
   text: z.string().min(1).max(20000),
 });
 
+// Documents and images are read by Muse Spark; data files (VCF, CSV, h5ad,
+// FASTA...) are analyzed in the Python workspace, so any type is accepted.
 const filePartSchema = z.object({
   type: z.enum(['file']),
-  mediaType: z.enum([
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'image/gif',
-    'application/pdf',
-  ]),
+  mediaType: z.string().min(1).max(120),
   // The client sends `filename`; `name` is accepted for older messages.
   filename: z.string().min(1).max(200).optional(),
   name: z.string().min(1).max(200).optional(),
@@ -43,7 +40,8 @@ export const postRequestBodySchema = z.object({
   message: messageSchema,
   selectedChatModel: z.string(),
   selectedVisibilityType: z.enum(['public', 'private']),
-  selectedAgentId: z.string().optional(),
+  /** Sources the agent may use; defaults to every source that needs no setup. */
+  connectors: z.array(z.enum(CONNECTOR_IDS as [ConnectorId, ...ConnectorId[]])).optional(),
   projectId: z.string().uuid().optional().nullable(),
 });
 
