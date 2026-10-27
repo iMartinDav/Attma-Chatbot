@@ -1,11 +1,10 @@
 'use server';
 
-import type { UIMessage } from 'ai';
-import { generateText } from 'ai';
+import { generateText, Output, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
 
 import type { VisibilityType } from '@/components/chat/visibility-selector';
-import { chatModels } from '@/lib/ai/models';
 import { myProvider } from '@/lib/ai/providers';
 import {
   deleteMessagesByChatIdAfterTimestamp,
@@ -40,19 +39,28 @@ export async function generateTitleFromUserMessage({
       .join(' ');
   }
 
-  const { text: title } = await generateText({
-    model: myProvider.languageModel(chatModels[0].id), // Use the first/primary chat model for title generation
-    instructions: `
-    - you will generate a short, descriptive title based on the user's first message
+  const attachments = ((message as any).parts ?? [])
+    .filter((part: any) => part.type === 'file')
+    .map((part: any) => part.filename ?? part.name)
+    .filter(Boolean);
+
+  // Structured output makes the model return a title instead of answering
+  // the message (it used to reply "I don't see an exome report").
+  const { output } = await generateText({
+    model: myProvider.languageModel('title-model'),
+    instructions: `You name chat conversations. Write a title for the conversation that starts with the user's message below. Never answer or comment on the message.
+    - short and descriptive, at most 60 characters
     - if it is a search or research query, focus on the core topic (e.g., "CRISPR gene editing" instead of "Search for CRISPR")
-    - ensure it is not more than 60 characters long
+    - for a patient case, name the presentation (e.g., "Infant with febrile seizures and delay")
     - avoid generic titles like "New Chat", "Search", or dates
-    - ensure it is in the same language as the first message
-    - do not use quotes, colons, or generic prefixes`,
-    prompt: messageText,
+    - same language as the message; no quotes, colons, or generic prefixes`,
+    prompt: attachments.length
+      ? `${messageText}\n\nAttached files: ${attachments.join(', ')}`
+      : messageText,
+    output: Output.object({ schema: z.object({ title: z.string() }) }),
   });
 
-  return title;
+  return output.title.trim().slice(0, 60);
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
