@@ -2,13 +2,22 @@ import { z } from 'zod';
 
 const textPartSchema = z.object({
   type: z.enum(['text']),
-  text: z.string().min(1).max(2000),
+  // Clinical notes and pasted reports run long.
+  text: z.string().min(1).max(20000),
 });
 
 const filePartSchema = z.object({
   type: z.enum(['file']),
-  mediaType: z.enum(['image/jpeg', 'image/png']),
-  name: z.string().min(1).max(100),
+  mediaType: z.enum([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'application/pdf',
+  ]),
+  // The client sends `filename`; `name` is accepted for older messages.
+  filename: z.string().min(1).max(200).optional(),
+  name: z.string().min(1).max(200).optional(),
   url: z.string().url(),
 });
 

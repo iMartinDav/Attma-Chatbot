@@ -13,10 +13,23 @@ import { TextShimmer } from '../ui/text-shimmer';
 type ToolState =
   'input-streaming' | 'input-available' | 'output-available' | 'output-error';
 
+export const RARE_DISEASE_TOOLS = [
+  'readClinicalDocument',
+  'rankDiagnoses',
+  'prioritizeVariants',
+  'reviewLiterature',
+] as const;
+export type RareDiseaseToolName = (typeof RARE_DISEASE_TOOLS)[number];
+
 interface RareDiseaseResultProps {
-  toolName: 'rankDiagnoses' | 'prioritizeVariants';
+  toolName: RareDiseaseToolName;
   state: ToolState;
-  input?: { phenotypes?: unknown[]; variants?: unknown[] };
+  input?: {
+    phenotypes?: unknown[];
+    variants?: unknown[];
+    name?: string;
+    gene?: string;
+  };
   output?: unknown;
   errorText?: string;
 }
@@ -42,10 +55,13 @@ export function RareDiseaseResult({
     const phenotypes = input?.phenotypes?.length ?? 0;
     const variants = input?.variants?.length ?? 0;
     const annotating = `annotating ${variants} variants with VEP, gnomAD, ClinVar and AlphaMissense`;
-    const message =
-      toolName === 'rankDiagnoses'
-        ? `Comparing ${phenotypes || 'the'} phenotypes with 12,900 rare diseases${variants ? ` and ${annotating}` : ''}…`
-        : `A${annotating.slice(1)}…`;
+    const messages: Record<RareDiseaseToolName, string> = {
+      readClinicalDocument: `Muse Spark is reading ${input?.name ?? 'the document'}…`,
+      rankDiagnoses: `Comparing ${phenotypes || 'the'} phenotypes with 12,900 rare diseases${variants ? ` and ${annotating}` : ''}…`,
+      prioritizeVariants: `A${annotating.slice(1)}…`,
+      reviewLiterature: `Muse Spark is reviewing PubMed case reports for ${input?.gene ?? 'the gene'}…`,
+    };
+    const message = messages[toolName];
     return (
       <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
         <div className="animate-spin text-primary">
@@ -56,6 +72,12 @@ export function RareDiseaseResult({
     );
   }
 
+  if (toolName === 'readClinicalDocument') {
+    return <DocumentCard extraction={output as DocumentExtraction} />;
+  }
+  if (toolName === 'reviewLiterature') {
+    return <LiteratureCard review={output as LiteratureReview} />;
+  }
   if (toolName === 'rankDiagnoses') {
     const { variantRanking, ...ranking } = output as DiagnosisRanking & {
       variantRanking?: VariantPrioritization;
@@ -77,7 +99,9 @@ export function RareDiseaseResult({
   );
 }
 
-const TITLES = {
+const TITLES: Record<RareDiseaseToolName, string> = {
+  readClinicalDocument: 'Clinical document',
+  reviewLiterature: 'Literature review',
   rankDiagnoses: 'Differential diagnosis',
   prioritizeVariants: 'Candidate variants',
 };
@@ -328,6 +352,157 @@ function VariantCard({
         Score combines variant evidence with how well the gene explains the
         phenotypes. Research use; confirm in an accredited laboratory.
       </p>
+    </Card>
+  );
+}
+
+interface DocumentExtraction {
+  documentType: string;
+  sex: string;
+  age: string;
+  presentFindings: { label: string; hpoId: string | null }[];
+  absentFindings: string[];
+  variants: {
+    notation: string;
+    gene: string | null;
+    zygosity: string;
+    inheritance: string;
+    reportedClassification: string | null;
+  }[];
+  familyHistory: string;
+  elapsedMs: number;
+}
+
+function DocumentCard({ extraction }: { extraction: DocumentExtraction }) {
+  return (
+    <Card
+      title={`Read: ${extraction.documentType}`}
+      meta={`Muse Spark sub-agent · ${(extraction.elapsedMs / 1000).toFixed(1)} s`}
+    >
+      <p className="text-xs text-muted-foreground">
+        {extraction.sex} · {extraction.age} · family history:{' '}
+        {extraction.familyHistory}
+      </p>
+      <ul className="flex flex-wrap gap-1.5" aria-label="Findings present">
+        {extraction.presentFindings.map((f) => (
+          <li key={f.label} className="rounded-full border px-2 py-0.5 text-xs">
+            {f.label}
+          </li>
+        ))}
+        {extraction.absentFindings.map((f) => (
+          <li
+            key={f}
+            className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground line-through"
+            title="Reported absent"
+          >
+            {f}
+          </li>
+        ))}
+      </ul>
+      {extraction.variants.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-xs text-muted-foreground">
+                <th className="py-1.5 pr-3 font-medium">Gene</th>
+                <th className="py-1.5 pr-3 font-medium">Variant</th>
+                <th className="py-1.5 pr-3 font-medium">Zygosity</th>
+                <th className="py-1.5 pr-3 font-medium">Inheritance</th>
+                <th className="py-1.5 font-medium">Reported as</th>
+              </tr>
+            </thead>
+            <tbody>
+              {extraction.variants.map((v) => (
+                <tr key={v.notation} className="border-b last:border-0">
+                  <td className="py-2 pr-3">
+                    {v.gene ? <GenePill symbol={v.gene} /> : '—'}
+                  </td>
+                  <td className="py-2 pr-3 font-mono text-xs">{v.notation}</td>
+                  <td className="py-2 pr-3 text-xs">{v.zygosity}</td>
+                  <td className="py-2 pr-3 text-xs">{v.inheritance}</td>
+                  <td className="py-2 text-xs">
+                    {v.reportedClassification ?? '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+interface LiteratureReview {
+  gene: string;
+  verdict: 'strong' | 'moderate' | 'limited' | 'none';
+  summary: string;
+  articles: {
+    pmid: string;
+    supports: 'supports' | 'neutral' | 'against';
+    finding: string;
+    title: string;
+    year: string;
+    journal: string;
+    url: string;
+  }[];
+  elapsedMs: number;
+}
+
+const VERDICT_TONE: Record<LiteratureReview['verdict'], string> = {
+  strong: 'text-emerald-600 dark:text-emerald-400',
+  moderate: 'text-amber-600 dark:text-amber-400',
+  limited: 'text-muted-foreground',
+  none: 'text-muted-foreground',
+};
+
+const SUPPORT_MARK: Record<
+  LiteratureReview['articles'][number]['supports'],
+  string
+> = {
+  supports: '✓',
+  neutral: '·',
+  against: '✗',
+};
+
+function LiteratureCard({ review }: { review: LiteratureReview }) {
+  return (
+    <Card
+      title={`Literature: ${review.gene}`}
+      meta={`PubMed · Muse Spark sub-agent · ${(review.elapsedMs / 1000).toFixed(1)} s`}
+    >
+      <p className="text-sm">
+        <span className={cn('font-medium', VERDICT_TONE[review.verdict])}>
+          {review.verdict} evidence.
+        </span>{' '}
+        {review.summary}
+      </p>
+      <ul className="flex flex-col gap-2">
+        {review.articles.map((a) => (
+          <li key={a.pmid} className="flex gap-2 text-sm">
+            <span
+              className="w-4 shrink-0 text-center text-muted-foreground"
+              title={a.supports}
+              aria-label={a.supports}
+            >
+              {SUPPORT_MARK[a.supports]}
+            </span>
+            <div className="min-w-0">
+              <a
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:underline"
+              >
+                {a.title}
+              </a>
+              <p className="text-xs text-muted-foreground">
+                {a.journal} {a.year} · PMID {a.pmid} · {a.finding}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }

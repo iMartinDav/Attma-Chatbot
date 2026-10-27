@@ -41,6 +41,7 @@ import {
   researchTools,
 } from '@/lib/ai/tools';
 import { createDocument } from '@/lib/ai/tools/create-document';
+import { rareDiseaseAgent } from '@/lib/ai/agents/rare-disease-agent';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { rareDiseaseTools } from '@/lib/ai/tools/rare-disease';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
@@ -259,6 +260,26 @@ export async function POST(request: Request) {
       { role: 'user' as const, content: currentUserMessageContent as any }, // Cast as any to satisfy CoreMessage type
     ];
 
+    // The agent opens attached documents itself, so it gets their URLs.
+    const attachedFiles = (message.parts ?? []).filter(
+      (part): part is Extract<typeof part, { type: 'file' }> =>
+        part.type === 'file',
+    );
+    const agentMessages = attachedFiles.length
+      ? [
+          ...existingMessages,
+          {
+            role: 'user' as const,
+            content: `${userMessageText}\n\nAttached documents:\n${attachedFiles
+              .map(
+                (f) =>
+                  `- ${f.filename ?? f.name ?? 'document'} (${f.mediaType}): ${f.url}`,
+              )
+              .join('\n')}`,
+          },
+        ]
+      : allMessages;
+
     // Determine model configuration
     const modelKey = MODEL_KEY_MAP[selectedChatModel] || 'chat-model';
     const modelConfig = getModelConfig(selectedChatModel);
@@ -342,97 +363,110 @@ export async function POST(request: Request) {
         );
         const finalTools = { ...tools, ...toolsWithWriter };
 
-        const streamingResult = streamText({
-          model: myProvider.languageModel(finalModelKey),
-          messages: allMessages,
-          instructions: system,
-          tools:
-            Object.keys(finalTools).length > 0
-              ? (finalTools as ToolSet)
-              : undefined,
-          providerOptions,
-          stopWhen: isStepCount(maxSteps),
-          onEnd: async (result) => {
-            if (session?.user?.id) {
-              try {
-                // Create chat for new conversations
-                if (isNewChat) {
-                  const title = await generateTitleFromUserMessage({ message });
-                  await saveChat({
-                    id: chatId,
-                    title: title,
-                    userId: session.user.id,
-                    visibility: selectedVisibilityType as VisibilityType,
-                    projectId: projectId || null,
-                  });
-                }
+        const persist = async (result: {
+          text?: string;
+          steps?: { toolCalls?: unknown[]; toolResults?: unknown[] }[];
+        }) => {
+          if (session?.user?.id) {
+            try {
+              // Create chat for new conversations
+              if (isNewChat) {
+                const title = await generateTitleFromUserMessage({ message });
+                await saveChat({
+                  id: chatId,
+                  title: title,
+                  userId: session.user.id,
+                  visibility: selectedVisibilityType as VisibilityType,
+                  projectId: projectId || null,
+                });
+              }
 
-                const assistantParts: Array<{
-                  type: string;
-                  [key: string]: unknown;
-                }> = [];
+              const assistantParts: Array<{
+                type: string;
+                [key: string]: unknown;
+              }> = [];
 
-                if (result.text) {
-                  assistantParts.push({ type: 'text', text: result.text });
-                }
+              if (result.text) {
+                assistantParts.push({ type: 'text', text: result.text });
+              }
 
-                if (result.steps && result.steps.length > 0) {
-                  for (const step of result.steps) {
-                    if (step.toolCalls?.length) {
-                      for (const tc of step.toolCalls as any[]) {
-                        assistantParts.push({
-                          type: 'tool-call',
-                          toolCallId: tc.toolCallId,
-                          toolName: tc.toolName,
-                          args: tc.args || tc.input,
-                        });
-                      }
+              if (result.steps && result.steps.length > 0) {
+                for (const step of result.steps) {
+                  if (step.toolCalls?.length) {
+                    for (const tc of step.toolCalls as any[]) {
+                      assistantParts.push({
+                        type: 'tool-call',
+                        toolCallId: tc.toolCallId,
+                        toolName: tc.toolName,
+                        args: tc.args || tc.input,
+                      });
                     }
-                    if (step.toolResults?.length) {
-                      for (const tr of step.toolResults as any[]) {
-                        assistantParts.push({
-                          type: 'tool-result',
-                          toolCallId: tr.toolCallId,
-                          toolName: tr.toolName,
-                          result: tr.result || tr.output,
-                        });
-                      }
+                  }
+                  if (step.toolResults?.length) {
+                    for (const tr of step.toolResults as any[]) {
+                      assistantParts.push({
+                        type: 'tool-result',
+                        toolCallId: tr.toolCallId,
+                        toolName: tr.toolName,
+                        result: tr.result || tr.output,
+                      });
                     }
                   }
                 }
-                if (assistantParts.length === 0) {
-                  assistantParts.push({
-                    type: 'text',
-                    text: result.text || '',
-                  });
-                }
-
-                const messagesToSave = [
-                  {
-                    id: message.id,
-                    chatId: chatId,
-                    role: message.role,
-                    content: message.parts || [
-                      { type: 'text', text: userMessageText },
-                    ],
-                    createdAt: new Date(),
-                  },
-                  {
-                    id: crypto.randomUUID(),
-                    chatId: chatId,
-                    role: 'assistant' as const,
-                    content: assistantParts,
-                    createdAt: new Date(),
-                  },
-                ];
-
-                await saveMessages({ messages: messagesToSave });
-              } catch (error) {
-                console.error('Error saving chat messages:', error);
               }
+              if (assistantParts.length === 0) {
+                assistantParts.push({
+                  type: 'text',
+                  text: result.text || '',
+                });
+              }
+
+              const messagesToSave = [
+                {
+                  id: message.id,
+                  chatId: chatId,
+                  role: message.role,
+                  content: message.parts || [
+                    { type: 'text', text: userMessageText },
+                  ],
+                  createdAt: new Date(),
+                },
+                {
+                  id: crypto.randomUUID(),
+                  chatId: chatId,
+                  role: 'assistant' as const,
+                  content: assistantParts,
+                  createdAt: new Date(),
+                },
+              ];
+
+              await saveMessages({ messages: messagesToSave });
+            } catch (error) {
+              console.error('Error saving chat messages:', error);
             }
-          },
-        });
+          }
+        };
+
+        // Rare disease cases run the autonomous agent (Muse Wonder with Muse Spark
+        // sub-agents); everything else uses the general chat loop.
+        const streamingResult =
+          domain === 'rare_disease'
+            ? await rareDiseaseAgent.stream({
+                messages: agentMessages,
+                onEnd: persist,
+              })
+            : streamText({
+                model: myProvider.languageModel(finalModelKey),
+                messages: allMessages,
+                instructions: system,
+                tools:
+                  Object.keys(finalTools).length > 0
+                    ? (finalTools as ToolSet)
+                    : undefined,
+                providerOptions,
+                stopWhen: isStepCount(maxSteps),
+                onEnd: persist,
+              });
 
         writer.merge(
           toUIMessageStream<ToolSet, ChatMessage>({

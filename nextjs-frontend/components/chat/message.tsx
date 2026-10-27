@@ -19,7 +19,11 @@ import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
 import { SearchingMessage, type SearchMessage } from './message-search';
 import { PreviewAttachment } from './preview-attachment';
-import { RareDiseaseResult } from './rare-disease-results';
+import {
+  RARE_DISEASE_TOOLS,
+  RareDiseaseResult,
+  type RareDiseaseToolName,
+} from './rare-disease-results';
 import { Weather } from './weather';
 
 // New components
@@ -514,13 +518,14 @@ const PurePreviewMessage = ({
                     }
 
                     if (
-                      toolName === 'rankDiagnoses' ||
-                      toolName === 'prioritizeVariants'
+                      (RARE_DISEASE_TOOLS as readonly string[]).includes(
+                        toolName,
+                      )
                     ) {
                       return (
                         <RareDiseaseResult
                           key={toolCallId}
-                          toolName={toolName}
+                          toolName={toolName as RareDiseaseToolName}
                           state={state}
                           input={part.input}
                           output={part.output}
