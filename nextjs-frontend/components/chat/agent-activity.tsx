@@ -68,6 +68,13 @@ export function MessageReasoning({
 const toolParts = (parts: AnyPart[]) =>
   parts.filter((p) => p.type.startsWith('tool-'));
 
+const VERDICT_WORDS: Record<string, string> = {
+  strong: 'strong evidence',
+  moderate: 'moderate evidence',
+  limited: 'limited evidence',
+  none: 'no supporting evidence',
+};
+
 function describeStep(part: AnyPart): string {
   const name = part.type.replace('tool-', '');
   const input = part.input ?? {};
@@ -92,7 +99,7 @@ function describeStep(part: AnyPart): string {
         : 'Annotating variants';
     case 'reviewLiterature':
       return done
-        ? `Reviewed PubMed for ${output.gene}: ${output.verdict} evidence`
+        ? `Reviewed PubMed for ${output.gene}: ${VERDICT_WORDS[output.verdict as string] ?? 'reviewed'}`
         : `Reviewing PubMed for ${input.gene ?? 'the gene'}`;
     default:
       return name
