@@ -1,71 +1,34 @@
-import { put } from '@vercel/blob';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
 import { auth } from '@/app/(auth)/auth';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { NextResponse } from 'next/server';
 
-// Configure this file handler to accept larger files
-export const maxDuration = 60; // Extend function timeout to 60 seconds
-export const dynamic = 'force-dynamic';
+/**
+ * Issues tokens for direct browser-to-Blob uploads, so files skip the 4.5 MB
+ * function body limit: VCFs, count matrices and .h5ad files go straight to
+ * storage and the agent stages them into its Python workspace.
+ */
 
-// Maximum upload size in bytes - 300MB
-const MAX_UPLOAD_SIZE = 300 * 1024 * 1024;
-
-// Use Blob instead of File since File is not available in Node.js environment
-const FileSchema = z.object({
-  file: z.instanceof(Blob).refine((file) => file.size <= MAX_UPLOAD_SIZE, {
-    message: `File size should be less than ${MAX_UPLOAD_SIZE / (1024 * 1024)}MB`,
-  }),
-});
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024;
 
 export async function POST(request: Request) {
-  const session = await auth();
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (request.body === null) {
-    return new Response('Request body is empty', { status: 400 });
-  }
-
+  const body = (await request.json()) as HandleUploadBody;
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as Blob;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-    }
-
-    const validatedFile = FileSchema.safeParse({ file });
-
-    if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.issues
-        .map((error) => error.message)
-        .join(', ');
-
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
-    }
-
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get('file') as File).name;
-    const fileBuffer = await file.arrayBuffer();
-
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: 'public',
-      });
-
-      return NextResponse.json(data);
-    } catch (error) {
-      console.error('Upload error:', error);
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
-    }
+    const result = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async () => {
+        const session = await auth();
+        if (!session?.user) throw new Error('Sign in to upload files.');
+        return { maximumSizeInBytes: MAX_UPLOAD_BYTES, addRandomSuffix: true };
+      },
+      // The browser gets the blob back directly; nothing to record here.
+      onUploadCompleted: async () => {},
+    });
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Request processing error:', error);
     return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 },
+      { error: error instanceof Error ? error.message : 'Upload failed.' },
+      { status: 400 },
     );
   }
 }

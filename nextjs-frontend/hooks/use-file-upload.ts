@@ -1,21 +1,46 @@
 'use client';
 
 import type { Attachment } from '@/lib/types';
+import { upload } from '@vercel/blob/client';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
-const BIOINFORMATICS_EXTENSIONS = [
-  '.fastq',
-  '.bam',
-  '.vcf',
-  '.mtx',
-  '.h5ad',
-  '.h5',
-  '.hdf5',
-  '.dgz',
-];
+/**
+ * Uploads straight from the browser to Vercel Blob (the server only signs the
+ * upload), so large data files such as VCFs and .h5ad matrices are accepted.
+ */
 
-const DOCUMENT_EXTENSIONS = ['.csv', '.tsv'];
+const MAX_UPLOAD_MB = 500;
+const MULTIPART_FROM_BYTES = 50 * 1024 * 1024;
+
+// Browsers report no type for most bioinformatics formats.
+const TYPES_BY_EXTENSION: Record<string, string> = {
+  vcf: 'text/x-vcf',
+  'vcf.gz': 'application/gzip',
+  csv: 'text/csv',
+  tsv: 'text/tab-separated-values',
+  txt: 'text/plain',
+  fa: 'text/x-fasta',
+  fasta: 'text/x-fasta',
+  fastq: 'text/x-fastq',
+  'fastq.gz': 'application/gzip',
+  h5ad: 'application/x-hdf5',
+  h5: 'application/x-hdf5',
+  mtx: 'text/plain',
+  bed: 'text/plain',
+  gtf: 'text/plain',
+  json: 'application/json',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+};
+
+function mediaTypeOf(file: File) {
+  if (file.type) return file.type;
+  const name = file.name.toLowerCase();
+  const match = Object.keys(TYPES_BY_EXTENSION)
+    .sort((a, b) => b.length - a.length)
+    .find((extension) => name.endsWith(`.${extension}`));
+  return match ? TYPES_BY_EXTENSION[match] : 'application/octet-stream';
+}
 
 interface UseFileUploadReturn {
   uploadFile: (file: File) => Promise<Attachment | undefined>;
@@ -26,58 +51,6 @@ interface UseFileUploadReturn {
   handleFileDrop: (files: FileList) => Promise<void>;
 }
 
-function getUploadUrl(file: File): string {
-  const fileExtension = file.name
-    .substring(file.name.lastIndexOf('.'))
-    .toLowerCase();
-  const fileSizeMB = file.size / (1024 * 1024);
-
-  const isZip = file.type === 'application/zip' || file.name.endsWith('.zip');
-  const isGzip =
-    file.type === 'application/gzip' ||
-    file.name.endsWith('.gz') ||
-    file.name.endsWith('.tgz');
-  const isTar = file.name.endsWith('.tar');
-  const isBioinformatics = BIOINFORMATICS_EXTENSIONS.some((ext) =>
-    file.name.toLowerCase().endsWith(ext),
-  );
-  const isDocument = DOCUMENT_EXTENSIONS.some((ext) =>
-    file.name.toLowerCase().endsWith(ext),
-  );
-  const isPdf =
-    file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  const isText =
-    file.type === 'text/plain' ||
-    file.name.toLowerCase().endsWith('.txt') ||
-    file.type === 'text/markdown' ||
-    file.name.toLowerCase().endsWith('.md');
-  const isLarge = fileSizeMB > 5;
-
-  if (file.type.startsWith('image/')) {
-    return '/api/files/upload/image';
-  }
-  if (isPdf && fileSizeMB <= 10) {
-    return '/api/files/upload/pdf';
-  }
-  if (isText && fileSizeMB <= 25) {
-    return '/api/files/upload/text';
-  }
-  if (
-    isZip ||
-    isGzip ||
-    isTar ||
-    isBioinformatics ||
-    isDocument ||
-    isLarge ||
-    (isPdf && fileSizeMB > 10) ||
-    (isText && fileSizeMB > 25)
-  ) {
-    return '/api/files/upload/bioflow/upload';
-  }
-
-  return '/api/files/upload';
-}
-
 export function useFileUpload(
   setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>,
 ): UseFileUploadReturn {
@@ -85,156 +58,38 @@ export function useFileUpload(
 
   const uploadFile = useCallback(
     async (file: File): Promise<Attachment | undefined> => {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const uploadUrl = getUploadUrl(file);
-      const fileSizeMB = file.size / (1024 * 1024);
-      const isLargeFile = fileSizeMB > 5;
-      const isBioflowUpload = uploadUrl.includes('bioflow');
-
-      // Show size warnings for bioflow uploads
-      if (isBioflowUpload) {
-        if (fileSizeMB > 200) {
-          toast.warning(
-            `Very large file (${fileSizeMB.toFixed(1)}MB). The server might reject it.`,
-          );
-        } else if (isLargeFile) {
-          toast.info(
-            `Large file detected (${fileSizeMB.toFixed(1)}MB). Processing may take longer.`,
-          );
-        }
-
-        const fileExtension = file.name
-          .substring(file.name.lastIndexOf('.'))
-          .toLowerCase();
-        formData.append('fileType', fileExtension);
-        formData.append(
-          'isCompressed',
-          String(
-            file.type === 'application/zip' ||
-              file.type === 'application/gzip' ||
-              file.name.endsWith('.gz') ||
-              file.name.endsWith('.tar'),
-          ),
+      if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+        toast.error(`${file.name} is larger than ${MAX_UPLOAD_MB} MB.`);
+        return undefined;
+      }
+      const contentType = mediaTypeOf(file);
+      try {
+        const blob = await upload(`uploads/${file.name}`, file, {
+          access: 'public',
+          handleUploadUrl: '/api/files/upload',
+          contentType,
+          multipart: file.size > MULTIPART_FROM_BYTES,
+        });
+        return { url: blob.url, name: file.name, contentType };
+      } catch (error) {
+        toast.error(
+          `Could not upload ${file.name}: ${error instanceof Error ? error.message : 'unknown error'}`,
         );
-        formData.append('needsProcessing', 'true');
-        formData.append('fileSizeMB', fileSizeMB.toString());
+        return undefined;
       }
-
-      const MAX_RETRIES = 2;
-      let retries = 0;
-
-      while (retries <= MAX_RETRIES) {
-        try {
-          const timeoutMs = isLargeFile
-            ? Math.min(300000, Math.max(120000, fileSizeMB * 2000))
-            : 30000;
-
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-          const response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal,
-            credentials: 'include',
-          });
-
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const data = await response.json();
-
-            toast.success(`File "${file.name}" uploaded successfully`);
-            return {
-              url: data.url,
-              name: data.pathname || file.name,
-              contentType: data.contentType || file.type,
-            };
-          }
-
-          // Handle specific error codes
-          if (response.status === 413) {
-            toast.error(
-              `File is too large (${fileSizeMB.toFixed(1)}MB). Maximum allowed size is 200MB.`,
-            );
-            return undefined;
-          }
-          if (response.status === 401) {
-            toast.error(
-              'Session expired. Please refresh the page and try again.',
-            );
-            return undefined;
-          }
-          if (response.status >= 400 && response.status < 500) {
-            const errorData = await response.json().catch(() => ({}));
-            toast.error(
-              errorData.detail ||
-                errorData.error ||
-                `Failed to upload file (${response.status})`,
-            );
-            return undefined;
-          }
-
-          // Retry for server errors
-          if (retries < MAX_RETRIES) {
-            retries++;
-            toast.info(
-              `Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`,
-            );
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** (retries - 1)),
-            );
-            continue;
-          }
-
-          toast.error(
-            `Failed to upload ${file.name} after ${MAX_RETRIES} retries.`,
-          );
-          return undefined;
-        } catch (error) {
-          if (error instanceof Error && error.name === 'AbortError') {
-            toast.error(
-              `Upload timed out for "${file.name}". Try a smaller file or check your connection.`,
-            );
-            return undefined;
-          }
-
-          if (retries < MAX_RETRIES) {
-            retries++;
-            toast.info(
-              `Upload retry ${retries}/${MAX_RETRIES} for "${file.name}"...`,
-            );
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * 2 ** (retries - 1)),
-            );
-            continue;
-          }
-
-          toast.error(
-            `Failed to upload ${file.name}. Please check your connection.`,
-          );
-          return undefined;
-        }
-      }
-
-      return undefined;
     },
     [],
   );
 
-  const handleFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(event.target.files || []);
+  const uploadAll = useCallback(
+    async (files: File[]) => {
       setUploadQueue(files.map((f) => f.name));
-
       try {
         const results = await Promise.all(files.map(uploadFile));
-        const successful = results.filter(
-          (a): a is Attachment => a !== undefined,
-        );
-        setAttachments((current) => [...current, ...successful]);
+        setAttachments((current) => [
+          ...current,
+          ...results.filter((a): a is Attachment => a !== undefined),
+        ]);
       } finally {
         setUploadQueue([]);
       }
@@ -242,22 +97,17 @@ export function useFileUpload(
     [setAttachments, uploadFile],
   );
 
-  const handleFileDrop = useCallback(
-    async (files: FileList) => {
-      const fileArray = Array.from(files);
-      setUploadQueue(fileArray.map((f) => f.name));
-
-      try {
-        const results = await Promise.all(fileArray.map(uploadFile));
-        const successful = results.filter(
-          (a): a is Attachment => a !== undefined,
-        );
-        setAttachments((current) => [...current, ...successful]);
-      } finally {
-        setUploadQueue([]);
-      }
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      await uploadAll(Array.from(event.target.files || []));
+      event.target.value = '';
     },
-    [setAttachments, uploadFile],
+    [uploadAll],
+  );
+
+  const handleFileDrop = useCallback(
+    (files: FileList) => uploadAll(Array.from(files)),
+    [uploadAll],
   );
 
   return { uploadFile, uploadQueue, handleFileChange, handleFileDrop };
