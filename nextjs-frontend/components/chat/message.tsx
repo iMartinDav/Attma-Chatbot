@@ -26,14 +26,18 @@ import {
 } from './rare-disease-results';
 import { Weather } from './weather';
 
-// New components
-import { ReasoningBlock } from './reasoning-block';
+// Agent activity (AI Elements)
+import {
+  AgentSteps,
+  GenericToolPart,
+  LiteratureSources,
+  MessageReasoning,
+} from './agent-activity';
 import { SourcePanel, type Source } from './source-citations';
 
 // AI SDK utilities
 import {
   getMessageFiles,
-  getMessageReasoning,
   getMessageSources,
   getMessageText,
 } from '@/lib/ai/message-utils';
@@ -253,13 +257,16 @@ const PurePreviewMessage = ({
                 ) : null;
               })()}
 
-              {/* Display Reasoning Block */}
-              {getMessageReasoning(message) && (
-                <ReasoningBlock
-                  reasoning={getMessageReasoning(message)}
-                  isStreaming={isLoading && message.id === 'latest'} // Heuristic for streaming
-                />
-              )}
+              {message.role === 'assistant' &&
+                Array.isArray((message as any).parts) && (
+                  <>
+                    <MessageReasoning
+                      parts={(message as any).parts}
+                      isStreaming={isLoading}
+                    />
+                    <AgentSteps parts={(message as any).parts} />
+                  </>
+                )}
 
               {/* Handle v5 UIMessage parts structure */}
               {Array.isArray((message as any).parts) &&
@@ -534,8 +541,6 @@ const PurePreviewMessage = ({
                       );
                     }
 
-                    // NEW: Handle additional tools
-
                     // Image Generation
                     if (toolName === 'image_generation') {
                       if (state === 'result') {
@@ -564,6 +569,8 @@ const PurePreviewMessage = ({
                         </div>
                       );
                     }
+
+                    return <GenericToolPart key={toolCallId} part={part} />;
                   }
 
                   return null;
@@ -651,6 +658,11 @@ const PurePreviewMessage = ({
                       );
                     })}
                   </div>
+                )}
+
+              {message.role === 'assistant' &&
+                Array.isArray((message as any).parts) && (
+                  <LiteratureSources parts={(message as any).parts} />
                 )}
 
               {!isReadonly && (
