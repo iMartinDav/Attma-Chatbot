@@ -1,6 +1,8 @@
 'use client';
 
 import cx from 'classnames';
+import type { DictationState } from '@/hooks/use-dictation';
+import { Loader2Icon, MicIcon, SquareIcon } from 'lucide-react';
 import { memo, type Dispatch, type SetStateAction } from 'react';
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from '../icons';
 import { Button } from '../ui/button';
@@ -39,6 +41,55 @@ function PureAttachmentsButton({
 }
 
 export const AttachmentsButton = memo(PureAttachmentsButton);
+
+export interface DictationButtonProps {
+  state: DictationState;
+  onStart: () => void;
+  onStop: () => void;
+  disabled: boolean;
+}
+
+function PureDictationButton({
+  state,
+  onStart,
+  onStop,
+  disabled,
+}: DictationButtonProps) {
+  const recording = state === 'recording';
+  const label = recording
+    ? 'Stop dictation'
+    : state === 'transcribing'
+      ? 'Transcribing with Muse Voice'
+      : 'Dictate with Muse Voice';
+  return (
+    <Button
+      className={cx('rounded-full size-8 p-0', {
+        'bg-red-500/15 text-red-600 hover:bg-red-500/25 dark:text-red-400':
+          recording,
+      })}
+      onClick={(e) => {
+        e.preventDefault();
+        if (recording) onStop();
+        else onStart();
+      }}
+      disabled={disabled || state === 'transcribing'}
+      variant="ghost"
+      aria-label={label}
+      aria-pressed={recording}
+      title={label}
+    >
+      {state === 'transcribing' ? (
+        <Loader2Icon className="size-[18px] animate-spin" />
+      ) : recording ? (
+        <SquareIcon className="size-4 animate-pulse fill-current" />
+      ) : (
+        <MicIcon className="size-[18px]" />
+      )}
+    </Button>
+  );
+}
+
+export const DictationButton = memo(PureDictationButton);
 
 export interface StopButtonProps {
   stop: () => void;

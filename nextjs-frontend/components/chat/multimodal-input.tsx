@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
+import { useDictation } from '@/hooks/use-dictation';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { useKeyboardVisibility } from '@/hooks/use-keyboard-visibility';
 import { getChatUrl } from '@/lib/utils';
@@ -27,6 +28,7 @@ import { AgentSelector } from './agent-selector';
 import { AgentStatus } from './agent-status';
 import {
   AttachmentsButton,
+  DictationButton,
   SendButton,
   StopButton,
 } from './input-action-buttons';
@@ -106,6 +108,12 @@ function PureMultimodalInput({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   }, []);
+
+  // Dictated text is appended to whatever is already typed.
+  const dictation = useDictation((transcript) => {
+    setInput((current) => (current ? `${current} ${transcript}` : transcript));
+    textareaRef.current?.focus();
+  });
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -346,10 +354,16 @@ function PureMultimodalInput({
           </div>
 
           {/* Bottom-anchored action buttons */}
-          <div className="absolute left-2.5 bottom-2.5 flex items-center">
+          <div className="absolute left-2.5 bottom-2.5 flex items-center gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
               isLoading={isLoading || isSearching}
+            />
+            <DictationButton
+              state={dictation.state}
+              onStart={dictation.start}
+              onStop={dictation.stop}
+              disabled={isLoading || isSearching}
             />
           </div>
 
