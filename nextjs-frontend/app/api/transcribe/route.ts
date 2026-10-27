@@ -1,11 +1,13 @@
 import { auth } from '@/app/(auth)/auth';
 import { CLINICAL_KEYWORDS } from '@/lib/voice/clinical-keywords';
+import { biasFor } from '@/lib/voice/languages';
 import { NextResponse } from 'next/server';
 
 /**
  * Dictation: transcribes a recorded WAV with Muse Voice Transcribe. The browser
  * records and converts to 16 kHz mono PCM; this route adds the API key and the
- * clinical vocabulary bias, so the key never reaches the client.
+ * clinical vocabulary and the speaker's languages as hints, so the key never
+ * reaches the client.
  */
 
 export const maxDuration = 60;
@@ -52,6 +54,10 @@ export async function POST(request: Request) {
           audioEncoding: 'WAV',
           mode: 'PUSH_TO_TALK',
           keywords: CLINICAL_KEYWORDS,
+          languageBias: biasFor(
+            String(form.get('language') ?? 'auto'),
+            String(form.get('languages') ?? '').split(',').filter(Boolean),
+          ),
         }),
       ],
       { type: 'application/json' },

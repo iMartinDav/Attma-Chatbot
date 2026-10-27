@@ -14,15 +14,23 @@ const MAX_SECONDS = 120;
 
 export type DictationState = 'idle' | 'recording' | 'transcribing';
 
-export function useDictation(onTranscript: (text: string) => void) {
+export function useDictation(
+  onTranscript: (text: string) => void,
+  /** A VOICE_LANGUAGES code, or 'auto' to let Muse detect the language. */
+  language = 'auto',
+) {
   const [state, setState] = useState<DictationState>('idle');
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const cancelledRef = useRef(false);
   const limitRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onTranscriptRef = useRef(onTranscript);
+  const languageRef = useRef(language);
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript;
-  }, [onTranscript]);
+    languageRef.current = language;
+  }, [onTranscript, language]);
 
   const transcribe = useCallback(async (recording: Blob) => {
     setState('transcribing');
@@ -30,6 +38,8 @@ export function useDictation(onTranscript: (text: string) => void) {
       const wav = await toWav(recording);
       const form = new FormData();
       form.append('audio', wav, 'dictation.wav');
+      form.append('language', languageRef.current);
+      form.append('languages', navigator.languages.join(','));
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: form,
@@ -56,10 +66,17 @@ export function useDictation(onTranscript: (text: string) => void) {
       recorder.ondataavailable = (event) => chunks.push(event.data);
       recorder.onstop = () => {
         clearTimeout(limitRef.current);
+        setStartedAt(null);
         for (const track of stream.getTracks()) track.stop();
+        if (cancelledRef.current) {
+          setState('idle');
+          return;
+        }
         void transcribe(new Blob(chunks, { type: recorder.mimeType }));
       };
+      cancelledRef.current = false;
       recorder.start();
+      setStartedAt(Date.now());
       recorderRef.current = recorder;
       limitRef.current = setTimeout(() => recorder.stop(), MAX_SECONDS * 1000);
       setState('recording');
@@ -72,9 +89,21 @@ export function useDictation(onTranscript: (text: string) => void) {
     if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
   }, []);
 
-  useEffect(() => () => recorderRef.current?.stop(), []);
+  /** Stops recording and discards the audio. */
+  const cancel = useCallback(() => {
+    cancelledRef.current = true;
+    stop();
+  }, [stop]);
 
-  return { state, start, stop };
+  useEffect(
+    () => () => {
+      cancelledRef.current = true;
+      recorderRef.current?.stop();
+    },
+    [],
+  );
+
+  return { state, startedAt, start, stop, cancel, maxSeconds: MAX_SECONDS };
 }
 
 /** Decodes any browser recording and re-encodes it as 16 kHz mono PCM WAV. */
