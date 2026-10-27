@@ -8,6 +8,7 @@ import type {
 } from '@/lib/rare-disease/rank';
 import { cn } from '@/lib/utils';
 import { LoaderIcon } from '../icons';
+import { StepError } from './agent-activity';
 import { TextShimmer } from '../ui/text-shimmer';
 
 type ToolState =
@@ -42,13 +43,7 @@ export function RareDiseaseResult({
   errorText,
 }: RareDiseaseResultProps) {
   if (state === 'output-error') {
-    return (
-      <Card title={TITLES[toolName]}>
-        <p className="text-sm text-destructive">
-          {errorText ?? 'The lookup failed. Try again in a moment.'}
-        </p>
-      </Card>
-    );
+    return <StepError label={TITLES[toolName]} errorText={errorText} />;
   }
 
   if (state !== 'output-available' || !output) {
@@ -129,7 +124,7 @@ function Card({
 function ScoreBar({ value }: { value: number }) {
   return (
     <div
-      className="h-1.5 w-16 overflow-hidden rounded-full bg-muted"
+      className="h-1.5 w-10 shrink-0 overflow-hidden rounded-full bg-muted"
       role="img"
       aria-label={`Score ${value.toFixed(2)}`}
     >
@@ -302,7 +297,7 @@ function VariantRow({ variant }: { variant: VariantCandidate }) {
       <td className="py-2">
         <div className="flex items-center gap-2">
           <ScoreBar value={variant.combinedScore} />
-          <span className="font-mono text-xs tabular-nums">
+          <span className="whitespace-nowrap font-mono text-xs tabular-nums">
             {variant.combinedScore.toFixed(2)}
           </span>
         </div>

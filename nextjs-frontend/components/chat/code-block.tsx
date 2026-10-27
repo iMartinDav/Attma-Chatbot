@@ -2,19 +2,22 @@
 
 interface CodeBlockProps {
   node: any;
-  inline: boolean;
-  className: string;
+  className?: string;
   children: any;
 }
 
+// react-markdown 10 no longer says whether code is inline: fenced blocks carry
+// a language class or span several lines, inline spans do neither.
+const isBlock = (className: string | undefined, children: unknown) =>
+  Boolean(className?.includes('language-')) || String(children).includes('\n');
+
 export function CodeBlock({
   node,
-  inline,
   className,
   children,
   ...props
 }: CodeBlockProps) {
-  if (!inline) {
+  if (isBlock(className, children)) {
     return (
       <div className="not-prose flex flex-col">
         <pre
@@ -28,7 +31,7 @@ export function CodeBlock({
   } else {
     return (
       <code
-        className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
+        className={`${className ?? ''} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
         {...props}
       >
         {children}

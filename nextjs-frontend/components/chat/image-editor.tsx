@@ -14,6 +14,16 @@ interface ImageEditorProps {
   onDownload?: (title: string, content: string) => void;
 }
 
+/** A data URL with the type the bytes actually have: Muse Image returns WebP. */
+export function imageDataUrl(base64: string) {
+  const type = base64.startsWith('UklGR')
+    ? 'image/webp'
+    : base64.startsWith('/9j/')
+      ? 'image/jpeg'
+      : 'image/png';
+  return `data:${type};base64,${base64}`;
+}
+
 export function ImageEditor({
   title,
   content,
@@ -28,7 +38,7 @@ export function ImageEditor({
 
   useEffect(() => {
     if (content && status !== 'streaming') {
-      const url = `data:image/png;base64,${content}`;
+      const url = imageDataUrl(content);
       setImageUrl(url);
 
       const imgElement = document.createElement('img');

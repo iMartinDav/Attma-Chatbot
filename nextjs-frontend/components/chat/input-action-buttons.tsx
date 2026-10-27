@@ -120,17 +120,15 @@ export interface SendButtonProps {
   submitForm: () => void;
   input: string;
   uploadQueue: string[];
-  isSearchMode: boolean;
 }
 
 function PureSendButton({
   submitForm,
   input,
   uploadQueue,
-  isSearchMode,
 }: SendButtonProps) {
   const hasInput = input.length > 0;
-  const label = isSearchMode ? 'Search' : 'Send message';
+  const label = 'Send message';
 
   return (
     <Button
@@ -156,6 +154,5 @@ function PureSendButton({
 export const SendButton = memo(PureSendButton, (prev, next) => {
   if (prev.uploadQueue.length !== next.uploadQueue.length) return false;
   if (prev.input !== next.input) return false;
-  if (prev.isSearchMode !== next.isSearchMode) return false;
   return true;
 });

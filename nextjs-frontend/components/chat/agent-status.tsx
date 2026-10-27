@@ -129,9 +129,9 @@ function formatModelName(model: string): string {
     'gpt-4o-mini': 'Fast',
     'gpt-4o': 'Advanced',
     'o3-mini': 'Reasoning',
-    'chat-model': 'Standard',
-    'chat-model-standard': 'Advanced',
-    'chat-model-reasoning': 'Reasoning',
+    'chat-model': 'Muse Spark',
+    'chat-model-standard': 'Muse Wonder',
+    'chat-model-reasoning': 'Muse Wonder · deep',
   };
   return names[model] || model;
 }

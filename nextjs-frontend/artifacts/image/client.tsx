@@ -1,5 +1,5 @@
 import { Artifact } from '@/components/chat/create-artifact';
-import { ImageEditor } from '@/components/chat/image-editor';
+import { ImageEditor, imageDataUrl } from '@/components/chat/image-editor';
 import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { toast } from 'sonner';
 
@@ -51,7 +51,7 @@ export const imageArtifact = new Artifact({
       description: 'Copy image to clipboard',
       onClick: ({ content }) => {
         const img = new Image();
-        img.src = `data:image/png;base64,${content}`;
+        img.src = imageDataUrl(content);
 
         img.onload = () => {
           const canvas = document.createElement('canvas');

@@ -34,6 +34,11 @@ import {
   MessageReasoning,
 } from './agent-activity';
 import { SourcePanel, type Source } from './source-citations';
+import {
+  WORKFLOW_TOOLS,
+  WorkflowResult,
+  type WorkflowToolName,
+} from './workflow-results';
 
 // AI SDK utilities
 import {
@@ -264,7 +269,10 @@ const PurePreviewMessage = ({
                       parts={(message as any).parts}
                       isStreaming={isLoading}
                     />
-                    <AgentSteps parts={(message as any).parts} />
+                    <AgentSteps
+                      parts={(message as any).parts}
+                      isStreaming={isLoading}
+                    />
                   </>
                 )}
 
@@ -275,7 +283,12 @@ const PurePreviewMessage = ({
                   const key = `message-${message.id}-part-${index}`;
 
                   // Skip reasoning & source parts as they are handled separately above/below
-                  if (type === 'reasoning' || type === 'source') {
+                  if (
+                    type === 'reasoning' ||
+                    type === 'source' ||
+                    type === 'source-url' ||
+                    type === 'step-start'
+                  ) {
                     return null;
                   }
 
@@ -522,6 +535,25 @@ const PurePreviewMessage = ({
                           </div>
                         );
                       }
+                    }
+
+                    // Muse search grounding runs on Meta's side; its citations
+                    // arrive as source parts and are listed under the answer.
+                    if (toolName === 'web_search') return null;
+
+                    if (
+                      (WORKFLOW_TOOLS as readonly string[]).includes(toolName)
+                    ) {
+                      return (
+                        <WorkflowResult
+                          key={toolCallId}
+                          toolName={toolName as WorkflowToolName}
+                          state={state}
+                          input={part.input}
+                          output={part.output}
+                          errorText={part.errorText}
+                        />
+                      );
                     }
 
                     if (

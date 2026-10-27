@@ -24,7 +24,6 @@ import { getChatUrl } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
 import { Textarea } from '../ui/textarea';
-import { AgentSelector } from './agent-selector';
 import { AgentStatus } from './agent-status';
 import {
   AttachmentsButton,
@@ -32,9 +31,15 @@ import {
   SendButton,
   StopButton,
 } from './input-action-buttons';
-import { MessageSearch, type SearchMessage } from './message-search';
+import type { SearchMessage } from './message-search';
 import { ModelSelector } from './model-selector';
 import { PreviewAttachment } from './preview-attachment';
+import { SourcesSelector } from './sources-selector';
+import {
+  DictationBar,
+  useVoiceLanguage,
+  VoiceLanguageMenu,
+} from './voice-dictation';
 import type { VisibilityType } from './visibility-selector';
 
 type Message = SearchMessage;
@@ -55,8 +60,6 @@ export interface MultimodalInputProps {
   selectedVisibilityType?: VisibilityType;
   placeholder?: string;
   selectedModelId?: string;
-  selectedAgentId?: string;
-  onAgentSelect?: (agentId: string) => void;
   onChatIdChange?: (chatId: string) => void;
 }
 
@@ -76,8 +79,6 @@ function PureMultimodalInput({
   selectedVisibilityType,
   placeholder,
   selectedModelId,
-  selectedAgentId,
-  onAgentSelect,
   onChatIdChange,
 }: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -86,8 +87,6 @@ function PureMultimodalInput({
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
 
-  const [isSearching, setIsSearching] = useState(false);
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     'input',
     '',
@@ -110,10 +109,20 @@ function PureMultimodalInput({
   }, []);
 
   // Dictated text is appended to whatever is already typed.
+  // Text set from outside (starter cards, dictation, a restored draft) resizes too.
+  useEffect(() => {
+    adjustHeight();
+  }, [input, adjustHeight]);
+
+  const [voiceLanguage] = useVoiceLanguage();
   const dictation = useDictation((transcript) => {
     setInput((current) => (current ? `${current} ${transcript}` : transcript));
-    textareaRef.current?.focus();
-  });
+    requestAnimationFrame(() => {
+      adjustHeight();
+      textareaRef.current?.focus();
+    });
+  }, voiceLanguage);
+  const dictating = dictation.state !== 'idle';
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -154,19 +163,6 @@ function PureMultimodalInput({
     [setInput, adjustHeight],
   );
 
-  // Search functionality
-  const { handleSearch, SearchButton } = MessageSearch({
-    isSearchMode,
-    isSearching,
-    setIsSearchMode,
-    input,
-    setInput,
-    resetHeight,
-    setMessages,
-    disabled: isLoading,
-    chatId,
-  });
-
   // Form submission
   const submitForm = useCallback(() => {
     let targetChatId = chatId;
@@ -178,19 +174,6 @@ function PureMultimodalInput({
     }
 
     window.history.replaceState({}, '', getChatUrl(targetChatId, projectId));
-
-    if (isSearchMode) {
-      const queryText = input.trim();
-      if (!queryText) {
-        toast.error('Please enter a search query');
-        return;
-      }
-      setInput('');
-      setLocalStorageInput('');
-      resetHeight();
-      handleSearch(queryText);
-      return;
-    }
 
     sendMessage({
       role: 'user',
@@ -215,9 +198,7 @@ function PureMultimodalInput({
     }
   }, [
     chatId,
-    handleSearch,
     input,
-    isSearchMode,
     resetHeight,
     setAttachments,
     setInput,
@@ -238,12 +219,17 @@ function PureMultimodalInput({
   );
 
   // Determine active tool for status indication
-  const lastMessage = messages[messages.length - 1];
+  const lastMessage = messages[messages.length - 1] as
+    { role: string; parts?: { type: string; state?: string }[] } | undefined;
   const activeTool =
-    lastMessage?.role === 'assistant' && lastMessage.toolInvocations
-      ? lastMessage.toolInvocations.find(
-          (ti) => ti.state === 'call' || ti.state === 'partial-call',
-        )?.toolName
+    lastMessage?.role === 'assistant'
+      ? lastMessage.parts
+          ?.findLast(
+            (p) =>
+              p.type.startsWith('tool-') &&
+              (p.state === 'input-streaming' || p.state === 'input-available'),
+          )
+          ?.type.replace('tool-', '')
       : undefined;
 
   return (
@@ -312,19 +298,27 @@ function PureMultimodalInput({
               : 'border-zinc-200/80 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5',
           )}
         >
-          <div className={cx('w-full', input.length > 0 && 'pb-14')}>
+          <div className="w-full pb-12">
+            {dictating && (
+              <DictationBar
+                state={dictation.state}
+                startedAt={dictation.startedAt}
+                onCancel={dictation.cancel}
+                onStop={dictation.stop}
+              />
+            )}
             <Textarea
               data-testid="multimodal-input"
               ref={textareaRef}
               placeholder={
-                placeholder ||
-                (isSearchMode ? 'Search with Attma...' : 'Send a message...')
+                placeholder || 'Ask, attach data, or describe an analysis…'
               }
               value={input}
               onChange={handleInput}
               className={cx(
                 'w-full min-h-[44px] max-h-[450px] resize-none bg-transparent border-0 shadow-none',
-                'focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-12',
+                'focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-5',
+                dictating && 'hidden',
                 'text-base md:text-[15px] leading-[1.6] placeholder:text-muted-foreground/40',
                 'font-normal transition-all',
                 className,
@@ -347,8 +341,6 @@ function PureMultimodalInput({
                     submitForm();
                   }
                 }
-                if (event.key === 'Escape' && isSearchMode)
-                  setIsSearchMode(false);
               }}
             />
           </div>
@@ -357,33 +349,20 @@ function PureMultimodalInput({
           <div className="absolute left-2.5 bottom-2.5 flex items-center gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
-              isLoading={isLoading || isSearching}
+              isLoading={isLoading}
             />
             <DictationButton
               state={dictation.state}
               onStart={dictation.start}
               onStop={dictation.stop}
-              disabled={isLoading || isSearching}
+              disabled={isLoading}
             />
+            <VoiceLanguageMenu disabled={dictating} />
           </div>
 
           <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1.5">
-            <div
-              className={cx(
-                'flex items-center gap-1.5 transition-all duration-300',
-                input.length > 0
-                  ? 'opacity-100'
-                  : 'opacity-0 translate-x-4 pointer-events-none',
-              )}
-            >
-              <SearchButton />
-              <div className="h-4 w-px bg-border/40 mx-0.5" />
-              {onAgentSelect && (
-                <AgentSelector
-                  currentAgentId={selectedAgentId}
-                  onAgentSelect={onAgentSelect}
-                />
-              )}
+            <div className="flex items-center gap-1.5">
+              <SourcesSelector />
               {selectedModelId && (
                 <div className="hidden sm:block">
                   <ModelSelector
@@ -394,14 +373,13 @@ function PureMultimodalInput({
               )}
             </div>
 
-            {status === 'submitted' ? (
+            {isLoading ? (
               <StopButton stop={stop} setMessages={setMessages} />
             ) : (
               <SendButton
                 input={input}
                 submitForm={submitForm}
                 uploadQueue={uploadQueue}
-                isSearchMode={isSearchMode}
               />
             )}
           </div>
@@ -410,6 +388,7 @@ function PureMultimodalInput({
 
       {/* Hidden file input */}
       <input
+        id="chat-attachments-input"
         type="file"
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
@@ -428,7 +407,6 @@ export const MultimodalInput = memo(
     if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
-    if (prevProps.selectedAgentId !== nextProps.selectedAgentId) return false;
     return true;
   },
 );

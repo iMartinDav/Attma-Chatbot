@@ -714,3 +714,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* The new-chat helix slides one turn to the left, looping: it reads as a
+   slowly turning double helix. Still for people who prefer reduced motion. */
+@keyframes attma-helix-turn {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-320px);
+  }
+}
+.attma-helix {
+  animation: attma-helix-turn 14s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .attma-helix {
+    animation: none;
+  }
+}
