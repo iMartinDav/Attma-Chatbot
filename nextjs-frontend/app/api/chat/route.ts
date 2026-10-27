@@ -265,10 +265,13 @@ export async function POST(request: Request) {
     const isReasoningModel = modelConfig?.isReasoning ?? false;
 
     // Build provider options
-    const providerOptions = getDefaultProviderOptions(selectedChatModel, {
-      reasoningSummary: isReasoningModel ? 'detailed' : undefined,
-      reasoningEffort: isReasoningModel ? 'medium' : undefined,
-    });
+    // Muse models carry their own reasoning settings (see providers.ts).
+    const providerOptions = !supportsOpenAIBuiltInTools
+      ? undefined
+      : getDefaultProviderOptions(selectedChatModel, {
+          reasoningSummary: isReasoningModel ? 'detailed' : undefined,
+          reasoningEffort: isReasoningModel ? 'medium' : undefined,
+        });
 
     // Build tools
     const tools = buildToolsForModel(selectedChatModel, session);
@@ -434,7 +437,7 @@ export async function POST(request: Request) {
         writer.merge(
           toUIMessageStream<ToolSet, ChatMessage>({
             stream: streamingResult.stream,
-            sendReasoning: isReasoningModel,
+            sendReasoning: isReasoningModel || !supportsOpenAIBuiltInTools,
           }),
         );
       },

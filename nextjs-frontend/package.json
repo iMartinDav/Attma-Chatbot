@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "4.0.102",
-    "@ai-sdk/openai-compatible": "^3.0.79",
     "@ai-sdk/react": "4.0.157",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/state": "^6.7.6",

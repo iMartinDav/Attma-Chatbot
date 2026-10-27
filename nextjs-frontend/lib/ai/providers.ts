@@ -3,10 +3,14 @@
  * Centralized configuration for all AI providers and models.
  */
 
-import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import {
+  createOpenAI,
+  openai,
+  type OpenAIResponsesProviderOptions,
+} from '@ai-sdk/openai';
 import {
   customProvider,
+  defaultSettingsMiddleware,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
@@ -131,19 +135,46 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
   },
 } as const;
 
-// Meta Model API (Muse) is OpenAI-compatible. When MODEL_API_KEY is set, Muse
-// serves every chat alias; OpenAI stays as the fallback provider.
-const meta = createOpenAICompatible({
+// Meta Model API (Muse). When META_MODEL_API_KEY is set, Muse serves every alias
+// through Meta's Responses API, the only surface that returns reasoning summaries
+// and carries reasoning between tool steps. OpenAI stays as the fallback provider.
+const meta = createOpenAI({
   name: 'meta',
   baseURL: 'https://api.meta.ai/v1',
-  apiKey: process.env.MODEL_API_KEY,
-  supportsStructuredOutputs: true,
+  apiKey: process.env.META_MODEL_API_KEY,
 });
-const USE_META = Boolean(process.env.MODEL_API_KEY);
+const USE_META = Boolean(process.env.META_MODEL_API_KEY);
 /** OpenAI built-in tools (web search, image generation, code interpreter) only run on OpenAI. */
 export const supportsOpenAIBuiltInTools = !USE_META;
-const MUSE_FAST = 'muse-spark-1.3';
-const MUSE_ADVANCED = 'muse-wonder-1.0';
+
+type MuseEffort = 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
+/**
+ * A Muse model with its reasoning settings baked in. `forceReasoning` is needed
+ * because the OpenAI provider only recognizes OpenAI reasoning models by name;
+ * `store: false` with encrypted reasoning keeps nothing on Meta's side.
+ */
+function muse(
+  modelId: 'muse-spark-1.3' | 'muse-wonder-1.0',
+  effort: MuseEffort,
+) {
+  return wrapLanguageModel({
+    model: meta.responses(modelId),
+    middleware: defaultSettingsMiddleware({
+      settings: {
+        providerOptions: {
+          openai: {
+            forceReasoning: true,
+            reasoningEffort: effort,
+            reasoningSummary: 'auto',
+            store: false,
+            include: ['reasoning.encrypted_content'],
+          },
+        },
+      },
+    }),
+  });
+}
 
 function createLanguageModel(modelId: string) {
   const config = MODEL_REGISTRY[modelId];
@@ -167,11 +198,13 @@ const REASONING_MODEL = USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3-mini';
 const REASONING_ADVANCED = USE_FALLBACK ? 'gpt-3.5-turbo' : 'o3';
 
 const fast = () =>
-  USE_META ? meta(MUSE_FAST) : createLanguageModel(FAST_MODEL);
+  USE_META ? muse('muse-spark-1.3', 'low') : createLanguageModel(FAST_MODEL);
 const advanced = () =>
-  USE_META ? meta(MUSE_ADVANCED) : createLanguageModel(ADVANCED_MODEL);
+  USE_META
+    ? muse('muse-wonder-1.0', 'medium')
+    : createLanguageModel(ADVANCED_MODEL);
 const reasoning = (openaiModel: string) =>
-  USE_META ? meta(MUSE_ADVANCED) : createLanguageModel(openaiModel);
+  USE_META ? muse('muse-wonder-1.0', 'high') : createLanguageModel(openaiModel);
 
 export const myProvider = customProvider({
   languageModels: {
@@ -182,7 +215,12 @@ export const myProvider = customProvider({
     'chat-model-research': advanced(),
     'chat-model-reasoning': reasoning(REASONING_MODEL),
     'chat-model-reasoning-advanced': reasoning(REASONING_ADVANCED),
-    'title-model': fast(),
+    'title-model': USE_META
+      ? muse('muse-spark-1.3', 'minimal')
+      : createLanguageModel(FAST_MODEL),
+    // Agent roles: Muse Wonder plans and decides; Muse Spark runs fast sub-agents.
+    'agent-model': advanced(),
+    'subagent-model': fast(),
     'artifact-model': advanced(),
     'chat-model-small': fast(),
     'chat-model-large': advanced(),
