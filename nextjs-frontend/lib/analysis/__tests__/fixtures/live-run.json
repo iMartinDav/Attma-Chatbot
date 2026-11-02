@@ -1,0 +1,70 @@
+{
+  "genitalRankDiagnoses": {
+    "diseases": [
+      {
+        "name": "Smith-Lemli-Opitz syndrome",
+        "score": 3.98,
+        "genes": ["DHCR7"]
+      }
+    ],
+    "variantRanking": {
+      "variants": [
+        {
+          "gene": "DHCR7",
+          "hgvsp": "ENSP00000347717.4:p.Gly303Arg",
+          "gnomadAf": 0.0001249,
+          "clinvar": [
+            "uncertain_significance",
+            "likely_pathogenic",
+            "pathogenic"
+          ],
+          "cadd": 34,
+          "combinedScore": 0.999
+        },
+        {
+          "gene": "DHCR7",
+          "hgvsp": "ENSP00000347717.4:p.His442Arg",
+          "gnomadAf": null,
+          "clinvar": ["uncertain_significance", "pathogenic"],
+          "cadd": 26.3,
+          "combinedScore": 0.975
+        }
+      ]
+    }
+  },
+  "genitalProteinStructure": {
+    "gene": "DHCR7",
+    "length": 475,
+    "residueFeatures": []
+  },
+  "recordedFactValues": {
+    "diseasesGenesAsScalar": "DHCR7",
+    "clinvarAsCommaString": "uncertain_significance, likely_pathogenic, pathogenic",
+    "gnomadAfAsNullString": "null",
+    "residueFeaturesAsNullString": "null"
+  },
+  "dravetAnswer": "Dravet syndrome ranked first (score 3.358), and the ENSP00000501589.1:p.Arg1648His variant in SCN1A ranked first (combinedScore 0.992, CADD 28.6). Residue context is the S4 segment of repeat IV, a voltage-sensing transmembrane region. Literature verdict was strong (PMID 36368227).",
+  "dravetGap": "Functional evidence that this specific missense change causes loss of Nav1.1 function was not provided.",
+  "genitalFindingWithEnsp": "Recorded top variants are ENSP00000347717.4:p.Gly303Arg, with combinedScore 0.999, and ENSP00000347717.4:p.His442Arg.",
+  "lowPlateletsFindingWithEnsp": "Top-ranked candidate is WAS ENSP00000365891.4:p.Ile290Thr with combinedScore 0.999 and CADD 24.6, ahead of the other candidates.",
+  "identifierTexts": [
+    "NM_000546.6:c.215C>G",
+    "p.Arg1648His",
+    "ENSP00000501589.1:p.Arg1648His",
+    "ENSP00000347717.4:p.Gly303Arg",
+    "rs1801133",
+    "rs121909102",
+    "GRCh38",
+    "17-43045712-A-G",
+    "v1.1",
+    "Nav1.1"
+  ],
+  "keptNumberTexts": [
+    "CADD 27.4",
+    "score 0.9849",
+    "frequency 1.2e-5",
+    "common at 63%",
+    "(0.3227)",
+    "score 3.358,"
+  ]
+}
