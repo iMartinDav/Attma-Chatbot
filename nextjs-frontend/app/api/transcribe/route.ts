@@ -56,7 +56,9 @@ export async function POST(request: Request) {
           keywords: CLINICAL_KEYWORDS,
           languageBias: biasFor(
             String(form.get('language') ?? 'auto'),
-            String(form.get('languages') ?? '').split(',').filter(Boolean),
+            String(form.get('languages') ?? '')
+              .split(',')
+              .filter(Boolean),
           ),
         }),
       ],

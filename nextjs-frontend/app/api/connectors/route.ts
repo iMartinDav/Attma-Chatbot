@@ -6,7 +6,8 @@ export function GET() {
   return NextResponse.json(
     CONNECTORS.map((connector) => ({
       id: connector.id,
-      available: !connector.requires || Boolean(process.env[connector.requires]),
+      available:
+        !connector.requires || Boolean(process.env[connector.requires]),
     })),
   );
 }
