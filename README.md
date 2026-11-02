@@ -1,15 +1,18 @@
 # Attma
 
 <p align="center">
-    <em>An AI bioinformatician: chat with your data, literature and pathways.</em>
+    <em>The AI bioinformatician that runs the analysis.</em>
 </p>
 
-Attma is a Next.js app where an AI agent answers biology questions with real tools: literature search (PubMed, Semantic Scholar), gene and pathway databases (KEGG, Reactome, STRING, GO), and documents it writes for you. Single-cell analysis on your own data is being rebuilt on sandboxed scanpy compute; see the architecture plan.
+Describe an analysis or attach your data, and Attma's agent plans the workflow, runs each step against real sources and a Python sandbox, and cites every result: rare disease case review (HPO ranking, Ensembl VEP with gnomAD, ClinVar, AlphaMissense and CADD), single-cell and RNA-seq analysis (scanpy, PyDESeq2), protein context (UniProt, AlphaFold), enrichment (g:Profiler) and graded literature (PubMed). Dictation works in 25 languages.
+
+**Start here:** [docs/HANDOFF.md](docs/HANDOFF.md) explains what was built, why, how to set up a new machine, and what is still open. [CLAUDE.md](CLAUDE.md) is the short version for Claude Code.
 
 ## Stack
 
 - **App:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS 4, shadcn/ui
-- **AI:** AI SDK 7 with OpenAI models; tools live in `nextjs-frontend/lib/ai/tools`
+- **AI:** AI SDK 7 with Meta's Muse models (Wonder, Spark, Image, Voice Transcribe); tools in `nextjs-frontend/lib/ai/tools`
+- **Compute:** Vercel Sandbox (one Python microVM per chat, scanpy stack preinstalled)
 - **Data:** Neon Postgres via Drizzle ORM, Vercel Blob for files
 - **Auth:** Auth.js (NextAuth v5) with Google and email/password
 - **Tooling:** bun, ESLint, Prettier, Jest
@@ -28,10 +31,10 @@ cd nextjs-frontend
 bun install
 vercel link --project attma-chatbot   # once per machine
 vercel env pull .env.local --environment development
-bun dev
+env -u OPENAI_BASE_URL bun dev
 ```
 
-The app runs at http://localhost:3000. `.env.development.local` can override pulled values for local work (for example `NEXTAUTH_URL=http://localhost:3000`); it is gitignored.
+The app runs at http://localhost:3000. For local sign-in, create `.env.development.local` (gitignored) with `NEXTAUTH_URL`, `AUTH_URL` set to `http://localhost:3000` and `AUTH_TRUST_HOST=true`. Full setup, including the environment variables, is in [docs/HANDOFF.md](docs/HANDOFF.md#3-setting-up-another-mac).
 
 To run against a local Postgres instead of Neon:
 

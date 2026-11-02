@@ -1,3 +1,5 @@
+> **Out of date.** This plan describes the removed FastAPI "BioFlow" backend. The current architecture and status are in [docs/HANDOFF.md](docs/HANDOFF.md).
+
 # BioFlow Project Integration Plan
 
 ## Project Overview
