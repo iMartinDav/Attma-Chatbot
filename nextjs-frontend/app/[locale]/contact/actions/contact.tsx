@@ -38,21 +38,11 @@ export async function submitContactForm(formData: FormData) {
       researchArea: rawData.researchArea || '',
     });
 
-    // In a production environment, you would send this data to your email service
-    // For example using Resend, Sendgrid, etc.
-    console.log('Form submission:', validatedData);
+    // No mail service is wired yet, so nothing is logged with personal data; delivery stays an open product decision.
+    void validatedData;
 
-    // TODO: Add your email sending logic here
-    // await sendEmail({...})
-
-    // Set a cookie to show success message after redirect
-    (
-      await // TODO: Add your email sending logic here
-      // await sendEmail({...})
-      // Set a cookie to show success message after redirect
-      cookies()
-    ).set('contactSubmitted', 'true', {
-      maxAge: 10, // Short-lived cookie
+    (await cookies()).set('contactSubmitted', 'true', {
+      maxAge: 10,
     });
 
     // Redirect to thank you page or back to contact with success parameter

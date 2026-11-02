@@ -393,12 +393,19 @@ export class AnalysisSession implements SessionView {
   }
 
   toSnapshot(): AnalysisSnapshot {
+    // An approved report is frozen, so captured outputs no fact cites can be dropped instead of saved on every later turn.
+    const citedRefs =
+      this.currentStatus === 'approved'
+        ? new Set(this.factList.map((fact) => fact.ref))
+        : null;
     return clone({
       results: Object.fromEntries(
-        [...this.results.entries()].map(([ref, captured]) => [
-          ref,
-          { toolName: captured.toolName, output: captured.output },
-        ]),
+        [...this.results.entries()]
+          .filter(([ref]) => citedRefs === null || citedRefs.has(ref))
+          .map(([ref, captured]) => [
+            ref,
+            { toolName: captured.toolName, output: captured.output },
+          ]),
       ),
       checklist: this.checklistItems,
       facts: this.factList,

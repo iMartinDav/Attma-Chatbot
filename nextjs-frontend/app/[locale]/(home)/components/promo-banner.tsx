@@ -113,5 +113,3 @@ export function PromoBanner({
     </div>
   );
 }
-
-export type { Locale };

@@ -398,13 +398,19 @@ const PurePreviewMessage = ({
                                 message.role === 'user',
                             })}
                           >
-                            {/* Use displayedContent for typing animation, otherwise use part.text */}
                             <Markdown>
                               {message.isTyping &&
                               message.sourceType === 'web-search'
                                 ? displayedContent
                                 : part.text}
                             </Markdown>
+                            {/* A caret on the live text part shows the agent is still writing, without moving layout. */}
+                            {message.role === 'assistant' && isLoading && (
+                              <span
+                                aria-hidden="true"
+                                className="ml-1 inline-block h-4 w-[7px] translate-y-[3px] animate-pulse rounded-[2px] bg-primary motion-reduce:animate-none"
+                              />
+                            )}
                             {message.isTyping && !isTypingComplete && (
                               <span className="inline-block h-4 w-2 bg-current animate-pulse ml-1" />
                             )}

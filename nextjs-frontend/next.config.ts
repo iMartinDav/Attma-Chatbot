@@ -5,12 +5,9 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/chat': ['./lib/rare-disease/data/*.json'],
   },
-  reactStrictMode: false, // Temporarily disabled to debug multiple mounting
-  // Next.js telemetry is disabled via NEXT_TELEMETRY_DISABLED environment variable
+  reactStrictMode: true,
   experimental: {
     ppr: false,
-    // Add large response support if needed
-    largePageDataBytes: 300 * 1024 * 1024, // Equivalent to 300MB
   },
   images: {
     qualities: [75, 100],

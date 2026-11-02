@@ -54,6 +54,9 @@ const MODEL_LABELS: Record<string, string> = {
 };
 const AGENT_MODELS = new Set(Object.keys(MODEL_LABELS));
 
+// One run per chat at a time: two concurrent runs would rebuild two trust sessions from the same history and race on save.
+const inFlightChats = new Set<string>();
+
 // Earlier steps go back to the model as a text log of each tool call and its
 // result, trimmed so one large table does not crowd out the conversation.
 // Muse's Responses API rejects replayed function_call items from an earlier
@@ -212,12 +215,18 @@ export async function POST(request: Request) {
     snapshot: analysisSession.toSnapshot(),
   });
 
+  if (inFlightChats.has(chatId)) {
+    return new ChatSDKError('bad_request:api').toResponse();
+  }
+  inFlightChats.add(chatId);
+
   // One save path for the agent run and the approval shortcut, so both land in the chat the same way.
   const handleEnd = async ({
     responseMessage,
   }: {
     responseMessage: ChatMessage;
   }) => {
+    inFlightChats.delete(chatId);
     // A failed run streams no text or steps; saving it would leave an empty
     // reply in the chat, so only the question is kept.
     const answered = (responseMessage.parts as UIPart[]).some(

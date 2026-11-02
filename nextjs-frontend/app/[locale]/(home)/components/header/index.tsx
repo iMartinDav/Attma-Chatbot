@@ -4,14 +4,7 @@ import { memo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import {
-  MoonIcon,
-  SunIcon,
-  Menu,
-  X,
-  ArrowRight,
-  LaptopIcon,
-} from 'lucide-react';
+import { MoonIcon, SunIcon, Menu, X, ArrowRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -22,12 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { Locale } from '@/lib/internationalization/config';
 import { LanguageSwitcher } from './language-switcher';
 import {
@@ -188,31 +175,6 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
     },
     [activeHash, pathname, locale],
   );
-
-  const toggleTheme = useCallback(() => {
-    if (!mounted) return;
-    // Cycle through themes: system -> light -> dark -> system
-    if (theme === 'system') {
-      setTheme('light');
-    } else if (theme === 'light') {
-      setTheme('dark');
-    } else {
-      setTheme('system');
-    }
-  }, [theme, setTheme, mounted]);
-
-  const getThemeIcon = useCallback(() => {
-    if (!mounted) return null;
-
-    if (theme === 'system') {
-      return <LaptopIcon className="size-5" />;
-    }
-    return resolvedTheme === 'dark' ? (
-      <SunIcon className="size-5" />
-    ) : (
-      <MoonIcon className="size-5" />
-    );
-  }, [resolvedTheme, theme, mounted]);
 
   const getThemeAriaLabel = useCallback(() => {
     if (theme === 'system') {
