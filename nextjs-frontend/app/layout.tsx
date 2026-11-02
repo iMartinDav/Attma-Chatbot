@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/components/theme-provider';
+import { fontHeading, fontSans } from '@/lib/fonts';
 import type { Metadata } from 'next';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'sonner';
@@ -53,7 +54,10 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body suppressHydrationWarning className="antialiased">
+      <body
+        suppressHydrationWarning
+        className={`${fontSans.variable} ${fontHeading.variable} antialiased`}
+      >
         <SessionProvider>
           <ThemeProvider
             attribute="class"

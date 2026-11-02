@@ -5,8 +5,10 @@
 @theme {
   --font-*: initial;
   --font-sans:
-    'geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
-    sans-serif;
+    var(--font-jakarta), 'geist', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    system-ui, sans-serif;
+  --font-heading:
+    var(--font-sora), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     'geist-mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
@@ -211,9 +213,10 @@
   -webkit-text-stroke: 0.45px currentColor;
 }
 
-/* Marketing page headings (app/[locale]/(home)). */
+/* Marketing headings: light mode keeps the old near-black to purple gradient; dark mode is solid foreground like attma.bio. */
 @utility feature-title-gradient {
   display: inline-block;
+  font-family: var(--font-heading);
   background-image: linear-gradient(to right, #111827, #581c87);
   -webkit-background-clip: text;
   background-clip: text;
@@ -221,12 +224,15 @@
   color: transparent;
 
   .dark & {
-    background-image: linear-gradient(to right, #ffffff, #d8b4fe);
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+    color: hsl(var(--foreground));
   }
 }
 
 @utility feature-subtitle-gradient {
   display: inline-block;
+  font-family: var(--font-heading);
   background-image: linear-gradient(to right, #2563eb, #7c3aed);
   -webkit-background-clip: text;
   background-clip: text;
@@ -234,7 +240,9 @@
   color: transparent;
 
   .dark & {
-    background-image: linear-gradient(to right, #60a5fa, #c4b5fd);
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+    color: hsl(var(--primary-ink));
   }
 }
 
@@ -330,6 +338,34 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .attma-helix {
+    animation: none;
+  }
+}
+
+/* Floating DNA letters in the promo banner, matching attma.bio. Still for people who prefer reduced motion. */
+@keyframes dna-float {
+  0% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateY(-16px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+.animate-dna-float {
+  animation: dna-float 4s ease-in-out infinite;
+}
+.animate-dna-float-delayed {
+  animation: dna-float 4s ease-in-out 0.5s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-dna-float,
+  .animate-dna-float-delayed {
     animation: none;
   }
 }

@@ -30,9 +30,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Locale } from '@/lib/internationalization/config';
 import { LanguageSwitcher } from './language-switcher';
+import {
+  BANNER_DISMISSED_EVENT,
+  useScrollState,
+} from '@/hooks/use-scroll-state';
 
-export const ATTMA_COLOR_CLASS = 'text-attma-logo';
-export const ATTMA_BOLD_CLASS = 'text-ultra-bold';
+export const ATTMA_COLOR_CLASS = 'text-primary-ink';
+export const ATTMA_BOLD_CLASS = 'font-heading font-bold tracking-tight';
 
 // ------ Types ------
 export interface NavItem {
@@ -56,6 +60,15 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { bannerHidden } = useScrollState();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const bannerGone = bannerHidden || bannerDismissed;
+
+  useEffect(() => {
+    const onDismiss = () => setBannerDismissed(true);
+    window.addEventListener(BANNER_DISMISSED_EVENT, onDismiss);
+    return () => window.removeEventListener(BANNER_DISMISSED_EVENT, onDismiss);
+  }, []);
   const [activeHash, setActiveHash] = useState<string>('');
   const nav = dictionary?.common?.nav || {};
   const cta = dictionary?.common?.cta || {};
@@ -217,13 +230,14 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full backdrop-blur-md transition-all duration-300',
+        'fixed left-0 right-0 z-30 w-full will-change-transform motion-reduce:transition-none transition-[transform,background-color,border-color,backdrop-filter] duration-300',
+        bannerGone ? 'translate-y-0' : 'translate-y-[56px]',
         scrolled
-          ? 'border-b border-border/40 bg-background/95 shadow-xs'
-          : 'bg-background/80',
+          ? 'border-b border-border/60 bg-background/90 shadow-xs backdrop-blur-xl'
+          : 'border-b border-transparent bg-transparent',
       )}
     >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6 max-w-7xl">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Logo locale={locale} />
 
@@ -245,53 +259,39 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
           <div className="hidden md:flex items-center">
             <LanguageSwitcher currentLocale={locale} />
 
-            {/* Theme Toggle with Dropdown */}
-            {mounted ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={getThemeAriaLabel()}
-                    className="ml-1 lg:ml-2"
-                  >
-                    {getThemeIcon()}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => setTheme('light')}
-                    className={theme === 'light' ? 'bg-accent/50' : ''}
-                  >
-                    <SunIcon className="size-4 mr-2" /> Light
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme('dark')}
-                    className={theme === 'dark' ? 'bg-accent/50' : ''}
-                  >
-                    <MoonIcon className="size-4 mr-2" /> Dark
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme('system')}
-                    className={theme === 'system' ? 'bg-accent/50' : ''}
-                  >
-                    <LaptopIcon className="size-4 mr-2" /> System
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
+            {/* Theme toggle, same single-button switch as attma.bio. */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+              }
+              aria-label={mounted ? getThemeAriaLabel() : 'Toggle theme'}
+              className="ml-1 text-muted-foreground hover:text-foreground lg:ml-2"
+            >
+              {mounted ? (
+                resolvedTheme === 'dark' ? (
+                  <SunIcon className="size-5" />
+                ) : (
+                  <MoonIcon className="size-5" />
+                )
+              ) : (
+                <div className="size-5" />
+              )}
+            </Button>
+
+            <Link href="/login" className="ml-2 lg:ml-3">
               <Button
                 variant="ghost"
-                size="icon"
-                className="ml-1 lg:ml-2"
-                aria-label="Loading theme"
+                size="sm"
+                className="px-3 font-medium text-primary-ink hover:bg-accent/10"
               >
-                <div className="size-5 opacity-0" />
+                {nav.login || 'Log in'}
               </Button>
-            )}
+            </Link>
 
             {/* Console Button */}
-            <Link href={`/${locale}/chat`} className="ml-3 lg:ml-5">
+            <Link href={`/${locale}/chat`} className="ml-1 lg:ml-2">
               <Button
                 size="sm"
                 className="px-4 font-medium bg-[#25C6A3] hover:opacity-90 transition-opacity border-0"
@@ -356,44 +356,25 @@ const Header = ({ locale, dictionary }: HeaderProps) => {
             >
               <LanguageSwitcher currentLocale={locale} />
 
-              {/* Mobile Theme Toggle with Dropdown */}
-              {mounted ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={getThemeAriaLabel()}
-                    >
-                      {getThemeIcon()}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => setTheme('light')}
-                      className={theme === 'light' ? 'bg-accent/50' : ''}
-                    >
-                      <SunIcon className="size-4 mr-2" /> Light
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setTheme('dark')}
-                      className={theme === 'dark' ? 'bg-accent/50' : ''}
-                    >
-                      <MoonIcon className="size-4 mr-2" /> Dark
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setTheme('system')}
-                      className={theme === 'system' ? 'bg-accent/50' : ''}
-                    >
-                      <LaptopIcon className="size-4 mr-2" /> System
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="ghost" size="icon" aria-label="Toggle theme">
-                  <div className="size-5 opacity-0" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+                }
+                aria-label={mounted ? getThemeAriaLabel() : 'Toggle theme'}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {mounted ? (
+                  resolvedTheme === 'dark' ? (
+                    <SunIcon className="size-5" />
+                  ) : (
+                    <MoonIcon className="size-5" />
+                  )
+                ) : (
+                  <div className="size-5" />
+                )}
+              </Button>
             </motion.div>
 
             <div className="p-4 pt-2 pb-6">

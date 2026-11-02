@@ -48,19 +48,15 @@ const AlertDialogContent = React.forwardRef<
     visuallyHiddenTitle?: string;
   }
 >(({ className, children, visuallyHiddenTitle = 'Alert', ...props }, ref) => {
-  // Check if AlertDialogTitle is present among children
-  const hasAlertDialogTitle = React.Children.toArray(children).some(
-    (child) =>
-      React.isValidElement(child) &&
-      (child.type === AlertDialogTitle ||
-        (React.isValidElement<{ children?: React.ReactNode }>(child) &&
-          child.props?.children &&
-          React.Children.toArray(child.props.children).some(
-            (grandChild) =>
-              React.isValidElement(grandChild) &&
-              grandChild.type === AlertDialogTitle,
-          ))),
-  );
+  // Titles are often nested inside layout wrappers, so the search walks the whole subtree instead of two levels.
+  const findTitle = (node: React.ReactNode): boolean =>
+    React.Children.toArray(node).some((child) => {
+      if (!React.isValidElement(child)) return false;
+      if (child.type === AlertDialogTitle) return true;
+      const inner = (child.props as { children?: React.ReactNode }).children;
+      return inner !== undefined && findTitle(inner);
+    });
+  const hasAlertDialogTitle = findTitle(children);
 
   // Show warning in development if AlertDialogTitle is missing
   if (process.env.NODE_ENV !== 'production' && !hasAlertDialogTitle) {

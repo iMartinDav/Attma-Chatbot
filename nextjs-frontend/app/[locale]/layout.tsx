@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 import Footer from './(home)/components/footer';
 import Header from './(home)/components/header';
+import { PromoBanner } from './(home)/components/promo-banner';
 
 // Base metadata configuration
 const baseMetadata: Metadata = {
@@ -81,10 +82,18 @@ export default async function LocaleLayout({
 
   const dictionary = await getDictionary(locale);
 
+  const banner = dictionary?.common?.banner ?? {
+    label: 'New:',
+    text: 'Verified reports: every number checked in code, then approved by a person.',
+    dismiss: 'Dismiss',
+  };
+
   return (
     <>
+      <PromoBanner locale={locale} dictionary={banner} />
       <Header locale={locale} dictionary={dictionary} />
-      <main>{children}</main>
+      {/* Fixed banner and header sit above the page, so content clears both. */}
+      <main className="pt-[120px]">{children}</main>
       <Footer locale={locale} dictionary={dictionary} />
       <Toaster position="top-center" />
     </>

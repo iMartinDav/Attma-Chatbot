@@ -49,19 +49,15 @@ const DialogContent = React.forwardRef<
     visuallyHiddenTitle?: string;
   }
 >(({ className, children, visuallyHiddenTitle = 'Dialog', ...props }, ref) => {
-  // Check if DialogTitle is present among children
-  const hasDialogTitle = React.Children.toArray(children).some(
-    (child) =>
-      React.isValidElement(child) &&
-      (child.type === DialogTitle ||
-        (React.isValidElement<{ children?: React.ReactNode }>(child) &&
-          child.props?.children &&
-          React.Children.toArray(child.props.children).some(
-            (grandChild) =>
-              React.isValidElement(grandChild) &&
-              grandChild.type === DialogTitle,
-          ))),
-  );
+  // Titles are often nested inside layout wrappers, so the search walks the whole subtree instead of two levels.
+  const findTitle = (node: React.ReactNode): boolean =>
+    React.Children.toArray(node).some((child) => {
+      if (!React.isValidElement(child)) return false;
+      if (child.type === DialogTitle) return true;
+      const inner = (child.props as { children?: React.ReactNode }).children;
+      return inner !== undefined && findTitle(inner);
+    });
+  const hasDialogTitle = findTitle(children);
 
   // Show warning in development if DialogTitle is missing
   if (process.env.NODE_ENV !== 'production' && !hasDialogTitle) {

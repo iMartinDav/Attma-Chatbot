@@ -9,7 +9,8 @@
       "pricing": "定价方案",
       "cases": "案例研究",
       "blog": "资源中心",
-      "contact": "联系我们"
+      "contact": "联系我们",
+      "login": "登录"
     },
     "cta": {
       "start": "立即开始",
@@ -40,6 +41,11 @@
       "de": "🇩🇪 Deutsch",
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português"
+    },
+    "banner": {
+      "label": "新功能：",
+      "text": "已核查报告：每个数字都经过代码校验，再由专人批准。",
+      "dismiss": "关闭"
     }
   },
   "home": {

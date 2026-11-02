@@ -9,7 +9,8 @@
       "pricing": "Preise",
       "cases": "Fallstudien",
       "blog": "Ressourcen",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "login": "Anmelden"
     },
     "cta": {
       "start": "Jetzt starten",
@@ -40,6 +41,11 @@
       "de": "🇩🇪 Deutsch",
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português"
+    },
+    "banner": {
+      "label": "Neu:",
+      "text": "Geprüfte Berichte: Jede Zahl wird im Code geprüft und dann von einer Person freigegeben.",
+      "dismiss": "Schließen"
     }
   },
   "home": {

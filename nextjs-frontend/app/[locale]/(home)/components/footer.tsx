@@ -54,13 +54,13 @@ const Footer = ({ locale, dictionary }: FooterProps) => {
       <div className="absolute inset-0 -z-10 overflow-hidden">
         {/* Main purple glow in bottom left corner */}
         <div
-          className="absolute -left-36 -bottom-36 size-[600px] rounded-full bg-purple-500/20 blur-[100px] opacity-30"
+          className="absolute -left-36 -bottom-36 size-[600px] rounded-full bg-primary/20 blur-[100px] opacity-30"
           aria-hidden="true"
         />
 
         {/* Secondary smaller accent lights */}
         <div
-          className="absolute top-40 right-20 size-[200px] rounded-full bg-purple-400/10 blur-[50px] opacity-20"
+          className="absolute top-40 right-20 size-[200px] rounded-full bg-primary/10 blur-[50px] opacity-20"
           aria-hidden="true"
         />
         <div

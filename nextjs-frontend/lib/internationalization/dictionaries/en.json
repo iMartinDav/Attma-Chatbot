@@ -9,7 +9,8 @@
       "pricing": "Pricing",
       "cases": "Case Studies",
       "blog": "Resources",
-      "contact": "Contact"
+      "contact": "Contact",
+      "login": "Log in"
     },
     "cta": {
       "start": "Get Started",
@@ -41,6 +42,11 @@
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português",
       "it": "🇮🇹 Italiano"
+    },
+    "banner": {
+      "label": "New:",
+      "text": "Verified reports: every number checked in code, then approved by a person.",
+      "dismiss": "Dismiss"
     }
   },
   "home": {

@@ -9,7 +9,8 @@
       "pricing": "Tarification",
       "cases": "Études de cas",
       "blog": "Ressources",
-      "contact": "Contact"
+      "contact": "Contact",
+      "login": "Se connecter"
     },
     "cta": {
       "start": "Démarrer",
@@ -40,6 +41,11 @@
       "de": "🇩🇪 Deutsch",
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português"
+    },
+    "banner": {
+      "label": "Nouveau :",
+      "text": "Rapports vérifiés : chaque nombre est contrôlé par le code, puis approuvé par une personne.",
+      "dismiss": "Fermer"
     }
   },
   "home": {

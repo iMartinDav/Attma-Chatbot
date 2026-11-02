@@ -28,8 +28,8 @@ export const CTA: React.FC<CTAProps> = ({ dictionary, locale }) => {
         <div className="relative overflow-hidden rounded-3xl bg-linear-to-b from-slate-200/40 to-purple-100/10 dark:from-slate-800/40 dark:to-purple-900/10 border border-border mx-auto">
           {/* Decorative background blur */}
           <div aria-hidden="true" className="absolute inset-0 -z-10">
-            <div className="absolute opacity-15 -top-32 -left-32 size-120 rounded-full bg-purple-300/20 dark:bg-purple-800/15 blur-3xl" />
-            <div className="absolute opacity-15 -bottom-32 -right-32 size-120 rounded-full bg-purple-300/20 dark:bg-purple-800/15 blur-3xl" />
+            <div className="absolute opacity-15 -top-32 -left-32 size-120 rounded-full bg-primary/20 dark:bg-primary/15 blur-3xl" />
+            <div className="absolute opacity-15 -bottom-32 -right-32 size-120 rounded-full bg-primary/20 dark:bg-primary/15 blur-3xl" />
           </div>
 
           <div className="relative px-6 py-12 sm:px-12 lg:px-16 flex flex-col items-center justify-center text-center space-y-8">

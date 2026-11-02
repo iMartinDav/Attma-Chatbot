@@ -9,7 +9,8 @@
       "pricing": "Prezzi",
       "cases": "Casi di Studio",
       "blog": "Risorse",
-      "contact": "Contatti"
+      "contact": "Contatti",
+      "login": "Accedi"
     },
     "cta": {
       "start": "Inizia Ora",
@@ -41,6 +42,11 @@
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português",
       "it": "🇮🇹 Italiano"
+    },
+    "banner": {
+      "label": "Novità:",
+      "text": "Report verificati: ogni numero è controllato dal codice e poi approvato da una persona.",
+      "dismiss": "Chiudi"
     }
   },
   "home": {

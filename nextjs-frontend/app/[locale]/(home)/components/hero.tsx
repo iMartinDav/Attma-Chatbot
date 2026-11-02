@@ -177,33 +177,27 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
   };
 
   return (
-    <section className="relative py-12 md:py-20 lg:py-32 overflow-hidden w-full">
-      {/* Decorative background elements - adjusted for better appearance on mobile */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-linear-to-b from-background/80 via-background to-background/80 backdrop-blur-xs"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute left-1/2 top-10 w-[300%] max-w-xl aspect-square -translate-x-1/2 bg-linear-to-r from-violet-300/30 to-purple-300/30 blur-3xl dark:from-violet-700/30 dark:to-purple-700/30 sm:w-full"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute left-1/2 top-10 w-[300%] max-w-xl aspect-square translate-x-1/4 bg-linear-to-r from-indigo-300/30 to-blue-300/30 blur-3xl dark:from-indigo-700/30 dark:to-blue-700/30 sm:w-full"
-        />
-      </div>
+    <section className="relative overflow-hidden w-full bg-background py-12 md:py-20 lg:py-32">
+      {/* Backdrop matches attma.bio: a fine grid fading from the top over one soft mint glow. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.35)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.35)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_55%_at_50%_0%,#000_65%,transparent_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute left-1/2 top-24 h-[520px] w-[820px] max-w-none -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+      />
 
-      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+      <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-8 mx-auto">
-          <div className="inline-flex items-center rounded-full border border-border bg-background/50 px-3 py-1 text-xs sm:text-sm backdrop-blur-md">
-            <span className="font-medium">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5">
+            <Sparkles className="size-3.5 text-primary" />
+            <span className="text-xs font-medium text-foreground">
               {dictionary.introducing || 'Introducing Attma'}
             </span>
-            <Sparkles className="ml-1 size-3 sm:size-3.5 text-primary-ink" />
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl xl:text-7xl max-w-3xl mx-auto bg-clip-text text-transparent bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 px-2">
+          <h1 className="font-heading mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-[4.25rem] max-w-5xl mx-auto px-2">
             {dictionary.title}
           </h1>
 
@@ -213,7 +207,7 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
 
           <div className="w-full max-w-3xl mt-5 md:mt-8 px-2 sm:px-0">
             <form onSubmit={handleSubmit} className="w-full">
-              <div className="relative bg-background/20 backdrop-blur-md rounded-xl overflow-hidden border border-[#20c997]/30 shadow-lg">
+              <div className="relative bg-background/20 backdrop-blur-md rounded-xl overflow-hidden border border-primary/30 shadow-lg">
                 {/* Add container to control placeholder display and text overflow */}
                 <div className="relative w-full">
                   <Input
@@ -242,7 +236,7 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
                   <Button
                     type="submit"
                     size="icon"
-                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-[#20c997] hover:bg-[#20c997]/90 shadow-md transition-all active:scale-95 disabled:opacity-70"
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary hover:opacity-90 shadow-md transition-all active:scale-95 disabled:opacity-70"
                     aria-label="Submit question"
                     disabled={isSubmitting}
                   >
@@ -269,9 +263,9 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
                           type="button"
                           aria-label={`Suggestion: ${text}`}
                           className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full border border-[#343541]/20
-                              bg-background/30 backdrop-blur-xs hover:border-[#20c997]/50 transition-all
+                              bg-background/30 backdrop-blur-xs hover:border-primary/50 transition-all
                               text-foreground/80 hover:text-foreground hover:bg-background/50 active:scale-95 whitespace-nowrap
-                              touch-manipulation focus:outline-hidden focus:ring-2 focus:ring-[#20c997]/50 focus:ring-offset-1
+                              touch-manipulation focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:ring-offset-1
                               snap-start snap-always select-none"
                           onClick={() => {
                             if (isSubmitting) return;

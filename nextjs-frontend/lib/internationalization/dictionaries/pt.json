@@ -9,7 +9,8 @@
       "pricing": "Preços",
       "cases": "Estudos de Caso",
       "blog": "Recursos",
-      "contact": "Contato"
+      "contact": "Contato",
+      "login": "Entrar"
     },
     "cta": {
       "start": "Começar",
@@ -40,6 +41,11 @@
       "de": "🇩🇪 Deutsch",
       "zh": "🇨🇳 中文",
       "pt": "🇵🇹 Português"
+    },
+    "banner": {
+      "label": "Novo:",
+      "text": "Relatórios verificados: cada número é conferido no código e depois aprovado por uma pessoa.",
+      "dismiss": "Fechar"
     }
   },
   "home": {
