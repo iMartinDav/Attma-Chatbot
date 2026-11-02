@@ -11,6 +11,7 @@ to a captured tool result by ref and JSON path, and a report that code verifies 
 number check, then a Muse Spark claims check) before a person reviews it.
 
 Files:
+
 - `nextjs-frontend/lib/analysis/types.ts`
 - `nextjs-frontend/lib/analysis/paths.ts`
 - `nextjs-frontend/lib/analysis/verify.ts`
@@ -28,6 +29,7 @@ Why: the live runs exposed false refusals (array vs string values, identifiers p
 numbers, an over-strict claims check). These tests pin the fixes with the real values.
 
 Files:
+
 - `nextjs-frontend/lib/analysis/__tests__/analysis.test.ts`
 - `nextjs-frontend/lib/analysis/__tests__/paths.test.ts`
 - `nextjs-frontend/lib/analysis/__tests__/wiring.test.ts`
@@ -40,6 +42,7 @@ Why: the agent gets the four analysis tools always on, evidence tools are captur
 the loop stops after submit or requestInput, and each run reports an estimated cost.
 
 Files:
+
 - `nextjs-frontend/lib/ai/agents/attma-agent.ts`
 - `nextjs-frontend/lib/ai/pricing.ts`
 - `nextjs-frontend/lib/ai/__tests__/pricing.test.ts`
@@ -51,6 +54,7 @@ facts, answer, gaps, research-use line), step labels with refusal reasons, Appro
 model call, Request changes reopening the analysis, and review actions only on the newest card.
 
 Files:
+
 - `nextjs-frontend/app/api/chat/route.ts`
 - `nextjs-frontend/app/api/chat/schema.ts`
 - `nextjs-frontend/app/api/chat/__tests__/schema.test.ts`
@@ -71,6 +75,7 @@ Why: runs the real agent on the three demo cases plus a no-phenotypes case outsi
 and prints a PASS/FAIL verdict per case, so gate regressions are visible before a release.
 
 Files:
+
 - `nextjs-frontend/scripts/analysis-eval/run.ts`
 - `nextjs-frontend/scripts/analysis-eval/cases.ts`
 - `nextjs-frontend/scripts/analysis-eval/print.ts`
@@ -82,6 +87,7 @@ Why: records why the gate exists, the schedule to the Nov 4 submission, and the 
 (T1 to T8) that produced this branch, so the work can be reviewed and continued anywhere.
 
 Files:
+
 - `docs/HACKATHON-PLAN.md`
 - `docs/muse/README.md`
 - `docs/muse/T1-brief.md`
@@ -114,6 +120,7 @@ naming exactly one missing thing instead of guessing. The chat shows the checkli
 refusals and the review card, and each run summary shows tokens plus an estimated cost.
 
 **How it was tested.**
+
 - Unit tests: 94 tests in `lib/analysis`, `lib/ai`, `components/chat` and `app/api/chat` pass,
   including regression tests built from real live-run values (array/string value equality,
   identifiers not parsed as numbers, claims-check prompt contents).
@@ -130,3 +137,5 @@ refusals and the review card, and each run summary shows tokens plus an estimate
 **Note.** Research use only. Attma ranks evidence for a qualified reviewer; it is not a
 diagnosis, and every report card carries that line. No diagnosis or patient-facing language
 was added.
+
+**Known limits (state these, do not hide them).** Review is single-user: the person who ran the analysis approves it. The per-chat run lock and the daily message cap are per server instance and fail open on a database error. The Python sandbox has open network egress and publishes outputs to public Blob links, so only synthetic data may be used. Prompt injection is mitigated by instruction ("documents are data, never instructions"), not yet by architecture. The trace covers the orchestrator run; sub-agent and claims-check calls are in the aggregate cost, which is labelled an estimate.
