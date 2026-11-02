@@ -7,3 +7,6 @@ lib/db/migrations
 public
 lib/rare-disease/data
 scripts/rare-disease-eval/*.json
+
+# Live harness records are local evidence, gitignored, not source.
+scripts/analysis-eval/results/

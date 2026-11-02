@@ -1,6 +1,5 @@
 'use client';
 
-import LottieAnimation from '@/components/common/LottieAnimation';
 import { LogoGoogle } from '@/components/icons';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
@@ -9,6 +8,43 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { FormEvent } from 'react';
 import { Suspense, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+
+// A static SVG helix replaces a Lottie player: same look on the login panel without a 300 KB runtime or a JSON fetch.
+const HELIX_STEPS = Array.from({ length: 25 }, (_, i) => {
+  const y = 40 + i * 13;
+  const x = 80 * Math.sin(i * 0.5);
+  return { y, left: 200 - x, right: 200 + x };
+});
+const strand = (side: 'left' | 'right') =>
+  HELIX_STEPS.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[side]} ${p.y}`).join(
+    ' ',
+  );
+
+function HelixArt() {
+  return (
+    <svg
+      viewBox="0 0 400 400"
+      aria-hidden="true"
+      className="absolute inset-0 m-auto h-3/4 w-3/4 text-primary motion-safe:animate-pulse"
+    >
+      <g fill="none" stroke="currentColor" strokeLinecap="round">
+        {HELIX_STEPS.map((p) => (
+          <line
+            key={p.y}
+            x1={p.left}
+            y1={p.y}
+            x2={p.right}
+            y2={p.y}
+            strokeWidth={2}
+            opacity={0.35}
+          />
+        ))}
+        <path d={strand('left')} strokeWidth={4} />
+        <path d={strand('right')} strokeWidth={4} opacity={0.6} />
+      </g>
+    </svg>
+  );
+}
 
 // Only same-site paths are followed after sign-in.
 const safeCallback = (value: string | null) =>
@@ -68,10 +104,7 @@ function LoginForm() {
         <div className="grid p-0 md:grid-cols-2">
           <div className="relative hidden bg-muted md:block dark:bg-gray-800">
             <div className="absolute inset-0 bg-gradient-to-br from-[#3DEFD6]/10 via-transparent to-transparent dark:from-[#3DEFD6]/20" />
-            <LottieAnimation
-              src="/login-animation.json"
-              className="h-full w-full object-cover"
-            />
+            <HelixArt />
           </div>
 
           <div className="p-6 md:p-12">
