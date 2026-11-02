@@ -27,7 +27,11 @@ export const runPythonTool = (chatId: string) =>
         .describe(
           'What this step does, in a few words, e.g. "QC and filtering"',
         ),
-      code: z.string().describe('The complete Python script for this step'),
+      // A size cap keeps one step reviewable and stops pasted blobs from becoming unreviewed programs.
+      code: z
+        .string()
+        .max(20_000)
+        .describe('The complete Python script for this step'),
       inputs: z.array(inputFile).optional(),
     }),
     execute: async ({ title, code, inputs }, { abortSignal }) => ({
