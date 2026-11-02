@@ -1,5 +1,13 @@
 import type { ArtifactKind } from '@/components/chat/artifact';
 import { z } from 'zod';
+import type {
+  AnalysisSnapshot,
+  AnalysisStatus,
+  ChecklistItem,
+  Fact,
+  InputRequest,
+  Report,
+} from './analysis/types';
 import type { Suggestion } from './db/schema';
 import type { Locale } from './internationalization/config';
 
@@ -272,6 +280,22 @@ export interface CustomUIDataTypesV5 {
     title: string;
     data: any;
     type: 'bar' | 'line' | 'pie';
+  };
+  run: {
+    model: string;
+    durationMs: number;
+    toolCalls: number;
+    totalTokens?: number;
+    costUsd?: number;
+  };
+  analysis: {
+    status: AnalysisStatus;
+    checklist: ChecklistItem[] | null;
+    facts: Fact[];
+    report: Report | null;
+    openInputRequest: InputRequest | null;
+    refusals: number;
+    snapshot: AnalysisSnapshot;
   };
   // Legacy compatibility
   textDelta: string;

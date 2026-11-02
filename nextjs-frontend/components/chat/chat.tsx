@@ -133,6 +133,35 @@ export function Chat({
     },
   });
 
+  // Review decisions travel as a request body field; the route approves without calling the model.
+  const handleReview = useCallback(
+    (decision: 'approve' | 'changes', notes?: string) => {
+      if (decision === 'approve') {
+        void sendMessage(
+          {
+            role: 'user' as const,
+            parts: [{ type: 'text' as const, text: 'Approved the report.' }],
+          },
+          { body: { review: { decision: 'approve' } } },
+        );
+      } else {
+        void sendMessage(
+          {
+            role: 'user' as const,
+            parts: [
+              {
+                type: 'text' as const,
+                text: `Requested changes: ${notes ?? ''}`,
+              },
+            ],
+          },
+          { body: { review: { decision: 'changes', notes } } },
+        );
+      }
+    },
+    [sendMessage],
+  );
+
   const query = searchParams.get('query');
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
@@ -234,6 +263,7 @@ export function Chat({
               isArtifactVisible={isArtifactVisible}
               isLoading={status === 'streaming'}
               isReasoningMode={false}
+              onReview={handleReview}
               reload={async () => {
                 await regenerate();
                 return null;

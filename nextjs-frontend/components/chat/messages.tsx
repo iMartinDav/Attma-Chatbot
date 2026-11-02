@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { SparklesIcon } from '../icons';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { SearchMessage } from './message-search';
+import { lastAnalysisMessageId } from './step-labels';
 
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
@@ -24,6 +25,7 @@ interface MessagesProps {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   isReasoningMode: boolean;
+  onReview?: (decision: 'approve' | 'changes', notes?: string) => void;
 }
 
 function PureMessages({
@@ -35,9 +37,12 @@ function PureMessages({
   reload,
   isReadonly,
   isReasoningMode,
+  onReview,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
+  // Only the newest analysis in the chat may offer review actions.
+  const reviewMessageId = lastAnalysisMessageId(messages);
 
   return (
     <div
@@ -79,6 +84,7 @@ function PureMessages({
             }
             regenerate={reload}
             isReadonly={isReadonly}
+            onReview={message.id === reviewMessageId ? onReview : undefined}
           />
         ))}
 

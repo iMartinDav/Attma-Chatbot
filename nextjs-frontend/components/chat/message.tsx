@@ -33,6 +33,11 @@ import {
   LiteratureSources,
   MessageReasoning,
 } from './agent-activity';
+import {
+  AnalysisCard,
+  type AnalysisCardData,
+  type AnalysisReviewDecision,
+} from './analysis-card';
 import { SourcePanel, type Source } from './source-citations';
 import {
   WORKFLOW_TOOLS,
@@ -58,6 +63,7 @@ const PurePreviewMessage = ({
   setMessages,
   regenerate,
   isReadonly,
+  onReview,
   requiresScrollPadding = false,
 }: {
   chatId: string;
@@ -69,6 +75,7 @@ const PurePreviewMessage = ({
   ) => void;
   regenerate: () => Promise<string | null | undefined>;
   isReadonly: boolean;
+  onReview?: (decision: AnalysisReviewDecision, notes?: string) => void;
   requiresScrollPadding?: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
@@ -287,9 +294,52 @@ const PurePreviewMessage = ({
                     type === 'reasoning' ||
                     type === 'source' ||
                     type === 'source-url' ||
-                    type === 'step-start'
+                    type === 'step-start' ||
+                    type === 'data-run'
                   ) {
                     return null;
+                  }
+
+                  if (type === 'data-analysis') {
+                    // Only the newest gate state in the message is the answer; earlier ones are history.
+                    const allParts =
+                      (
+                        message as unknown as {
+                          parts?: Array<{
+                            type: string;
+                            state?: string;
+                            output?: { ok?: unknown; problems?: unknown };
+                          }>;
+                        }
+                      ).parts ?? [];
+                    const latest = allParts.findLastIndex(
+                      (entry) => entry.type === 'data-analysis',
+                    );
+                    if (index !== latest || message.role !== 'assistant') {
+                      return null;
+                    }
+                    const refused = allParts.filter(
+                      (entry) =>
+                        entry.type === 'tool-submitReport' &&
+                        entry.state === 'output-available' &&
+                        entry.output?.ok === false,
+                    );
+                    const lastProblemsRaw = refused.at(-1)?.output?.problems;
+                    const lastProblems = Array.isArray(lastProblemsRaw)
+                      ? lastProblemsRaw.filter(
+                          (entry: unknown): entry is string =>
+                            typeof entry === 'string',
+                        )
+                      : [];
+                    return (
+                      <AnalysisCard
+                        key={key}
+                        data={part.data as AnalysisCardData}
+                        lastProblems={lastProblems}
+                        disabled={isLoading}
+                        onReview={isReadonly ? undefined : onReview}
+                      />
+                    );
                   }
 
                   if (type === 'text') {

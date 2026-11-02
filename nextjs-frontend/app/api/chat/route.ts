@@ -8,17 +8,23 @@
 
 import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
-import { createAttmaAgent } from '@/lib/ai/agents/attma-agent';
+import { AnalysisSession } from '@/lib/analysis/session';
+import { findLatestAnalysisSnapshot } from '@/lib/analysis/history';
+import { buildTrace } from '@/lib/analysis/trace';
+import { agentPromptHash, createAttmaAgent } from '@/lib/ai/agents/attma-agent';
 import {
   DEFAULT_CONNECTORS,
   type ConnectorId,
 } from '@/lib/ai/connectors/catalog';
+import { estimateCostUsd, SPARK_PRICES, WONDER_PRICES } from '@/lib/ai/pricing';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
+import { isWithinLimit } from '@/lib/ai/entitlements';
 import {
   deleteChatById,
   getChatById,
+  getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
@@ -90,8 +96,7 @@ function partAsText(part: UIPart): string | null {
  * Saved messages as model input. Attachments become a line with their URL, as
  * in the current message, since the agent opens files with its tools.
  */
-async function historyFor(chatId: string): Promise<ModelMessage[]> {
-  const saved = convertToUIMessages(await getMessagesByChatId({ id: chatId }));
+function historyFrom(saved: ChatMessage[]): ModelMessage[] {
   return saved.flatMap((m): ModelMessage[] => {
     if (m.role !== 'user' && m.role !== 'assistant') return [];
     const text = (m.parts as UIPart[])
@@ -132,6 +137,7 @@ export async function POST(request: Request) {
     selectedVisibilityType,
     projectId,
     connectors,
+    review,
   } = body;
 
   const session = await auth();
@@ -144,6 +150,17 @@ export async function POST(request: Request) {
   const existing = await getChatById({ id: chatId });
   if (existing && existing.userId !== userId) {
     return new ChatSDKError('forbidden:chat').toResponse();
+  }
+
+  // A per-user daily cap keeps one account from burning the model budget; the count comes from saved messages, so it survives across instances.
+  try {
+    const messagesToday = await getMessageCountByUserId({ id: userId });
+    if (!isWithinLimit('free', 'messages', messagesToday)) {
+      return new ChatSDKError('rate_limit:chat').toResponse();
+    }
+  } catch (error) {
+    // Failing open keeps chat available if the count query hiccups; the cap is abuse protection, not a correctness gate.
+    console.error('Message count check failed', error);
   }
 
   // Create the chat while the agent starts, so the title is not on the critical path.
@@ -159,11 +176,104 @@ export async function POST(request: Request) {
         }),
       );
 
-  const history = existing ? await historyFor(chatId) : [];
+  const savedMessages = existing
+    ? convertToUIMessages(await getMessagesByChatId({ id: chatId }))
+    : [];
+  const history = historyFrom(savedMessages);
   const messages: ModelMessage[] = [
     ...history,
     { role: 'user', content: describeMessage(message) },
   ];
+
+  // The trust state rides in the saved messages, so a follow-up reply resumes the same analysis.
+  let analysisSession = AnalysisSession.fromHistory(
+    findLatestAnalysisSnapshot(savedMessages),
+  );
+  // Approving a report waiting for review needs no model call; the saved
+  // status becomes approved and the next turn starts from it.
+  const approved =
+    review?.decision === 'approve' &&
+    analysisSession.status === 'awaiting_review' &&
+    analysisSession.approve().ok;
+  if (analysisSession.status === 'approved' && !approved) {
+    // An approved report is frozen, so a later message starts a fresh analysis instead of silently reopening signed-off work.
+    analysisSession = new AnalysisSession();
+  } else if (!approved && analysisSession.status !== 'collecting') {
+    analysisSession.reopen();
+  }
+
+  const analysisData = () => ({
+    status: analysisSession.status,
+    checklist: analysisSession.checklist,
+    facts: analysisSession.facts,
+    report: analysisSession.report,
+    openInputRequest: analysisSession.openInputRequest,
+    refusals: analysisSession.refusals,
+    snapshot: analysisSession.toSnapshot(),
+  });
+
+  // One save path for the agent run and the approval shortcut, so both land in the chat the same way.
+  const handleEnd = async ({
+    responseMessage,
+  }: {
+    responseMessage: ChatMessage;
+  }) => {
+    // A failed run streams no text or steps; saving it would leave an empty
+    // reply in the chat, so only the question is kept.
+    const answered = (responseMessage.parts as UIPart[]).some(
+      (p) => p.type === 'text' || p.type.startsWith('tool-'),
+    );
+    try {
+      await chatReady;
+      await saveMessages({
+        messages: [
+          {
+            id: message.id,
+            chatId,
+            role: 'user',
+            content: message.parts ?? [
+              { type: 'text', text: message.content ?? '' },
+            ],
+            createdAt: new Date(),
+          },
+          ...(answered
+            ? [
+                {
+                  id: crypto.randomUUID(),
+                  chatId,
+                  role: 'assistant' as const,
+                  content: responseMessage.parts,
+                  createdAt: new Date(),
+                },
+              ]
+            : []),
+        ],
+      });
+    } catch (error) {
+      console.error('Failed to save the chat', error);
+    }
+  };
+
+  if (approved) {
+    const stream = createUIMessageStream<ChatMessage>({
+      execute: async ({ writer }) => {
+        writer.write({ type: 'text-start', id: 'approved' });
+        writer.write({
+          type: 'text-delta',
+          id: 'approved',
+          delta: 'Approved.',
+        });
+        writer.write({ type: 'text-end', id: 'approved' });
+        writer.write({ type: 'data-analysis', data: analysisData() });
+      },
+      onError: (error) => {
+        console.error('Agent run failed', error);
+        return 'The agent hit an error. Try again, or rephrase the request.';
+      },
+      onEnd: handleEnd,
+    });
+    return createUIMessageStreamResponse({ stream });
+  }
 
   const stream = createUIMessageStream<ChatMessage>({
     execute: async ({ writer }) => {
@@ -181,6 +291,7 @@ export async function POST(request: Request) {
         connectors: (connectors ?? DEFAULT_CONNECTORS) as ConnectorId[],
         model,
         extraTools: documentTools,
+        analysis: analysisSession,
       });
       const startedAt = Date.now();
       const result = await agent.stream({
@@ -208,6 +319,29 @@ export async function POST(request: Request) {
         result.steps,
         result.totalUsage,
       ]);
+      // Saved with the assistant message so the next turn rebuilds the session and the UI can render the gate.
+      if (analysisSession.checklist) {
+        writer.write({ type: 'data-analysis', data: analysisData() });
+      }
+      const costUsd = estimateCostUsd(
+        {
+          inputTokens: usage.inputTokens ?? 0,
+          cachedTokens: usage.inputTokenDetails?.cacheReadTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+        },
+        model === 'chat-model' ? SPARK_PRICES : WONDER_PRICES,
+      );
+      // The trace names the model, prompt version and tokens of every step, so a reviewed report can be audited afterwards.
+      const trace = buildTrace(steps, {
+        model: MODEL_LABELS[model] ?? 'Muse Wonder',
+        promptHash: agentPromptHash(
+          (connectors ?? DEFAULT_CONNECTORS) as ConnectorId[],
+          true,
+          true,
+        ),
+        durationMs: Date.now() - startedAt,
+      });
+      writer.write({ type: 'data-trace', data: trace });
       writer.write({
         type: 'data-run',
         data: {
@@ -215,6 +349,7 @@ export async function POST(request: Request) {
           durationMs: Date.now() - startedAt,
           toolCalls: steps.reduce((n, step) => n + step.toolCalls.length, 0),
           totalTokens: usage.totalTokens,
+          costUsd,
         },
       });
     },
@@ -222,42 +357,7 @@ export async function POST(request: Request) {
       console.error('Agent run failed', error);
       return 'The agent hit an error. Try again, or rephrase the request.';
     },
-    onEnd: async ({ responseMessage }) => {
-      // A failed run streams no text or steps; saving it would leave an empty
-      // reply in the chat, so only the question is kept.
-      const answered = (responseMessage.parts as UIPart[]).some(
-        (p) => p.type === 'text' || p.type.startsWith('tool-'),
-      );
-      try {
-        await chatReady;
-        await saveMessages({
-          messages: [
-            {
-              id: message.id,
-              chatId,
-              role: 'user',
-              content: message.parts ?? [
-                { type: 'text', text: message.content ?? '' },
-              ],
-              createdAt: new Date(),
-            },
-            ...(answered
-              ? [
-                  {
-                    id: crypto.randomUUID(),
-                    chatId,
-                    role: 'assistant',
-                    content: responseMessage.parts,
-                    createdAt: new Date(),
-                  },
-                ]
-              : []),
-          ],
-        });
-      } catch (error) {
-        console.error('Failed to save the chat', error);
-      }
-    },
+    onEnd: handleEnd,
   });
 
   return createUIMessageStreamResponse({ stream });

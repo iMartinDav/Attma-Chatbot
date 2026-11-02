@@ -41,8 +41,17 @@ export const postRequestBodySchema = z.object({
   selectedChatModel: z.string(),
   selectedVisibilityType: z.enum(['public', 'private']),
   /** Sources the agent may use; defaults to every source that needs no setup. */
-  connectors: z.array(z.enum(CONNECTOR_IDS as [ConnectorId, ...ConnectorId[]])).optional(),
+  connectors: z
+    .array(z.enum(CONNECTOR_IDS as [ConnectorId, ...ConnectorId[]]))
+    .optional(),
   projectId: z.string().uuid().optional().nullable(),
+  /** A person's decision on a report awaiting review; approve skips the model, changes reopens the gate. */
+  review: z
+    .object({
+      decision: z.enum(['approve', 'changes']),
+      notes: z.string().max(4000).optional(),
+    })
+    .optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;
