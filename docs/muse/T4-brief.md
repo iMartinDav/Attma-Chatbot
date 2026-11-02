@@ -1,0 +1,24 @@
+# Task T4: fix what the live run exposed (false refusals)
+
+You are in `nextjs-frontend/` of Attma. Read `../CLAUDE.md`, then `lib/analysis/` and `scripts/analysis-eval/`. The senior engineer ran your harness against the real model. Results (full records with every tool output, fact and refusal) are in `scripts/analysis-eval/results/2026-11-02T08-46-41-196Z.json` (dravet) and `2026-11-02T08-49-27-016Z.json` (genital-anomalies, low-platelets, dravet-no-phenotypes). 3 of 4 cases passed, but most refusals were false refusals caused by our checks, and `genital-anomalies` escalated because of them. The model behaved well. Fix the checks, not the model.
+
+Write a regression test for each item FIRST, using the real values from those result files as fixtures (copy the minimum needed into a fixture file under `lib/analysis/__tests__/fixtures/`; do not import the results folder from tests).
+
+1. **Value comparison too literal** (`verify.ts` `valuesEqual`). Real refusals:
+   - `diseases[0].genes is DHCR7 in r1, not DHCR7`: the resolved value is the array `["DHCR7"]`, the model wrote `"DHCR7"`.
+   - `variants[0].clinvar is uncertain_significance,likely_pathogenic,pathogenic in r1, not uncertain_significance, likely_pathogenic, pathogenic`: array vs a comma-separated string with spaces.
+   - `variants[1].gnomadAf is null in r1, not null`: resolved `null` vs the string `"null"` (or the reverse).
+   - `residueFeatures is  in r3, not null`: an empty array vs null.
+   Rules: a one-element array equals its element; an array equals a string listing the same elements separated by commas with any spacing (order-insensitive); arrays equal arrays element-wise after the same normalisation (order-insensitive); `null`, `"null"`, `""`, `[]` and `"none"` are all "absent" and equal each other; also make the refusal message print arrays as JSON so it is readable.
+
+2. **Identifiers parsed as numbers** (`writtenNumbers`). Real refusals: `number 00000501589.1 has no cited fact` from `ENSP00000501589.1`, `00000347717.4`, `00000365891.4`, and `number 1.1` (find its source in the record). A number only counts when it stands alone: not preceded by a letter, digit, `_`, `.`, `:` or `-` joined to a word, and not followed by a letter or `_`. Keep `27.4`, `0.9849`, `1.2e-5`, `63%`, `(0.3227)`, `score 3.358,` working. Add tests for HGVS (`NM_000546.6:c.215C>G`, `p.Arg1648His`), Ensembl ids, rsIDs, `GRCh38`, `17-43045712-A-G`, and version strings like `v1.1`.
+
+3. **Claims check too strict** (`claims-check.ts`). It refused "the ranker's top disease is X with score S" because the facts had no phenotype terms. But `rankDiagnoses` ranks diseases by similarity to the patient's phenotypes, so its top result is phenotype-match evidence by construction. Change the claims-check input to give, per cited fact, the tool name that produced it (from the captured result) and a one-line meaning of that tool (`rankDiagnoses`: diseases ranked by HPO similarity to the patient's phenotypes, plus variants ranked by combined phenotype and variant evidence; `prioritizeVariants`: variants ranked by VEP evidence without phenotypes; `proteinStructure`: UniProt features at the residue; `reviewLiterature`: a sub-agent's grading of PubMed abstracts for the gene and disease; `lookupGene`: gene facts; `predictVariantEffect`: AlphaGenome predictions). Rewrite its instructions: a finding is unsupported only if it asserts something the cited facts contradict, or a specific new fact (a number, gene, variant, phenotype or citation) that no cited fact or tool meaning provides. Restating what a tool's output means is supported. Return short reasons. Unit-test the prompt builder (no model call): it includes tool names and meanings.
+
+4. **Fact cap**: raise the per-item fact cap and per-finding citation cap from 3 to 4 (identity + up to 3 measurements), in code, tool descriptions, tests and the agent instructions.
+
+5. **Agent instructions** (`lib/ai/agents/attma-agent.ts`, analysis section only): add two lines: findings state what the cited facts show, as scientific statements ("SCN1A p.Arg1648His ranks first, CADD 28.6, absent from gnomAD"), not "the tool returned"; when a finding names a gene, variant or disease, cite the fact that identifies it (e.g. `variants[0].gene`) along with the scores. Avoid writing transcript or protein identifiers with version suffixes in findings unless cited.
+
+6. **Results hygiene**: `scripts/analysis-eval/results/` must stay gitignored (check).
+
+Rules: no `any`; comments explain why; no new deps; no `.env*`; no git commits. Must pass: `bun run test -- lib/analysis`, `bunx tsc --noEmit -p .`, `bunx eslint lib/analysis scripts/analysis-eval lib/ai/agents`, Prettier on touched files. Do not call the real Model API and do not run the harness live (`--dry` is fine). Finish with a short summary of each fix and its test.
