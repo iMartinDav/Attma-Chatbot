@@ -10,7 +10,11 @@ import {
   type Report,
 } from './types';
 import { toolMeaningFor } from './claims-prompt';
-import { checkVariantInput, type QcResult } from './qc';
+import {
+  checkAnnotationCoverage,
+  checkVariantInput,
+  type QcResult,
+} from './qc';
 import {
   verifyChecklist,
   verifyFact,
@@ -212,6 +216,49 @@ export class AnalysisSession implements SessionView {
           'This analysis is escalated to a person; wait for their reply.',
         ],
       };
+    }
+    // Ranking without a QC check is a silent bypass, so a case that ranked variants must show a QC result before any report.
+    // A phenotype-only rankDiagnoses has no variantRanking, so it is a disease ranking and needs no variant QC.
+    const rankedOutputs = [...this.results.values()].filter((captured) => {
+      if (captured.toolName === 'prioritizeVariants') return true;
+      if (captured.toolName !== 'rankDiagnoses') return false;
+      if (captured.output === null || typeof captured.output !== 'object') {
+        return false;
+      }
+      const ranking = (captured.output as { variantRanking?: unknown })
+        .variantRanking;
+      return ranking !== null && typeof ranking === 'object';
+    });
+    if (rankedOutputs.length > 0 && this.qcResult === null) {
+      this.refusalCount += 1;
+      if (this.refusalCount >= 3) this.currentStatus = 'escalated';
+      return {
+        ok: false,
+        problems: [
+          'Call checkVariantInput on the candidate variants before submitting a report.',
+        ],
+      };
+    }
+    // A ranking that annotated nothing proves nothing, so its coverage failure blocks the report the same way.
+    for (const captured of rankedOutputs) {
+      const output =
+        captured.toolName === 'rankDiagnoses' &&
+        captured.output !== null &&
+        typeof captured.output === 'object' &&
+        'variantRanking' in captured.output
+          ? (captured.output as { variantRanking: unknown }).variantRanking
+          : captured.output;
+      const coverage = checkAnnotationCoverage(output);
+      if (coverage.status === 'fail') {
+        this.refusalCount += 1;
+        if (this.refusalCount >= 3) this.currentStatus = 'escalated';
+        return {
+          ok: false,
+          problems: [
+            `Annotation coverage failed, so no report can be submitted: ${coverage.problems.join(' ')}`,
+          ],
+        };
+      }
     }
     // A report from a failed QC run must never reach review, however good its checklist and facts look.
     if (this.qcResult?.status === 'fail') {

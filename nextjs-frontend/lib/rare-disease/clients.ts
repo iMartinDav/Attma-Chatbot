@@ -126,6 +126,10 @@ function loadSnapshot(): Map<string, VepResult> {
       };
       snapshot = new Map(Object.entries(file.entries));
     } catch {
+      // A missing snapshot only costs live API calls, but it must be visible instead of silent.
+      console.error(
+        'VEP snapshot could not be loaded; falling back to live Ensembl calls.',
+      );
       snapshot = new Map();
     }
   }

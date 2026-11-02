@@ -11,6 +11,7 @@ import type { VisibilityType } from '@/components/chat/visibility-selector';
 import { AnalysisSession } from '@/lib/analysis/session';
 import { findLatestAnalysisSnapshot } from '@/lib/analysis/history';
 import { buildTrace } from '@/lib/analysis/trace';
+import { ensureAnalysisPart } from './ensure-analysis-part';
 import { agentPromptHash, createAttmaAgent } from '@/lib/ai/agents/attma-agent';
 import {
   DEFAULT_CONNECTORS,
@@ -21,6 +22,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { isWithinLimit } from '@/lib/ai/entitlements';
+import { chatRunLock } from '@/lib/ai/run-lock';
 import {
   deleteChatById,
   getChatById,
@@ -55,7 +57,6 @@ const MODEL_LABELS: Record<string, string> = {
 const AGENT_MODELS = new Set(Object.keys(MODEL_LABELS));
 
 // One run per chat at a time: two concurrent runs would rebuild two trust sessions from the same history and race on save.
-const inFlightChats = new Set<string>();
 
 // Earlier steps go back to the model as a text log of each tool call and its
 // result, trimmed so one large table does not crowd out the conversation.
@@ -169,7 +170,7 @@ export async function POST(request: Request) {
   // Create the chat while the agent starts, so the title is not on the critical path.
   const chatReady = existing
     ? Promise.resolve()
-    : generateTitleFromUserMessage({ message: message as any }).then((title) =>
+    : generateTitleFromUserMessage({ message }).then((title) =>
         saveChat({
           id: chatId,
           title,
@@ -215,10 +216,13 @@ export async function POST(request: Request) {
     snapshot: analysisSession.toSnapshot(),
   });
 
-  if (inFlightChats.has(chatId)) {
-    return new ChatSDKError('bad_request:api').toResponse();
+  if (!chatRunLock.acquire(chatId, Date.now())) {
+    return new ChatSDKError('busy:chat').toResponse();
   }
-  inFlightChats.add(chatId);
+  // Release on abort too, because a stopped or closed run may never reach the stream's end handler.
+  request.signal.addEventListener('abort', () => chatRunLock.release(chatId), {
+    once: true,
+  });
 
   // One save path for the agent run and the approval shortcut, so both land in the chat the same way.
   const handleEnd = async ({
@@ -226,7 +230,7 @@ export async function POST(request: Request) {
   }: {
     responseMessage: ChatMessage;
   }) => {
-    inFlightChats.delete(chatId);
+    chatRunLock.release(chatId);
     // A failed run streams no text or steps; saving it would leave an empty
     // reply in the chat, so only the question is kept.
     const answered = (responseMessage.parts as UIPart[]).some(
@@ -251,7 +255,11 @@ export async function POST(request: Request) {
                   id: crypto.randomUUID(),
                   chatId,
                   role: 'assistant' as const,
-                  content: responseMessage.parts,
+                  content: ensureAnalysisPart(
+                    responseMessage.parts,
+                    Boolean(analysisSession.checklist),
+                    analysisData(),
+                  ),
                   createdAt: new Date(),
                 },
               ]
@@ -296,6 +304,7 @@ export async function POST(request: Request) {
         ? selectedChatModel
         : 'agent-model';
       const agent = createAttmaAgent({
+        userId,
         chatId,
         connectors: (connectors ?? DEFAULT_CONNECTORS) as ConnectorId[],
         model,
@@ -320,6 +329,12 @@ export async function POST(request: Request) {
           const text = error instanceof Error ? error.message : String(error);
           console.error('Agent step failed:', text);
           return text;
+        },
+        // The gate state is written on every step, so a stopped run still saves its checklist and verified facts.
+        onStepEnd: () => {
+          if (analysisSession.checklist) {
+            writer.write({ type: 'data-analysis', data: analysisData() });
+          }
         },
       })) {
         writer.write(chunk);

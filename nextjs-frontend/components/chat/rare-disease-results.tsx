@@ -97,7 +97,7 @@ export function RareDiseaseResult({
 const TITLES: Record<RareDiseaseToolName, string> = {
   readClinicalDocument: 'Clinical document',
   reviewLiterature: 'Literature review',
-  rankDiagnoses: 'Differential diagnosis',
+  rankDiagnoses: 'Disease ranking by phenotype',
   prioritizeVariants: 'Candidate variants',
 };
 
@@ -153,7 +153,7 @@ function DiagnosisCard({ ranking }: { ranking: DiagnosisRanking }) {
   const top = ranking.diseases[0]?.score || 1;
   return (
     <Card
-      title="Differential diagnosis"
+      title="Disease ranking by phenotype"
       meta={`HPO semantic similarity · ${ranking.phenotypes.length} terms · ${ranking.elapsedMs} ms`}
     >
       <ul className="flex flex-wrap gap-1.5" aria-label="HPO terms used">

@@ -3,6 +3,14 @@
  * they can be tested without loading the AI Elements components.
  */
 
+/** Older analyses read as superseded, so only the newest card in a chat shows its live gate status. */
+export function displayAnalysisStatus(
+  status: string,
+  isLatest: boolean,
+): string {
+  return isLatest ? status : 'superseded';
+}
+
 /** Minimal message shape needed to locate an analysis part, without depending on the AI SDK types. */
 export interface MessageWithParts {
   id: string;

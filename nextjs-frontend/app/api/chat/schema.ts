@@ -24,7 +24,7 @@ const partSchema = z.union([textPartSchema, filePartSchema]);
 const messageSchema = z.object({
   id: z.string(),
   role: z.enum(['user', 'assistant', 'system']),
-  content: z.string().optional(),
+  content: z.string().max(20000).optional(),
   parts: z.array(partSchema).optional(),
 });
 

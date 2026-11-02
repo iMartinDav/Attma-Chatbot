@@ -180,6 +180,7 @@ describe('writtenNumbers live-run regressions (item 2)', () => {
         value: 'SCN1A',
       }).ok,
     ).toBe(true);
+    session.runQc(['1-166848861-A-G']);
     return session;
   }
 
@@ -324,6 +325,7 @@ describe('fact and citation caps (item 4)', () => {
         value: 'SCN1A',
       }).ok,
     ).toBe(true);
+    session.runQc(['1-166848861-A-G']);
     const report: Report = {
       answer: 'Top candidate fits.',
       findings: [
@@ -450,6 +452,7 @@ describe('claims-check prompt builder (item 3)', () => {
       ],
       gaps: [],
     };
+    session.runQc(['1-166848861-A-G']);
     await session.submitReport(report, check);
     expect(seenBox.value?.[0]?.facts[0]?.toolName).toBe('rankDiagnoses');
     expect(seenBox.value?.[0]?.facts[0]?.toolMeaning).toContain(

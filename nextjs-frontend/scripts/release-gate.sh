@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Release gate: every check that must pass before a push, in one command.
-# The full Jest suite has 6 known pre-existing failures (hero-input, useTypingEffect) on main;
-# they are reported separately so a new failure can never hide behind them.
+# The full Jest suite must be green; there are no tolerated failures.
 set -u
 cd "$(dirname "$0")/.."
 fail=0
@@ -25,8 +24,7 @@ run "eval dry run (no model call)" env -u OPENAI_BASE_URL bun --conditions react
 run "build" bun run build:skip-migrate
 
 echo ""
-echo "== full test suite (6 known pre-existing failures in hero-input and useTypingEffect)"
-timeout 900 bun run test 2>&1 | tail -n 6 || true
+run "full test suite" bun run test
 
 echo ""
 if [ "$fail" -eq 0 ]; then

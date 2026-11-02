@@ -4,6 +4,7 @@
 
 export type ChatSDKErrorCode =
   | 'bad_request:api'
+  | 'busy:chat'
   | 'unauthorized:chat'
   | 'forbidden:chat'
   | 'rate_limit:chat'
@@ -29,6 +30,7 @@ export class ChatSDKError extends Error {
   ): string {
     const baseMessages: Record<ChatSDKErrorCode, string> = {
       'bad_request:api': 'Invalid request',
+      'busy:chat': 'This chat is still running. Wait for it to finish.',
       'unauthorized:chat': 'You must be logged in to access this chat',
       'forbidden:chat': 'You do not have permission to access this chat',
       'rate_limit:chat': 'You have exceeded the message limit for today',
@@ -45,6 +47,7 @@ export class ChatSDKError extends Error {
   public toResponse(): Response {
     const statusCodes: Record<string, number> = {
       bad_request: 400,
+      busy: 409,
       unauthorized: 401,
       forbidden: 403,
       not_found: 404,

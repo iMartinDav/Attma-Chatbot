@@ -111,13 +111,14 @@ describe('useTypingEffect', () => {
       }),
     );
 
-    // Complete first prompt cycle
+    // Complete first prompt cycle. Each phase advances in its own act, because the next timer only exists after a render.
     act(() => {
-      // Type A
       jest.advanceTimersByTime(10);
-      // Pause
+    });
+    act(() => {
       jest.advanceTimersByTime(20);
-      // Erase A
+    });
+    act(() => {
       jest.advanceTimersByTime(5);
     });
 
@@ -125,11 +126,12 @@ describe('useTypingEffect', () => {
 
     // Complete second prompt cycle
     act(() => {
-      // Type B
       jest.advanceTimersByTime(10);
-      // Pause
+    });
+    act(() => {
       jest.advanceTimersByTime(20);
-      // Erase B
+    });
+    act(() => {
       jest.advanceTimersByTime(5);
     });
 

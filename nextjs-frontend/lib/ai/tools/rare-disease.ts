@@ -1,5 +1,5 @@
 /**
- * @fileoverview Rare disease tools: phenotype-driven differential diagnosis and
+ * @fileoverview Rare disease tools: phenotype-driven disease ranking and
  * variant prioritization. Research use; every result needs clinical review.
  */
 
@@ -21,7 +21,7 @@ const phenotypeSchema = z.object({
 export const rankDiagnosesTool = tool({
   description: `Rank rare diseases and candidate genes for a patient's phenotypes.
 Pass only findings the patient HAS (not negated ones), mapped to HPO terms.
-Ranks all ~12,900 OMIM, Orphanet and DECIPHER diseases by HPO semantic similarity and returns the differential diagnosis with each disease's causal genes.`,
+Ranks all ~12,900 OMIM, Orphanet and DECIPHER diseases by HPO semantic similarity and returns the diseases ranked by phenotype similarity with each disease's causal genes.`,
   inputSchema: z.object({
     phenotypes: z.array(phenotypeSchema).min(1).max(40),
     variants: z

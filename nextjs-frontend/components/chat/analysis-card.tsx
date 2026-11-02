@@ -15,6 +15,7 @@ import type {
   Report,
 } from '@/lib/analysis/types';
 import { cn } from '@/lib/utils';
+import { displayAnalysisStatus } from './step-labels';
 
 export interface AnalysisCardData {
   status: AnalysisStatus;
@@ -28,12 +29,13 @@ export interface AnalysisCardData {
 
 export type AnalysisReviewDecision = 'approve' | 'changes';
 
-const STATUS_LABELS: Record<AnalysisStatus, string> = {
+const STATUS_LABELS: Record<AnalysisStatus | 'superseded', string> = {
   collecting: 'Collecting',
   needs_input: 'Needs input',
   awaiting_review: 'Awaiting your review',
   approved: 'Approved',
   escalated: 'Escalated to you',
+  superseded: 'Superseded',
 };
 
 function kindLabel(kind: ChecklistItem['kind']): string {
@@ -49,12 +51,15 @@ export function AnalysisCard({
   lastProblems = [],
   disabled = false,
   onReview,
+  isLatest = true,
 }: {
   data: AnalysisCardData;
   /** Refusal problems from the last refused report in this message, shown when escalated. */
   lastProblems?: string[];
   disabled?: boolean;
   onReview?: (decision: AnalysisReviewDecision, notes?: string) => void;
+  /** False for older cards in the chat, which read as superseded with no live status. */
+  isLatest?: boolean;
 }) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState('');
@@ -76,14 +81,26 @@ export function AnalysisCard({
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-medium">Analysis</h3>
         <Badge
-          variant={data.status === 'awaiting_review' ? 'default' : 'secondary'}
+          variant={
+            isLatest && data.status === 'awaiting_review'
+              ? 'default'
+              : 'secondary'
+          }
           className={cn(
-            (data.status === 'needs_input' || data.status === 'escalated') &&
+            isLatest &&
+              (data.status === 'needs_input' || data.status === 'escalated') &&
               'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200',
-            data.status === 'approved' && 'text-primary-ink',
+            isLatest && data.status === 'approved' && 'text-primary-ink',
           )}
         >
-          {STATUS_LABELS[data.status]}
+          {
+            STATUS_LABELS[
+              displayAnalysisStatus(
+                data.status,
+                isLatest,
+              ) as keyof typeof STATUS_LABELS
+            ]
+          }
         </Badge>
       </div>
 

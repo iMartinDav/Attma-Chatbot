@@ -31,3 +31,14 @@ describe('lastAnalysisMessageId', () => {
     ).toBe('m1');
   });
 });
+
+describe('displayAnalysisStatus', () => {
+  it('shows the live status on the newest card and Superseded elsewhere', async () => {
+    const { displayAnalysisStatus } = await import('../step-labels');
+    expect(displayAnalysisStatus('awaiting_review', true)).toBe(
+      'awaiting_review',
+    );
+    expect(displayAnalysisStatus('awaiting_review', false)).toBe('superseded');
+    expect(displayAnalysisStatus('approved', false)).toBe('superseded');
+  });
+});

@@ -9,6 +9,10 @@ export interface QcResult {
 
 const GENOMIC = /^(\d{1,2}|X|Y|M|MT)-(\d+)-([ACGT]+)-([ACGT]+)$/i;
 const RSID = /^rs\d+$/i;
+// Identifiers must look like real accessions or HGVS, so free text with a colon or a dot cannot slip through as one.
+const ACCESSION = /^[A-Za-z]{1,4}_?\d+\.\d+$/;
+const HGVS = /^[A-Za-z][\w.-]*:(c|g|m|n|p|r)\.[A-Za-z0-9_+\-*?[\]=>]+$/;
+const PROTEIN_CHANGE = /^[A-Za-z]{1,4}\d+\.?\d*:p\.[A-Za-z]{3}\d+[A-Za-z]{3}$/;
 const MAX_VARIANTS = 200;
 
 // A genomic coordinate must name a real chromosome and valid alleles, or VEP annotation downstream is meaningless.
@@ -25,16 +29,27 @@ function classify(variant: string): 'genomic' | 'identifier' | 'invalid' {
       (Number.isInteger(numeric) && numeric >= 1 && numeric <= 22);
     return chrOk && Number(match[2]) > 0 ? 'genomic' : 'invalid';
   }
-  if (RSID.test(variant) || variant.includes(':') || variant.includes('.')) {
+  if (RSID.test(variant) || ACCESSION.test(variant) || HGVS.test(variant)) {
     return 'identifier';
   }
+  if (PROTEIN_CHANGE.test(variant)) return 'identifier';
   return 'invalid';
 }
 
 export function checkVariantInput(variants: string[]): QcResult {
   const problems: string[] = [];
   const warnings: string[] = [];
-  const list = variants.map((v) => v.trim()).filter((v) => v !== '');
+  // Duplicates would count twice toward the cap and in ranking, so the list is deduplicated before anything is counted.
+  const seen = new Set<string>();
+  const list = variants
+    .map((v) => v.trim())
+    .filter((v) => v !== '')
+    .filter((v) => {
+      const key = v.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   if (list.length === 0) {
     problems.push('No candidate variants were given. Provide at least one.');
   }

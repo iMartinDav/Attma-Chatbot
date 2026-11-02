@@ -56,3 +56,20 @@ describe('estimateCostUsd', () => {
     expect(formatUsd(0.123456)).toBe('$0.1235');
   });
 });
+
+describe('budget stop condition', () => {
+  it('stops once cumulative tokens reach the budget', async () => {
+    const { budgetStopCondition, RUN_TOKEN_BUDGET } = await import('../budget');
+    expect(
+      budgetStopCondition({ steps: [{ usage: { totalTokens: 10 } }] }),
+    ).toBe(false);
+    expect(
+      budgetStopCondition({
+        steps: [
+          { usage: { totalTokens: RUN_TOKEN_BUDGET - 1 } },
+          { usage: { totalTokens: 1 } },
+        ],
+      }),
+    ).toBe(true);
+  });
+});

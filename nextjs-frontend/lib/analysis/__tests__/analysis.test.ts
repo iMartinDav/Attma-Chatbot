@@ -135,6 +135,7 @@ function sessionWithFacts(): AnalysisSession {
   }
   // The report fixture cites f1 to f4, which the auto ids must match.
   expect(session.facts.map((f) => f.id)).toEqual(['f1', 'f2', 'f3', 'f4']);
+  session.runQc(['1-166848861-A-G', '2-100000-A-T', '3-200000-C-G']);
   return session;
 }
 
@@ -779,5 +780,246 @@ describe('variant input QC', () => {
     }
     session.runQc(['1-166848861-A-G']);
     expect((await session.submitReport(validReport())).ok).toBe(true);
+  });
+});
+
+describe('QC enforcement', () => {
+  // Mirrors the rankDiagnoses tool output when only phenotypes were given: no variantRanking at all.
+  const phenotypeOnlyOutput = {
+    phenotypes: [{ id: 'HP:0002373', label: 'Febrile seizures' }],
+    unresolved: [] as string[],
+    diseases: [
+      {
+        rank: 1,
+        id: 'OMIM:607208',
+        name: 'Dravet syndrome',
+        score: 0.91,
+        genes: ['SCN1A'],
+        url: 'https://omim.org/entry/607208',
+      },
+    ],
+    genes: [
+      { symbol: 'SCN1A', phenotypeScore: 0.91, diseases: ['Dravet syndrome'] },
+    ],
+    hpoVersion: 'test',
+    elapsedMs: 5,
+    variantRanking: undefined,
+  };
+
+  function phenotypeReport(): Report {
+    return {
+      answer: 'Dravet syndrome fits the phenotypes.',
+      findings: [
+        {
+          itemId: 'c1',
+          status: 'proven',
+          text: 'Dravet syndrome scores 0.91 for the phenotypes.',
+          factIds: ['f1'],
+        },
+        {
+          itemId: 'c2',
+          status: 'proven',
+          text: 'SCN1A has a phenotype score of 0.91.',
+          factIds: ['f2'],
+        },
+        {
+          itemId: 'c3',
+          status: 'proven',
+          text: 'SCN1A is linked to Dravet syndrome and no conflicting disease fact was recorded.',
+          factIds: ['f3'],
+        },
+        {
+          itemId: 'c4',
+          status: 'gap',
+          text: 'No literature evidence was recorded for this item.',
+          factIds: [],
+        },
+      ],
+      gaps: ['No literature evidence was recorded.'],
+    };
+  }
+
+  function phenotypeOnlySession(): AnalysisSession {
+    const session = new AnalysisSession();
+    const ref = session.captureResult('rankDiagnoses', phenotypeOnlyOutput);
+    expect(session.setChecklist(validChecklist).ok).toBe(true);
+    const facts = [
+      { itemId: 'c1', ref, path: 'diseases[0].score', value: 0.91 },
+      { itemId: 'c2', ref, path: 'genes[0].phenotypeScore', value: 0.91 },
+      { itemId: 'c3', ref, path: 'genes[0].symbol', value: 'SCN1A' },
+    ];
+    for (const fact of facts) {
+      const result = session.recordFact(fact);
+      if (!result.ok) throw new Error(result.problems.join(' '));
+    }
+    return session;
+  }
+
+  it('submits a phenotype-only rankDiagnoses report without QC', async () => {
+    const session = phenotypeOnlySession();
+    const result = await session.submitReport(phenotypeReport());
+    expect(result.ok).toBe(true);
+    expect(session.status).toBe('awaiting_review');
+    expect(session.refusals).toBe(0);
+  });
+
+  it('still refuses rankDiagnoses with a real variantRanking and no QC', async () => {
+    const session = phenotypeOnlySession();
+    session.captureResult('rankDiagnoses', {
+      ...phenotypeOnlyOutput,
+      variantRanking: variantOutput,
+    });
+    const result = await session.submitReport(phenotypeReport());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.problems.join(' ')).toMatch(/checkVariantInput/);
+    }
+  });
+
+  it('refuses a submit when variants were ranked but QC never ran', async () => {
+    const session = new AnalysisSession();
+    const ref = session.captureResult('prioritizeVariants', variantOutput);
+    session.setChecklist([
+      {
+        id: 'c1',
+        question: 'Phenotype match?',
+        kind: 'phenotype_match',
+        evidenceNeeded: 'Score.',
+      },
+      {
+        id: 'c2',
+        question: 'Variant evidence?',
+        kind: 'variant_evidence',
+        evidenceNeeded: 'CADD.',
+      },
+      {
+        id: 'c3',
+        question: 'Counterevidence?',
+        kind: 'counterevidence',
+        evidenceNeeded: 'ClinVar.',
+      },
+      {
+        id: 'c4',
+        question: 'Literature?',
+        kind: 'literature',
+        evidenceNeeded: 'Papers.',
+      },
+    ]);
+    void ref;
+    const result = await session.submitReport(validReport());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.problems.join(' ')).toMatch(/checkVariantInput/);
+    }
+  });
+
+  it('refuses when annotation covered none of the variants', async () => {
+    const session = sessionWithFacts();
+    session.captureResult('prioritizeVariants', {
+      variants: [],
+      notAnnotated: ['1-166848861-A-G'],
+    });
+    const result = await session.submitReport(validReport());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.problems.join(' ')).toMatch(/Annotation coverage failed/);
+    }
+  });
+
+  it('fails free text as an identifier and deduplicates the list', () => {
+    const session = new AnalysisSession();
+    expect(session.runQc(['foo:bar']).status).toBe('fail');
+    expect(session.runQc(['hello.world']).status).toBe('fail');
+    const deduped = session.runQc(['1-100-A-G', '1-100-A-G', '1-100-a-g']);
+    expect(deduped.total).toBe(1);
+    expect(deduped.status).toBe('pass');
+    expect(session.runQc(['ENSP00000501589.1:p.Arg1648His']).status).toBe(
+      'warn',
+    );
+    expect(session.runQc(['NM_000546.6:c.215C>G']).status).toBe('warn');
+  });
+});
+
+describe('phenotype-only ranking needs no variant QC', () => {
+  it('submits a disease-ranking report without checkVariantInput', async () => {
+    const session = new AnalysisSession();
+    const ref = session.captureResult('rankDiagnoses', {
+      diseases: [{ name: 'Dravet syndrome', score: 0.9849 }],
+    });
+    session.setChecklist([
+      {
+        id: 'c1',
+        question: 'Phenotype match?',
+        kind: 'phenotype_match',
+        evidenceNeeded: 'Score.',
+      },
+      {
+        id: 'c2',
+        question: 'Variant evidence?',
+        kind: 'variant_evidence',
+        evidenceNeeded: 'Genes.',
+      },
+      {
+        id: 'c3',
+        question: 'Counterevidence?',
+        kind: 'counterevidence',
+        evidenceNeeded: 'Other fits.',
+      },
+      {
+        id: 'c4',
+        question: 'Literature?',
+        kind: 'literature',
+        evidenceNeeded: 'Papers.',
+      },
+    ]);
+    session.recordFact({
+      itemId: 'c1',
+      ref,
+      path: 'diseases[0].score',
+      value: 0.9849,
+    });
+    session.recordFact({
+      itemId: 'c2',
+      ref,
+      path: 'diseases[0].name',
+      value: 'Dravet syndrome',
+    });
+    session.recordFact({
+      itemId: 'c3',
+      ref,
+      path: 'diseases[0].name',
+      value: 'Dravet syndrome',
+    });
+    const report = {
+      answer: 'Dravet syndrome fits best.',
+      findings: [
+        {
+          itemId: 'c1',
+          status: 'proven' as const,
+          text: 'Top score is 0.9849.',
+          factIds: ['f1'],
+        },
+        {
+          itemId: 'c2',
+          status: 'proven' as const,
+          text: 'Dravet syndrome leads.',
+          factIds: ['f2'],
+        },
+        {
+          itemId: 'c3',
+          status: 'gap' as const,
+          text: 'Searched the ranking; no stronger fit.',
+          factIds: ['f3'],
+        },
+        {
+          itemId: 'c4',
+          status: 'gap' as const,
+          text: 'No literature recorded.',
+          factIds: [],
+        },
+      ],
+      gaps: [],
+    };
+    expect((await session.submitReport(report)).ok).toBe(true);
   });
 });

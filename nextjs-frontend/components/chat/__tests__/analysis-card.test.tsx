@@ -190,3 +190,15 @@ describe('AnalysisCard', () => {
     expect(screen.getByText(RESEARCH_LINE)).toBeInTheDocument();
   });
 });
+
+describe('AnalysisCard superseded pill', () => {
+  it('shows Superseded and no buttons on an older card', () => {
+    render(<AnalysisCard data={cardData({})} isLatest={false} />);
+    expect(screen.getByText('Superseded')).toBeInTheDocument();
+    expect(screen.queryByText('Awaiting your review')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Approve' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(RESEARCH_LINE)).toBeInTheDocument();
+  });
+});

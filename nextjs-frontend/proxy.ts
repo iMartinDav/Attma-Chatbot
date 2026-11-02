@@ -24,7 +24,7 @@ const authRoutes = [
 ];
 
 // App routes that should not be localized but need auth
-const nonLocalizedAppRoutes = ['/chat', '/settings'];
+const nonLocalizedAppRoutes = ['/chat', '/settings', '/console'];
 
 function getLocaleFromRequest(request: NextRequest): string {
   // Negotiator expects plain object so we need to transform headers

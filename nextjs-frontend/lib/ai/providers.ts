@@ -3,6 +3,8 @@
  * Centralized configuration for all AI providers and models.
  */
 
+import { createHash } from 'node:crypto';
+
 import {
   createOpenAI,
   openai,
@@ -165,6 +167,8 @@ function muse(
         providerOptions: {
           openai: {
             forceReasoning: true,
+            // A stable cache key lets Meta reuse the shared instruction prefix across runs.
+            promptCacheKey: 'attma-agent',
             reasoningEffort: effort,
             reasoningSummary: 'auto',
             store: false,
@@ -298,4 +302,9 @@ export function getModelsWithCapability(
 export function getDefaultModelId(): string {
   const defaultModel = Object.values(MODEL_REGISTRY).find((m) => m.isDefault);
   return defaultModel?.id ?? 'gpt-4o-mini';
+}
+
+/** Hashed per-user identifier for Meta safety tooling: stable for a user, never their email or raw id. */
+export function safetyIdentifierFor(userId: string): string {
+  return createHash('sha256').update(userId).digest('hex');
 }

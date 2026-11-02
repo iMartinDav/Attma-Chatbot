@@ -2,7 +2,7 @@
  * Live evaluation for the analysis trust gate, outside Next.js.
  *
  * Usage:
- *   bun --conditions react-server --env-file=.env.local scripts/analysis-eval/run.ts [--dry] [--max-steps N] [caseId ...]
+ *   bun --conditions react-server --env-file=.env.local scripts/analysis-eval/run.ts [--dry] [--max-steps N] [--repeat N] [caseId ...]
  *
  * The react-server condition lets `import 'server-only'` load outside Next.
  * Without --dry this calls the real model, so run it deliberately.
@@ -40,12 +40,14 @@ const EVAL_CONNECTORS: ConnectorId[] = DEFAULT_CONNECTORS.filter(
 interface CliOptions {
   dry: boolean;
   maxSteps: number;
+  repeat: number;
   caseIds: string[];
 }
 
 function parseArgs(argv: string[]): CliOptions {
   let dry = false;
   let maxSteps = 24;
+  let repeat = 1;
   const caseIds: string[] = [];
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index];
@@ -58,6 +60,13 @@ function parseArgs(argv: string[]): CliOptions {
       index++;
     } else if (arg.startsWith('--max-steps=')) {
       maxSteps = Number(arg.slice('--max-steps='.length));
+    } else if (arg === '--repeat') {
+      const value = argv[index + 1];
+      if (!value) throw new Error('--repeat needs a number.');
+      repeat = Number(value);
+      index++;
+    } else if (arg.startsWith('--repeat=')) {
+      repeat = Number(arg.slice('--repeat='.length));
     } else if (arg.startsWith('--')) {
       throw new Error(`Unknown flag ${arg}.`);
     } else {
@@ -67,7 +76,10 @@ function parseArgs(argv: string[]): CliOptions {
   if (!Number.isInteger(maxSteps) || maxSteps < 1) {
     throw new Error('--max-steps must be a positive integer.');
   }
-  return { dry, maxSteps, caseIds };
+  if (!Number.isInteger(repeat) || repeat < 1) {
+    throw new Error('--repeat must be a positive integer.');
+  }
+  return { dry, maxSteps, repeat, caseIds };
 }
 
 function selectCases(caseIds: string[]): EvalCase[] {
@@ -144,123 +156,131 @@ const records: CaseRecord[] = [];
 let anyFailed = false;
 
 for (const evalCase of cases) {
-  console.log(`\n=== ${evalCase.id} ===`);
-  console.log(`prompt: ${evalCase.prompt}`);
-  const session = new AnalysisSession();
-  const agent = createAttmaAgent({
-    chatId: `eval-${evalCase.id}`,
-    connectors: EVAL_CONNECTORS,
-    analysis: session,
-  });
-
-  let stepRecords: StepRecord[] = [];
-  let finalText = '';
-  let usage: TokenUsage = {
-    inputTokens: 0,
-    cachedTokens: 0,
-    outputTokens: 0,
-    reasoningTokens: 0,
-    totalTokens: 0,
-  };
-  let errorMessage: string | undefined;
-
-  try {
-    // Passing stopWhen here replaces the agent default for this run only, so --max-steps is honoured without changing the app.
-    const callOptions: Parameters<typeof agent.generate>[0] & {
-      stopWhen: [ReturnType<typeof isStepCount>, typeof analysisStopCondition];
-    } = {
-      prompt: evalCase.prompt,
-      stopWhen: [isStepCount(options.maxSteps), analysisStopCondition],
-    };
-    const result = await agent.generate(callOptions);
-    finalText = result.text;
-    const rawUsage = result.usage;
-    usage = {
-      inputTokens: rawUsage.inputTokens ?? 0,
-      cachedTokens: rawUsage.inputTokenDetails.cacheReadTokens ?? 0,
-      outputTokens: rawUsage.outputTokens ?? 0,
-      reasoningTokens: rawUsage.outputTokenDetails.reasoningTokens ?? 0,
-      totalTokens: rawUsage.totalTokens ?? 0,
-    };
-    stepRecords = result.steps.map((step, index) => {
-      const toolCalls = step.toolCalls.map((call) => ({
-        toolCallId: call.toolCallId,
-        toolName: call.toolName,
-        input: call.input as unknown,
-      }));
-      const toolResults = step.toolResults.map((entry) => ({
-        toolCallId: entry.toolCallId,
-        toolName: entry.toolName,
-        output: entry.output as unknown,
-      }));
-      const refusals = toolResults
-        .map((entry) => ({
-          toolName: entry.toolName,
-          problems: problemsFrom(entry.output),
-        }))
-        .filter((entry) => entry.problems.length > 0);
-      return {
-        step: index + 1,
-        toolCalls,
-        toolResults,
-        refusals,
-        text: step.text,
-      };
+  let passed = 0;
+  for (let runIndex = 1; runIndex <= options.repeat; runIndex++) {
+    console.log(`\n=== ${evalCase.id} (run ${runIndex}/${options.repeat}) ===`);
+    console.log(`prompt: ${evalCase.prompt}`);
+    const session = new AnalysisSession();
+    const agent = createAttmaAgent({
+      chatId: `eval-${evalCase.id}`,
+      connectors: EVAL_CONNECTORS,
+      analysis: session,
     });
-    for (const record of stepRecords) {
-      printStep(
-        record.step - 1,
-        record.toolCalls,
-        record.toolResults,
-        record.text,
-      );
+
+    let stepRecords: StepRecord[] = [];
+    let finalText = '';
+    let usage: TokenUsage = {
+      inputTokens: 0,
+      cachedTokens: 0,
+      outputTokens: 0,
+      reasoningTokens: 0,
+      totalTokens: 0,
+    };
+    let errorMessage: string | undefined;
+
+    try {
+      // Passing stopWhen here replaces the agent default for this run only, so --max-steps is honoured without changing the app.
+      const callOptions: Parameters<typeof agent.generate>[0] & {
+        stopWhen: [
+          ReturnType<typeof isStepCount>,
+          typeof analysisStopCondition,
+        ];
+      } = {
+        prompt: evalCase.prompt,
+        stopWhen: [isStepCount(options.maxSteps), analysisStopCondition],
+      };
+      const result = await agent.generate(callOptions);
+      finalText = result.text;
+      const rawUsage = result.usage;
+      usage = {
+        inputTokens: rawUsage.inputTokens ?? 0,
+        cachedTokens: rawUsage.inputTokenDetails.cacheReadTokens ?? 0,
+        outputTokens: rawUsage.outputTokens ?? 0,
+        reasoningTokens: rawUsage.outputTokenDetails.reasoningTokens ?? 0,
+        totalTokens: rawUsage.totalTokens ?? 0,
+      };
+      stepRecords = result.steps.map((step, index) => {
+        const toolCalls = step.toolCalls.map((call) => ({
+          toolCallId: call.toolCallId,
+          toolName: call.toolName,
+          input: call.input as unknown,
+        }));
+        const toolResults = step.toolResults.map((entry) => ({
+          toolCallId: entry.toolCallId,
+          toolName: entry.toolName,
+          output: entry.output as unknown,
+        }));
+        const refusals = toolResults
+          .map((entry) => ({
+            toolName: entry.toolName,
+            problems: problemsFrom(entry.output),
+          }))
+          .filter((entry) => entry.problems.length > 0);
+        return {
+          step: index + 1,
+          toolCalls,
+          toolResults,
+          refusals,
+          text: step.text,
+        };
+      });
+      for (const record of stepRecords) {
+        printStep(
+          record.step - 1,
+          record.toolCalls,
+          record.toolResults,
+          record.text,
+        );
+      }
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+      console.log(`  ERROR: ${errorMessage}`);
     }
-  } catch (error) {
-    errorMessage = error instanceof Error ? error.message : String(error);
-    console.log(`  ERROR: ${errorMessage}`);
+
+    const verdict =
+      errorMessage !== undefined
+        ? { pass: false, reasons: [`run failed: ${errorMessage}`] }
+        : verdictFor(evalCase, session);
+    if (verdict.pass) passed += 1;
+    else anyFailed = true;
+
+    const factsPerItem: Record<string, number> = {};
+    for (const fact of session.facts) {
+      factsPerItem[fact.itemId] = (factsPerItem[fact.itemId] ?? 0) + 1;
+    }
+    const costUsd = estimateCostUsd(usage, WONDER_PRICES);
+
+    printCaseSummary({
+      evalCase,
+      session,
+      steps: stepRecords.length,
+      finalText,
+      usage,
+      costUsd,
+      verdict,
+    });
+
+    records.push({
+      caseId: evalCase.id,
+      prompt: evalCase.prompt,
+      expect: evalCase.expect,
+      status: session.status,
+      checklist: session.checklist,
+      facts: session.facts,
+      factsPerItem,
+      report: session.report,
+      openInputRequest: session.openInputRequest,
+      refusals: session.refusals,
+      steps: stepRecords,
+      stepCount: stepRecords.length,
+      finalText,
+      usage,
+      estimatedCostUsd: costUsd,
+      verdict,
+      ...(errorMessage !== undefined ? { error: errorMessage } : {}),
+    });
   }
-
-  const verdict =
-    errorMessage !== undefined
-      ? { pass: false, reasons: [`run failed: ${errorMessage}`] }
-      : verdictFor(evalCase, session);
-  if (!verdict.pass) anyFailed = true;
-
-  const factsPerItem: Record<string, number> = {};
-  for (const fact of session.facts) {
-    factsPerItem[fact.itemId] = (factsPerItem[fact.itemId] ?? 0) + 1;
-  }
-  const costUsd = estimateCostUsd(usage, WONDER_PRICES);
-
-  printCaseSummary({
-    evalCase,
-    session,
-    steps: stepRecords.length,
-    finalText,
-    usage,
-    costUsd,
-    verdict,
-  });
-
-  records.push({
-    caseId: evalCase.id,
-    prompt: evalCase.prompt,
-    expect: evalCase.expect,
-    status: session.status,
-    checklist: session.checklist,
-    facts: session.facts,
-    factsPerItem,
-    report: session.report,
-    openInputRequest: session.openInputRequest,
-    refusals: session.refusals,
-    steps: stepRecords,
-    stepCount: stepRecords.length,
-    finalText,
-    usage,
-    estimatedCostUsd: costUsd,
-    verdict,
-    ...(errorMessage !== undefined ? { error: errorMessage } : {}),
-  });
+  console.log(`${evalCase.id} ${passed}/${options.repeat}`);
 }
 
 const here = dirname(fileURLToPath(import.meta.url));

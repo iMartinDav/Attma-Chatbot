@@ -119,6 +119,7 @@ function sessionWithFacts(): AnalysisSession {
     path: 'variants[0].gene',
     value: 'SCN1A',
   });
+  session.runQc(['1-166848861-A-G']);
   return session;
 }
 

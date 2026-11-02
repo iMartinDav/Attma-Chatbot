@@ -139,6 +139,13 @@ const WORKFLOWS: Workflow[] = [
     prompt: demoPrompt(DEMO_CASES[0]),
   },
   {
+    title: 'Variants, no findings yet',
+    description: 'Asks for phenotypes before ranking anything',
+    icon: DnaIcon,
+    runs: ['Muse Wonder', 'Attma checks'],
+    prompt: `Exome candidate variants for a patient, no clinical findings are available yet: ${DEMO_CASES[0].variants.slice(0, 3).join(', ')}. Which variant explains the case?`,
+  },
+  {
     title: 'Variant to structure',
     description: 'SCN1A p.Arg1648His: frequency, ClinVar, domain, literature',
     icon: BoxesIcon,

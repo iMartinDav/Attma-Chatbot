@@ -34,13 +34,34 @@ interface UniProtFeature {
   location: { start: { value: number }; end: { value: number } };
 }
 
-async function getJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
-  return response.json() as Promise<T>;
+// One retry with a short backoff covers transient UniProt and AlphaFold failures; the error stays short so no long URL reaches the user.
+export async function getJson<T>(url: string): Promise<T> {
+  const service = url.includes('uniprot.org') ? 'UniProt' : 'AlphaFold';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (response.ok) return response.json() as Promise<T>;
+      if (response.status < 500) {
+        throw new Error(`Request failed (${response.status})`);
+      }
+      if (attempt === 1)
+        throw new Error(`${service} did not respond; try again`);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('Request failed')
+      ) {
+        throw error;
+      }
+      if (attempt === 1)
+        throw new Error(`${service} did not respond; try again`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`${service} did not respond; try again`);
 }
 
 export async function proteinContext(gene: string, residue?: number) {

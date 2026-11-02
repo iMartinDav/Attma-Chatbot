@@ -20,28 +20,19 @@ export async function saveChatModelAsCookie(model: string) {
 export async function generateTitleFromUserMessage({
   message,
 }: {
-  message: UIMessage | any; // Allow both v4 and v5 message formats
+  message: {
+    parts?: Array<{ type: string; text?: string; filename?: string }>;
+  };
 }) {
-  // Extract text content from either v4 or v5 message format
-  let messageText = '';
-  if (typeof (message as any).content === 'string') {
-    messageText = (message as any).content;
-  } else if (Array.isArray((message as any).content)) {
-    messageText = (message as any).content
-      .filter((part: any) => part.type === 'text')
-      .map((part: any) => (part as any).text)
-      .join(' ');
-  } else if ((message as any).parts) {
-    // v5 format with parts
-    messageText = (message as any).parts
-      .filter((part: any) => part.type === 'text')
-      .map((part: any) => part.text)
-      .join(' ');
-  }
+  const parts = message.parts ?? [];
+  const messageText = parts
+    .filter((part) => part.type === 'text')
+    .map((part) => (part as { text: string }).text)
+    .join(' ');
 
-  const attachments = ((message as any).parts ?? [])
-    .filter((part: any) => part.type === 'file')
-    .map((part: any) => part.filename ?? part.name)
+  const attachments = parts
+    .filter((part) => part.type === 'file')
+    .map((part) => (part as { filename?: string }).filename)
     .filter(Boolean);
 
   // Structured output makes the model return a title instead of answering

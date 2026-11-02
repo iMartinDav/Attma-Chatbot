@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { HeroInput } from '../hero-input';
 
 describe('HeroInput', () => {
+  // Fresh mocks per test, so a submit in one test cannot leak into the next.
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   const defaultProps = {
     placeholder: 'Type here...',
     value: '',
@@ -66,10 +71,11 @@ describe('HeroInput', () => {
 
     const input = screen.getByPlaceholderText('Type here...');
 
-    fireEvent.focus(input);
+    // jsdom only moves focus through the element API, not through a dispatched focus event.
+    input.focus();
     expect(input).toHaveFocus();
 
-    fireEvent.blur(input);
+    input.blur();
     expect(input).not.toHaveFocus();
   });
 

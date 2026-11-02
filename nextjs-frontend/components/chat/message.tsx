@@ -64,6 +64,7 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   onReview,
+  isLatestAnalysis = true,
   requiresScrollPadding = false,
 }: {
   chatId: string;
@@ -76,6 +77,7 @@ const PurePreviewMessage = ({
   regenerate: () => Promise<string | null | undefined>;
   isReadonly: boolean;
   onReview?: (decision: AnalysisReviewDecision, notes?: string) => void;
+  isLatestAnalysis?: boolean;
   requiresScrollPadding?: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
@@ -338,6 +340,7 @@ const PurePreviewMessage = ({
                         lastProblems={lastProblems}
                         disabled={isLoading}
                         onReview={isReadonly ? undefined : onReview}
+                        isLatest={isLatestAnalysis}
                       />
                     );
                   }
@@ -393,10 +396,13 @@ const PurePreviewMessage = ({
 
                           <div
                             data-testid="message-content"
-                            className={cn('flex flex-col gap-4', {
-                              'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                                message.role === 'user',
-                            })}
+                            className={cn(
+                              'flex min-w-0 flex-col gap-4 [overflow-wrap:anywhere]',
+                              {
+                                'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                                  message.role === 'user',
+                              },
+                            )}
                           >
                             <Markdown>
                               {message.isTyping &&
@@ -454,6 +460,17 @@ const PurePreviewMessage = ({
                   if (type?.startsWith('tool-')) {
                     const toolName = type.replace('tool-', '');
                     const { toolCallId, state } = part;
+
+                    // Analysis gate steps are shown by the timeline and the analysis card, so raw tool rows would only repeat them.
+                    if (
+                      toolName === 'setChecklist' ||
+                      toolName === 'recordFact' ||
+                      toolName === 'submitReport' ||
+                      toolName === 'requestInput' ||
+                      toolName === 'checkVariantInput'
+                    ) {
+                      return null;
+                    }
 
                     if (toolName === 'getWeather') {
                       if (state === 'input-available') {

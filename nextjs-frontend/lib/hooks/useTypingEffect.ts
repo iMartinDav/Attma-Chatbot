@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface TypeOptions {
   /**
@@ -13,7 +13,7 @@ interface TypeOptions {
   typeSpeed?: number;
 
   /**
-   * The speed of the erasing effect in milliseconds
+   * The speed of erasing effect in milliseconds
    * @default 30
    */
   eraseSpeed?: number;
@@ -53,39 +53,42 @@ export function useTypingEffect({
     return processText(originalPrompt);
   }, [currentIndex, prompts, processText]);
 
-  // Handle the typing effect animation
+  // One interval per phase drives every character, so timing stays steady instead of depending on render cycles.
   useEffect(() => {
     if (!prompts.length) return;
 
     const displayPrompt = getCurrentPrompt();
-    let timer: NodeJS.Timeout;
 
     if (isTyping) {
-      // Typing phase
       if (currentText.length < displayPrompt.length) {
-        timer = setTimeout(() => {
-          setCurrentText(displayPrompt.substring(0, currentText.length + 1));
+        const timer = setInterval(() => {
+          setCurrentText((text) => displayPrompt.substring(0, text.length + 1));
         }, typeSpeed);
-      } else {
-        // Complete - pause before erasing
-        timer = setTimeout(() => {
-          setIsTyping(false);
-        }, pauseDuration);
+        return () => clearInterval(timer);
       }
-    } else {
-      // Erasing phase
-      if (currentText.length > 0) {
-        timer = setTimeout(() => {
-          setCurrentText(currentText.substring(0, currentText.length - 1));
-        }, eraseSpeed);
-      } else {
-        // Move to next prompt
-        setIsTyping(true);
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % prompts.length);
-      }
+      const timer = setTimeout(() => {
+        setIsTyping(false);
+      }, pauseDuration);
+      return () => clearTimeout(timer);
     }
 
-    return () => clearTimeout(timer);
+    if (currentText.length > 0) {
+      const timer = setInterval(() => {
+        // The last erased character moves to the next prompt in the same tick, so a phase never waits on a second render.
+        if (currentText.length <= 1) {
+          clearInterval(timer);
+          setCurrentText('');
+          setIsTyping(true);
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % prompts.length);
+          return;
+        }
+        setCurrentText((text) => text.substring(0, text.length - 1));
+      }, eraseSpeed);
+      return () => clearInterval(timer);
+    }
+
+    setIsTyping(true);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % prompts.length);
   }, [
     currentText,
     currentIndex,

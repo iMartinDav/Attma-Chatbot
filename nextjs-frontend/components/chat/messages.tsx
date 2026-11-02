@@ -85,6 +85,7 @@ function PureMessages({
             regenerate={reload}
             isReadonly={isReadonly}
             onReview={message.id === reviewMessageId ? onReview : undefined}
+            isLatestAnalysis={message.id === reviewMessageId}
           />
         ))}
 
