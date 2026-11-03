@@ -116,8 +116,13 @@ export function printStep(
 export function verdictFor(
   evalCase: EvalCase,
   session: AnalysisSession,
+  finalText = '',
 ): { pass: boolean; reasons: string[] } {
   const reasons: string[] = [];
+  if (evalCase.expect === 'answered') {
+    if (!finalText.trim()) reasons.push('no answer text was produced');
+    return { pass: reasons.length === 0, reasons };
+  }
   if (evalCase.expect === 'needs_input') {
     if (session.status !== 'needs_input') {
       reasons.push(`status is ${session.status}, expected needs_input`);

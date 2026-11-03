@@ -95,6 +95,7 @@ interface RunSummary {
   durationMs: number;
   toolCalls: number;
   totalTokens?: number;
+  cachedTokens?: number;
   costUsd?: number;
 }
 
@@ -163,6 +164,9 @@ export function AgentSteps({
               {formatDuration(run.data.durationMs)}
               {run.data.totalTokens != null
                 ? ` · ${run.data.totalTokens.toLocaleString()} tokens`
+                : ''}
+              {run.data.cachedTokens
+                ? ` · ${run.data.cachedTokens.toLocaleString()} cached`
                 : ''}
               {costUsd != null ? (
                 <>
@@ -239,7 +243,8 @@ export function StepError({
   return (
     <div className="flex w-full items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-muted-foreground">
       <CircleAlertIcon className="mt-px size-3.5 shrink-0 text-amber-500" />
-      <span className="min-w-0">
+      {/* Error texts often carry URLs or ids with no spaces; letting them break anywhere keeps one failed step from widening the whole page on a phone. */}
+      <span className="min-w-0 [overflow-wrap:anywhere]">
         <span className="font-medium text-foreground/80">{label} failed</span>
         {errorText ? `: ${errorText.slice(0, 240)}` : ''}
       </span>

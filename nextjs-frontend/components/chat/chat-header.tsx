@@ -71,8 +71,8 @@ function PureChatHeader({
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Visibility Selector */}
-      {!isReadonly && (
+      {/* As in Grok, Private is chosen on the welcome screen only; once the first message gets the chat its id, the pill goes and the composer caption carries the state. */}
+      {!isReadonly && chatId === 'new' && (
         <VisibilitySelector
           chatId={chatId}
           selectedVisibilityType={selectedVisibilityType}
@@ -84,7 +84,9 @@ function PureChatHeader({
 }
 
 export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
+  // chatId matters: the first message swaps 'new' for the real id, and that hides the Private pill.
   return (
+    prevProps.chatId === nextProps.chatId &&
     prevProps.selectedModelId === nextProps.selectedModelId &&
     prevProps.selectedVisibilityType === nextProps.selectedVisibilityType &&
     prevProps.isReadonly === nextProps.isReadonly

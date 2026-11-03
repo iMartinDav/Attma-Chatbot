@@ -31,7 +31,10 @@ export const analysisStopCondition: StopCondition<ToolSet> = ({ steps }) => {
 
 export function analysisTools(
   session: AnalysisSession,
-  options: { claimsCheck?: ClaimsCheck } = {},
+  options: {
+    claimsCheck?: ClaimsCheck;
+    reportScreen?: import('./session').ReportScreen;
+  } = {},
 ): ToolSet {
   return {
     setChecklist: tool({
@@ -114,6 +117,7 @@ export function analysisTools(
           const result = await session.submitReport(
             { answer, findings, gaps },
             options.claimsCheck,
+            options.reportScreen,
           );
           if (!result.ok) {
             return {

@@ -58,16 +58,36 @@ describe('estimateCostUsd', () => {
 });
 
 describe('budget stop condition', () => {
-  it('stops once cumulative tokens reach the budget', async () => {
-    const { budgetStopCondition, RUN_TOKEN_BUDGET } = await import('../budget');
-    expect(
-      budgetStopCondition({ steps: [{ usage: { totalTokens: 10 } }] }),
-    ).toBe(false);
+  it('does not stop a dravet-sized run dominated by cached input', async () => {
+    const { budgetStopCondition } = await import('../budget');
+    // The recorded 174,763-token live run: 168,306 input, 150,500 of it cached, 6,457 output.
     expect(
       budgetStopCondition({
         steps: [
-          { usage: { totalTokens: RUN_TOKEN_BUDGET - 1 } },
-          { usage: { totalTokens: 1 } },
+          {
+            usage: {
+              inputTokens: 168_306,
+              outputTokens: 6_457,
+              inputTokenDetails: { cacheReadTokens: 150_500 },
+            },
+          },
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it('stops once estimated cost passes the budget', async () => {
+    const { budgetStopCondition } = await import('../budget');
+    expect(
+      budgetStopCondition({
+        steps: [
+          {
+            usage: {
+              inputTokens: 400_000,
+              outputTokens: 20_000,
+              inputTokenDetails: { cacheReadTokens: 0 },
+            },
+          },
         ],
       }),
     ).toBe(true);

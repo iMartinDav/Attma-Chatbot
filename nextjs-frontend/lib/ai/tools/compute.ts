@@ -3,6 +3,8 @@
  * prediction, which runs DeepMind's SDK in the same sandbox.
  */
 
+import { BIOSECURITY_CATEGORY_LABELS } from '@/lib/biosecurity/policy';
+import { screenBiosecurity } from '@/lib/biosecurity/screen';
 import { runPython } from '@/lib/sandbox/python';
 import { tool } from 'ai';
 import { z } from 'zod';
@@ -15,7 +17,7 @@ const inputFile = z.object({
 export const runPythonTool = (chatId: string) =>
   tool({
     description: `Run Python 3.12 in this chat's isolated workspace (a Vercel Sandbox microVM). Use it for any computation on data: parsing and filtering VCFs, statistics, differential expression, single-cell analysis, plots.
-- Installed: numpy, pandas, scipy, statsmodels, scikit-learn, matplotlib, seaborn, biopython, pysam, cyvcf2, anndata, scanpy (with leidenalg), pydeseq2, gseapy, pyarrow, openpyxl, requests. Network access to public APIs and datasets is available (e.g. scanpy.datasets.pbmc3k()).
+- Installed: numpy, pandas, scipy, statsmodels, scikit-learn, matplotlib, seaborn, biopython, pysam, cyvcf2, anndata, scanpy (with leidenalg), pydeseq2, gseapy, pyarrow, openpyxl, requests. Network access is limited to an allow-list: Ensembl REST (rest.ensembl.org), UniProt (rest.uniprot.org), NCBI E-utilities (eutils.ncbi.nlm.nih.gov), the AlphaGenome API (gdmscience.googleapis.com) and the scanpy dataset host (exampledata.scverse.org, e.g. scanpy.datasets.pbmc3k()). Other sites are blocked.
 - The working directory persists across steps and messages in this chat, like a notebook whose variables do not persist: save intermediate results to files (e.g. .h5ad, .parquet) and reload them in the next step.
 - Attached files: list them in inputs; they are downloaded to data/<name> before the code runs.
 - Save every figure (PNG, dpi=150, tight bbox, readable labels and a title) and every result table (CSV) to outputs/; they are shown to the user, so each analysis step should leave at least one figure. scanpy's save= also lands there. Do not call plt.show().
@@ -34,10 +36,23 @@ export const runPythonTool = (chatId: string) =>
         .describe('The complete Python script for this step'),
       inputs: z.array(inputFile).optional(),
     }),
-    execute: async ({ title, code, inputs }, { abortSignal }) => ({
-      title,
-      ...(await runPython({ chatId, code, inputs, signal: abortSignal })),
-    }),
+    execute: async ({ title, code, inputs }, { abortSignal }) => {
+      // Every model-written script is screened before it runs; blocked code never reaches the sandbox.
+      const verdict = await screenBiosecurity({
+        checkpoint: 'code',
+        text: `${title}\n${code}`,
+      });
+      if (verdict.decision !== 'accept') {
+        throw new Error(
+          `Blocked by the biosecurity check: ${BIOSECURITY_CATEGORY_LABELS[verdict.category]}.`,
+        );
+      }
+      return {
+        title,
+        biosecurity: verdict,
+        ...(await runPython({ chatId, code, inputs, signal: abortSignal })),
+      };
+    },
   });
 
 const ALPHAGENOME_SCRIPT = `

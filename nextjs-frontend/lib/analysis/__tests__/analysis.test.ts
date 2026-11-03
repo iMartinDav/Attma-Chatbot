@@ -524,6 +524,41 @@ describe('escalation and claims check', () => {
   });
 });
 
+describe('report biosecurity screen', () => {
+  it('submits when the screen accepts', async () => {
+    const session = sessionWithFacts();
+    const result = await session.submitReport(
+      validReport(),
+      undefined,
+      async () => ({
+        decision: 'accept',
+        category: 'in_scope_research',
+      }),
+    );
+    expect(result.ok).toBe(true);
+    expect(session.status).toBe('awaiting_review');
+  });
+
+  it('refuses with the readable label and counts the refusal', async () => {
+    const session = sessionWithFacts();
+    const result = await session.submitReport(
+      validReport(),
+      undefined,
+      async () => ({
+        decision: 'refuse',
+        category: 'other_out_of_scope',
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.problems).toEqual([
+        'Blocked by the biosecurity check: Out of scope.',
+      ]);
+    }
+    expect(session.refusals).toBe(1);
+  });
+});
+
 describe('reopen', () => {
   function badReport(): Report {
     const report = validReport();

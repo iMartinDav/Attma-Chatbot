@@ -332,10 +332,12 @@ const SidebarInset = React.forwardRef<
   React.ComponentProps<'main'>
 >(({ className, ...props }, ref) => {
   return (
+    // min-w-0: as a flex item, main would otherwise refuse to shrink below its widest content
+    // (a results table), so a phone scrolled the whole page sideways instead of just the table.
     <main
       ref={ref}
       className={cn(
-        'relative flex min-h-[var(--app-height)] flex-1 flex-col bg-background',
+        'relative flex min-h-[var(--app-height)] min-w-0 flex-1 flex-col bg-background',
         'peer-data-[variant=inset]:min-h-[calc(100svh-(--spacing(4)))] md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm',
         className,
       )}

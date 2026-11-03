@@ -6,10 +6,12 @@
 
 import { myProvider } from '@/lib/ai/providers';
 import { searchPubMed } from '@/lib/rare-disease/pubmed';
+import { blobStoreHost } from '@/lib/sandbox/network-policy';
 import { generateText, Output, tool } from 'ai';
 import { z } from 'zod';
 
-const BLOB_HOST = /\.public\.blob\.vercel-storage\.com$/;
+// Only this app's own Blob store counts as an upload; any other public store is someone else's file.
+const isOwnUpload = (url: string) => new URL(url).hostname === blobStoreHost();
 
 const caseExtraction = z.object({
   documentType: z
@@ -79,7 +81,7 @@ export const readClinicalDocument = tool({
     name: z.string().optional(),
   }),
   execute: async ({ url, mediaType }) => {
-    if (!BLOB_HOST.test(new URL(url).hostname)) {
+    if (!isOwnUpload(url)) {
       throw new Error('Only documents uploaded to this chat can be read.');
     }
     return extractCaseFromDocument(new URL(url), mediaType);
@@ -179,7 +181,7 @@ export const readDocument = tool({
       .describe('What to extract or answer, e.g. "List the genes in Table 2"'),
   }),
   execute: async ({ url, mediaType, question }) => {
-    if (!BLOB_HOST.test(new URL(url).hostname)) {
+    if (!isOwnUpload(url)) {
       throw new Error('Only files uploaded to this chat can be read.');
     }
     const started = Date.now();

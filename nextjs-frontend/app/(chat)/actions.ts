@@ -4,10 +4,12 @@ import { generateText, Output, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 
+import { auth } from '@/app/(auth)/auth';
 import type { VisibilityType } from '@/components/chat/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
 import {
   deleteMessagesByChatIdAfterTimestamp,
+  getChatById,
   getMessageById,
   updateChatVisiblityById,
 } from '@/lib/db/queries';
@@ -54,8 +56,20 @@ export async function generateTitleFromUserMessage({
   return output.title.trim().slice(0, 60);
 }
 
+// Server actions are public endpoints, so each one that changes a chat checks that the caller owns it.
+async function assertChatOwner(chatId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Sign in to change this chat.');
+  const chat = await getChatById({ id: chatId });
+  if (!chat || chat.userId !== session.user.id) {
+    throw new Error('Only the owner can change this chat.');
+  }
+}
+
 export async function deleteTrailingMessages({ id }: { id: string }) {
   const [message] = await getMessageById({ id });
+  if (!message) return;
+  await assertChatOwner(message.chatId);
 
   await deleteMessagesByChatIdAfterTimestamp({
     chatId: message.chatId,
@@ -71,6 +85,10 @@ export async function updateChatVisibility({
   visibility: VisibilityType;
 }) {
   if (chatId === 'new') return;
+  if (visibility !== 'private' && visibility !== 'public') {
+    throw new Error('Unknown visibility.');
+  }
+  await assertChatOwner(chatId);
 
   await updateChatVisiblityById({ chatId, visibility });
 }

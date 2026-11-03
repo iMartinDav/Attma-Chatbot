@@ -271,7 +271,7 @@ function VariantRow({ variant }: { variant: VariantCandidate }) {
           <summary className="cursor-pointer font-mono text-xs">
             {change ?? variant.input}
           </summary>
-          <ul className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
+          <ul className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground [overflow-wrap:anywhere]">
             {variant.reasons.map((r) => (
               <li key={r}>{r}</li>
             ))}

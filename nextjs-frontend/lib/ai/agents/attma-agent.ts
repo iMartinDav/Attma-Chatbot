@@ -10,6 +10,7 @@ import 'server-only';
 
 import type { AnalysisSession } from '@/lib/analysis/session';
 import { claimsCheck } from '@/lib/analysis/claims-check';
+import { screenBiosecurity } from '@/lib/biosecurity/screen';
 import { withCapture } from '@/lib/analysis/capture';
 import { analysisStopCondition, analysisTools } from '@/lib/analysis/tools';
 import { promptHash } from '@/lib/analysis/trace';
@@ -215,7 +216,14 @@ export function createAttmaAgent({
   if (analysis) {
     // The analysis tools are always on, and evidence results are captured so facts can cite them.
     tools = withCapture(tools, analysis, EVIDENCE_TOOLS);
-    Object.assign(tools, analysisTools(analysis, { claimsCheck }));
+    Object.assign(
+      tools,
+      analysisTools(analysis, {
+        claimsCheck,
+        reportScreen: async (text) =>
+          screenBiosecurity({ checkpoint: 'report', text }),
+      }),
+    );
   }
   return new ToolLoopAgent({
     model: myProvider.languageModel(model),

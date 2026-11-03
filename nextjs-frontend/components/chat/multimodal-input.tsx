@@ -23,8 +23,10 @@ import { useKeyboardVisibility } from '@/hooks/use-keyboard-visibility';
 import { getChatUrl } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { DragAndDrop } from '../drag-and-drop';
+import { GhostIcon } from '../icons';
 import { Textarea } from '../ui/textarea';
 import { AgentStatus } from './agent-status';
+import { describeStep, type StepPart } from './step-labels';
 import {
   AttachmentsButton,
   DictationButton,
@@ -225,18 +227,17 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
-  // Determine active tool for status indication
+  // The running tool step, described in the same words as the timeline.
   const lastMessage = messages[messages.length - 1] as
-    { role: string; parts?: { type: string; state?: string }[] } | undefined;
-  const activeTool =
+    { role: string; parts?: StepPart[] } | undefined;
+  const activeStep =
     lastMessage?.role === 'assistant'
-      ? lastMessage.parts
-          ?.findLast(
-            (p) =>
-              p.type.startsWith('tool-') &&
-              (p.state === 'input-streaming' || p.state === 'input-available'),
-          )
-          ?.type.replace('tool-', '')
+      ? lastMessage.parts?.findLast(
+          (part) =>
+            part.type.startsWith('tool-') &&
+            (part.state === 'input-streaming' ||
+              part.state === 'input-available'),
+        )
       : undefined;
 
   return (
@@ -246,16 +247,6 @@ function PureMultimodalInput({
         isFullSize ? 'h-full' : 'max-w-4xl mx-auto',
       )}
     >
-      {/* Private Mode Indicator */}
-      {selectedVisibilityType === 'private' && (
-        <div className="absolute -top-6 left-0 right-0 flex items-center justify-center">
-          <div className="text-[10px] uppercase tracking-wider font-medium text-purple-500/70 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500/50 animate-pulse" />
-            Private Session — Not Saved
-          </div>
-        </div>
-      )}
-
       {/* Attachment Previews */}
       {(attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-auto items-end w-full pb-2 px-1">
@@ -287,7 +278,7 @@ function PureMultimodalInput({
           >
             <AgentStatus
               isActive={isLoading}
-              currentTool={activeTool}
+              currentAction={activeStep ? describeStep(activeStep) : undefined}
               model={selectedModelId}
             />
           </motion.div>
@@ -299,10 +290,10 @@ function PureMultimodalInput({
         <div
           className={cx(
             'relative flex flex-col w-full transition-all duration-300 ease-in-out',
-            'rounded-[32px] border shadow-sm group bg-background/50 backdrop-blur-md',
+            'rounded-[32px] border shadow-sm group backdrop-blur-md',
             selectedVisibilityType === 'private'
-              ? 'border-purple-500/30 dark:border-purple-500/40 focus-within:ring-2 focus-within:ring-purple-500/10'
-              : 'border-zinc-200/80 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5',
+              ? 'border-purple-500/40 bg-purple-100 focus-within:ring-2 focus-within:ring-purple-500/25 dark:bg-[#251840]'
+              : 'border-zinc-200/80 bg-background/50 dark:border-zinc-800/80 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5',
           )}
         >
           <div className="w-full pb-12">
@@ -393,6 +384,14 @@ function PureMultimodalInput({
         </div>
       </DragAndDrop>
 
+      {/* Private caption under the composer, as in Grok: ghost plus one short line, only while Private is on. */}
+      {selectedVisibilityType === 'private' && (
+        <p className="-mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <GhostIcon className="size-3.5 shrink-0 text-purple-500" />
+          This chat is private. Only you can open it.
+        </p>
+      )}
+
       {/* Hidden file input */}
       <input
         id="chat-attachments-input"
@@ -414,6 +413,9 @@ export const MultimodalInput = memo(
     if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
+    // Private can be switched mid-chat, and the composer's colour and caption follow it.
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+      return false;
     return true;
   },
 );

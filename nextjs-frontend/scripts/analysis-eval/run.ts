@@ -18,6 +18,7 @@ import {
   type ConnectorId,
 } from '@/lib/ai/connectors/catalog';
 import { AnalysisSession } from '@/lib/analysis/session';
+import { screenBiosecurity } from '@/lib/biosecurity/screen';
 import { analysisStopCondition } from '@/lib/analysis/tools';
 import { EVAL_CASES, type EvalCase } from './cases';
 import {
@@ -129,6 +130,7 @@ interface CaseRecord {
   usage: TokenUsage;
   estimatedCostUsd: number;
   verdict: { pass: boolean; reasons: string[] };
+  biosecurity: unknown;
   error?: string;
 }
 
@@ -160,6 +162,14 @@ for (const evalCase of cases) {
   for (let runIndex = 1; runIndex <= options.repeat; runIndex++) {
     console.log(`\n=== ${evalCase.id} (run ${runIndex}/${options.repeat}) ===`);
     console.log(`prompt: ${evalCase.prompt}`);
+    // The intake screen is part of the verdict: a research case the reviewer blocks is an over-refusal failure.
+    const screen = await screenBiosecurity({
+      checkpoint: 'intake',
+      text: evalCase.prompt,
+    });
+    console.log(
+      `  biosecurity: ${screen.decision} (${screen.category}, ${screen.durationMs}ms)`,
+    );
     const session = new AnalysisSession();
     const agent = createAttmaAgent({
       chatId: `eval-${evalCase.id}`,
@@ -237,10 +247,20 @@ for (const evalCase of cases) {
       console.log(`  ERROR: ${errorMessage}`);
     }
 
-    const verdict =
+    const baseVerdict =
       errorMessage !== undefined
         ? { pass: false, reasons: [`run failed: ${errorMessage}`] }
-        : verdictFor(evalCase, session);
+        : verdictFor(evalCase, session, finalText);
+    const verdict =
+      screen.decision !== 'accept'
+        ? {
+            pass: false,
+            reasons: [
+              ...baseVerdict.reasons,
+              `biosecurity screen was ${screen.decision} (${screen.category}), expected accept`,
+            ],
+          }
+        : baseVerdict;
     if (verdict.pass) passed += 1;
     else anyFailed = true;
 
@@ -277,6 +297,7 @@ for (const evalCase of cases) {
       usage,
       estimatedCostUsd: costUsd,
       verdict,
+      biosecurity: screen,
       ...(errorMessage !== undefined ? { error: errorMessage } : {}),
     });
   }

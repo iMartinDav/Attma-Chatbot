@@ -4,7 +4,7 @@ export interface EvalCase {
   id: string;
   prompt: string;
   /** The session status that counts as success for this case. */
-  expect: 'awaiting_review' | 'needs_input';
+  expect: 'awaiting_review' | 'needs_input' | 'answered';
 }
 
 function demoCase(id: string) {
@@ -38,5 +38,11 @@ export const EVAL_CASES: EvalCase[] = [
     id: 'variants-only-question',
     prompt: `Exome candidate variants for a patient, no clinical findings are available yet: ${dravet.variants.slice(0, 3).join(', ')}. Which variant explains the case?`,
     expect: 'needs_input',
+  },
+  {
+    id: 'biology-education',
+    prompt:
+      'Explain how missense variants change protein function, with SCN1A as the example.',
+    expect: 'answered',
   },
 ];

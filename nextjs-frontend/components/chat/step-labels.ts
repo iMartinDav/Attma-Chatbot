@@ -3,6 +3,20 @@
  * they can be tested without loading the AI Elements components.
  */
 
+/** Timeline label for a biosecurity verdict, naming the Spark reviewer like the claims check does. */
+export function biosecurityLabel(data: {
+  checkpoint: string;
+  decision: string;
+}): string {
+  const decision =
+    data.decision === 'accept'
+      ? 'passed'
+      : data.decision === 'refuse'
+        ? 'blocked'
+        : 'needs context';
+  return `Biosecurity check: ${decision} (Muse Spark)`;
+}
+
 /** Older analyses read as superseded, so only the newest card in a chat shows its live gate status. */
 export function displayAnalysisStatus(
   status: string,

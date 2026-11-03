@@ -29,6 +29,15 @@ const components: Partial<Components> = {
       </ul>
     );
   },
+  table: ({ node, children, ...props }) => {
+    return (
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-full text-sm" {...props}>
+          {children}
+        </table>
+      </div>
+    );
+  },
   strong: ({ node, children, ...props }) => {
     return (
       <span className="font-semibold" {...props}>

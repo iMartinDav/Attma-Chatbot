@@ -12,6 +12,8 @@ import { AnalysisSession } from '@/lib/analysis/session';
 import { findLatestAnalysisSnapshot } from '@/lib/analysis/history';
 import { buildTrace } from '@/lib/analysis/trace';
 import { ensureAnalysisPart } from './ensure-analysis-part';
+import { BIOSECURITY_CATEGORY_LABELS } from '@/lib/biosecurity/policy';
+import { screenBiosecurity } from '@/lib/biosecurity/screen';
 import { agentPromptHash, createAttmaAgent } from '@/lib/ai/agents/attma-agent';
 import {
   DEFAULT_CONNECTORS,
@@ -271,6 +273,63 @@ export async function POST(request: Request) {
     }
   };
 
+  // Every new request is screened before any tool runs; an approval carries no new request, so it skips the screen.
+  const userText = [
+    message.content ?? '',
+    ...(message.parts ?? [])
+      .filter((part) => part.type === 'text')
+      .map((part) => (part as { text: string }).text),
+    ...(message.parts ?? [])
+      .filter((part) => part.type === 'file')
+      .map(
+        (part) =>
+          `Attachment: ${(part as { filename?: string }).filename ?? 'file'}`,
+      ),
+  ]
+    .join('\n')
+    .trim();
+  const lastAssistantText = [...savedMessages]
+    .reverse()
+    .find((entry) => entry.role === 'assistant');
+  const biosecurity =
+    approved || !userText
+      ? null
+      : await screenBiosecurity({
+          checkpoint: 'intake',
+          text: userText,
+          context: lastAssistantText
+            ? String(historyFrom([lastAssistantText])[0]?.content ?? '').slice(
+                0,
+                2000,
+              )
+            : undefined,
+        });
+
+  if (biosecurity && biosecurity.decision !== 'accept') {
+    const reply =
+      biosecurity.decision === 'refuse'
+        ? `This request is outside what Attma supports: ${BIOSECURITY_CATEGORY_LABELS[biosecurity.category]}. Attma is for human genetics and biomedical research workflows.`
+        : biosecurity.rationale;
+    const stream = createUIMessageStream<ChatMessage>({
+      execute: async ({ writer }) => {
+        writer.write({ type: 'data-biosecurity', data: biosecurity });
+        writer.write({ type: 'text-start', id: 'biosecurity' });
+        writer.write({
+          type: 'text-delta',
+          id: 'biosecurity',
+          delta: reply,
+        });
+        writer.write({ type: 'text-end', id: 'biosecurity' });
+      },
+      onError: (error) => {
+        console.error('Agent run failed', error);
+        return 'The agent hit an error. Try again, or rephrase the request.';
+      },
+      onEnd: handleEnd,
+    });
+    return createUIMessageStreamResponse({ stream });
+  }
+
   if (approved) {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
@@ -312,6 +371,10 @@ export async function POST(request: Request) {
         analysis: analysisSession,
       });
       const startedAt = Date.now();
+      // The screen ran before the agent, so its verdict is the first part of this message.
+      if (biosecurity) {
+        writer.write({ type: 'data-biosecurity', data: biosecurity });
+      }
       const result = await agent.stream({
         messages,
         abortSignal: request.signal,
@@ -373,6 +436,7 @@ export async function POST(request: Request) {
           durationMs: Date.now() - startedAt,
           toolCalls: steps.reduce((n, step) => n + step.toolCalls.length, 0),
           totalTokens: usage.totalTokens,
+          cachedTokens: usage.inputTokenDetails?.cacheReadTokens ?? 0,
           costUsd,
         },
       });

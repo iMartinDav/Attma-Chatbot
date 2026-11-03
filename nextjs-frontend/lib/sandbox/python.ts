@@ -11,6 +11,8 @@ import 'server-only';
 import { put } from '@vercel/blob';
 import { Sandbox } from '@vercel/sandbox';
 
+import { blobStoreHost, sandboxAllowedHosts } from './network-policy';
+
 const WORKDIR = '/vercel/sandbox';
 const PYTHON = '/opt/attma/venv/bin/python';
 const SESSION_MS = 30 * 60_000;
@@ -20,7 +22,6 @@ const MAX_OUTPUT_FILES = 12;
 // Larger outputs (usually intermediate .h5ad objects) stay in the workspace
 // for later steps instead of being copied to Blob on every run.
 const MAX_PUBLISHED_BYTES = 15 * 1024 * 1024;
-const BLOB_HOST = /\.public\.blob\.vercel-storage\.com$/;
 
 const OUTPUT_TYPES: Record<string, string> = {
   png: 'image/png',
@@ -62,10 +63,10 @@ export const isPythonAvailable = () =>
   Boolean(process.env.ATTMA_SANDBOX_SNAPSHOT);
 
 /** The chat's sandbox: resumed if it exists, otherwise created from the snapshot. */
-function sandboxFor(chatId: string): Promise<Sandbox> {
+async function sandboxFor(chatId: string): Promise<Sandbox> {
   const snapshotId = process.env.ATTMA_SANDBOX_SNAPSHOT;
   if (!snapshotId) throw new Error('Python compute is not configured.');
-  return Sandbox.getOrCreate({
+  const sandbox = await Sandbox.getOrCreate({
     name: `attma-${chatId}`,
     resume: true,
     source: { type: 'snapshot', snapshotId },
@@ -75,7 +76,13 @@ function sandboxFor(chatId: string): Promise<Sandbox> {
     snapshotExpiration: 7 * 24 * 60 * 60_000,
     env: { MPLBACKEND: 'Agg', PYTHONUNBUFFERED: '1' },
     tags: { app: 'attma' },
+    networkPolicy: { allow: sandboxAllowedHosts() },
   });
+  // A resumed sandbox predates the policy, so the same allow-list is applied to it explicitly.
+  await sandbox.update({
+    networkPolicy: { allow: sandboxAllowedHosts() },
+  });
+  return sandbox;
 }
 
 const tail = (text: string) =>
@@ -87,7 +94,7 @@ const tail = (text: string) =>
 async function stageInputs(sandbox: Sandbox, inputs: InputFile[]) {
   for (const input of inputs) {
     const url = new URL(input.url);
-    if (!BLOB_HOST.test(url.hostname)) {
+    if (url.hostname !== blobStoreHost()) {
       throw new Error(`Only files uploaded to this chat can be used: ${url}`);
     }
     const name = input.name.replace(/[^\w.-]/g, '_');

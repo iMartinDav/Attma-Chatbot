@@ -33,6 +33,24 @@ function partsOf(content: unknown): Array<Record<string, unknown>> {
     : [];
 }
 
+interface BiosecurityPart {
+  checkpoint?: string;
+  decision?: string;
+  category?: string;
+  policyVersion?: string;
+  durationMs?: number;
+}
+
+function allParts<T>(messages: Array<{ content: unknown }>, type: string): T[] {
+  const found: T[] = [];
+  for (const message of messages) {
+    for (const part of partsOf(message.content)) {
+      if (part.type === type && part.data) found.push(part.data as T);
+    }
+  }
+  return found;
+}
+
 function lastPart<T>(
   messages: Array<{ content: unknown }>,
   type: string,
@@ -56,6 +74,7 @@ export default async function ConsolePage() {
         chat,
         analysis: lastPart<AnalysisPart>(messages, 'data-analysis'),
         trace: lastPart<TracePart>(messages, 'data-trace'),
+        biosecurity: allParts<BiosecurityPart>(messages, 'data-biosecurity'),
       };
     }),
   );
@@ -75,7 +94,7 @@ export default async function ConsolePage() {
         </p>
       ) : (
         <ul className="mt-8 space-y-4">
-          {audited.map(({ chat, analysis, trace }) => (
+          {audited.map(({ chat, analysis, trace, biosecurity }) => (
             <li
               key={chat.id}
               className="rounded-2xl border border-border/60 bg-card/40 p-4"
@@ -96,6 +115,19 @@ export default async function ConsolePage() {
                   {analysis?.refusals ?? 0} refusals
                 </span>
               </div>
+              {biosecurity.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                  {biosecurity.map((verdict, index) => (
+                    <li
+                      key={`${verdict.checkpoint ?? 'check'}-${verdict.decision ?? 'decision'}-${index}`}
+                    >
+                      Biosecurity {verdict.checkpoint}: {verdict.decision} (
+                      {verdict.category}, {verdict.policyVersion},{' '}
+                      {verdict.durationMs}ms)
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               {trace ? (
                 <div className="mt-3 text-xs text-muted-foreground">
                   <p>

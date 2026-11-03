@@ -8,13 +8,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { GlobeIcon, LoaderIcon, PencilEditIcon, SparklesIcon } from '../icons';
+import { LoaderIcon, PencilEditIcon } from '../icons';
 import { Button } from '../ui/button';
 import { TextShimmer } from '../ui/text-shimmer';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { DocumentPreview } from './document-preview';
+import { AttmaMark, useElapsedSeconds, workingLabel } from './attma-mark';
 import { Markdown } from './markdown';
+import { biosecurityLabel } from './step-labels';
 import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
 import { SearchingMessage, type SearchMessage } from './message-search';
@@ -225,16 +227,10 @@ const PurePreviewMessage = ({
             )}
           >
             {message.role === 'assistant' && (
-              <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-                <div className="translate-y-px">
-                  {/* Show a different icon for search results */}
-                  {message.sourceType === 'web-search' ||
-                  allSources.length > 0 ? (
-                    <GlobeIcon size={14} />
-                  ) : (
-                    <SparklesIcon size={14} />
-                  )}
-                </div>
+              // The avatar says who is speaking, so every answer carries the helix; the sources panel says where it came from.
+              // It turns while this answer streams and rests once it is done.
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                <AttmaMark working={isLoading} />
               </div>
             )}
 
@@ -300,6 +296,27 @@ const PurePreviewMessage = ({
                     type === 'data-run'
                   ) {
                     return null;
+                  }
+
+                  if (type === 'data-biosecurity') {
+                    const data = (
+                      part as unknown as {
+                        data: { checkpoint: string; decision: string };
+                      }
+                    ).data;
+                    const blocked = data.decision !== 'accept';
+                    return (
+                      <div
+                        key={key}
+                        className={
+                          blocked
+                            ? 'w-fit rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs text-amber-800 dark:text-amber-200'
+                            : 'w-fit rounded-full border px-2.5 py-1 text-xs text-muted-foreground'
+                        }
+                      >
+                        {biosecurityLabel(data)}
+                      </div>
+                    );
                   }
 
                   if (type === 'data-analysis') {
@@ -821,6 +838,7 @@ export const PreviewMessage = memo(
 
 export const ThinkingMessage = () => {
   const role = 'assistant';
+  const seconds = useElapsedSeconds();
 
   return (
     <motion.div
@@ -838,16 +856,16 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+          <AttmaMark working />
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex h-8 items-center w-full">
           <TextShimmer
-            duration={5}
-            className="flex flex-col gap-4 text-muted-foreground font-medium"
+            duration={2.5}
+            className="text-sm text-muted-foreground font-medium tabular-nums"
           >
-            Thinking...
+            {workingLabel(seconds)}
           </TextShimmer>
         </div>
       </div>

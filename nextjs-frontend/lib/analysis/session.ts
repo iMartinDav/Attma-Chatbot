@@ -9,6 +9,10 @@ import {
   type InputRequest,
   type Report,
 } from './types';
+import {
+  BIOSECURITY_CATEGORY_LABELS,
+  type BiosecurityCategory,
+} from '@/lib/biosecurity/policy';
 import { toolMeaningFor } from './claims-prompt';
 import {
   checkAnnotationCoverage,
@@ -54,6 +58,12 @@ export interface ClaimsCheckVerdict {
 export type ClaimsCheck = (
   input: ClaimsCheckFindingInput[],
 ) => Promise<ClaimsCheckVerdict[]>;
+
+/** Screens the finished report text; only a refuse blocks the submit. */
+export type ReportScreen = (text: string) => Promise<{
+  decision: 'accept' | 'needs_context' | 'refuse';
+  category: BiosecurityCategory | 'screen_unavailable';
+}>;
 
 export type SetChecklistResult =
   | { ok: true; checklist: ChecklistItem[]; droppedFacts: string[] }
@@ -207,6 +217,7 @@ export class AnalysisSession implements SessionView {
   async submitReport(
     report: Report,
     claimsCheck?: ClaimsCheck,
+    reportScreen?: ReportScreen,
   ): Promise<SubmitReportResult> {
     // An escalated analysis waits for a person, so further submits change nothing and do not count.
     if (this.currentStatus === 'escalated') {
@@ -357,6 +368,24 @@ export class AnalysisSession implements SessionView {
           problems: unsupported.map(
             (verdict) => `Finding ${verdict.itemId}: ${verdict.reason}`,
           ),
+        };
+      }
+    }
+    // The biosecurity reviewer gets the last word before a person does; a refusal counts like any other gate refusal.
+    if (reportScreen) {
+      const text = [
+        report.answer,
+        ...report.findings.map((finding) => finding.text),
+      ].join('\n');
+      const screen = await reportScreen(text);
+      if (screen.decision === 'refuse') {
+        this.refusalCount += 1;
+        if (this.refusalCount >= 3) this.currentStatus = 'escalated';
+        return {
+          ok: false,
+          problems: [
+            `Blocked by the biosecurity check: ${BIOSECURITY_CATEGORY_LABELS[screen.category]}.`,
+          ],
         };
       }
     }

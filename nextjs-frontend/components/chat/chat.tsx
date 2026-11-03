@@ -26,6 +26,7 @@ import { Greeting, WorkflowCards } from './empty-state';
 import { useDataStream } from './data-stream-provider';
 import { Messages } from './messages';
 import { useSources } from './sources-selector';
+import { TrustCard } from './trust-card';
 import { MultimodalInput } from './multimodal-input';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import type { VisibilityType } from './visibility-selector';
@@ -199,7 +200,7 @@ export function Chat({
         <ChatHeader
           chatId={activeChatId}
           selectedModelId={initialChatModel}
-          selectedVisibilityType={initialVisibilityType}
+          selectedVisibilityType={visibilityType}
           isReadonly={isReadonly}
         />
 
@@ -297,6 +298,8 @@ export function Chat({
           </>
         )}
       </div>
+
+      <TrustCard />
 
       <Artifact
         chatId={activeChatId}

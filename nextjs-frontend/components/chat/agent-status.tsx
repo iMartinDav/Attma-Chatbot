@@ -5,7 +5,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   BookOpenIcon,
   BrainIcon,
@@ -17,13 +17,14 @@ import {
   SparklesIcon,
 } from 'lucide-react';
 
+import { TextShimmer } from '../ui/text-shimmer';
+import { AttmaMark, useElapsedSeconds } from './attma-mark';
+
 export interface AgentStatusProps {
   isActive: boolean;
+  /** The running step in plain words, from describeStep. */
   currentAction?: string;
-  currentTool?: string;
   model?: string;
-  step?: number;
-  totalSteps?: number;
   className?: string;
 }
 
@@ -46,68 +47,46 @@ function ToolIcon({ tool, className }: { tool?: string; className?: string }) {
   return <Icon className={className} />;
 }
 
+/**
+ * The working pill above the composer: Attma's turning helix, the current step in plain words,
+ * an elapsed timer and the model. It sits on a neutral surface, because in Attma only results
+ * carry colour; the helix is the one accent and the only thing that moves.
+ */
 export function AgentStatus({
   isActive,
   currentAction,
-  currentTool,
   model,
-  step,
-  totalSteps,
   className,
 }: AgentStatusProps) {
+  // The pill mounts when a run starts, so time since mount is the run's elapsed time.
+  const seconds = useElapsedSeconds();
   if (!isActive) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-        className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-full',
-          'bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-teal-500/10',
-          'border border-purple-500/20',
-          'backdrop-blur-sm',
-          'text-xs text-muted-foreground',
-          className,
-        )}
+    <div
+      role="status"
+      className={cn(
+        'flex h-8 max-w-full items-center gap-2.5 rounded-full border border-border bg-popover/90 pl-2.5 pr-3 shadow-sm backdrop-blur-sm',
+        'text-xs text-muted-foreground',
+        className,
+      )}
+    >
+      <AttmaMark working />
+      <TextShimmer
+        as="span"
+        duration={2.5}
+        className="max-w-[18rem] truncate font-medium"
       >
-        {/* Animated Icon */}
-        <div className="relative">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-            className="absolute inset-0"
-          >
-            <div className="h-4 w-4 rounded-full border border-purple-500/30 border-t-purple-500" />
-          </motion.div>
-          <ToolIcon tool={currentTool} className="h-3 w-3 text-purple-400" />
-        </div>
-
-        {/* Status Text */}
-        <span className="font-medium">
-          {currentAction ||
-            (currentTool
-              ? `Using ${formatToolName(currentTool)}...`
-              : 'Thinking...')}
-        </span>
-
-        {/* Step Counter */}
-        {step !== undefined && totalSteps !== undefined && (
-          <span className="text-muted-foreground ml-1">
-            Step {step}/{totalSteps}
-          </span>
-        )}
-
-        {/* Model Badge */}
-        {model && (
-          <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300">
-            {formatModelName(model)}
-          </span>
-        )}
-      </motion.div>
-    </AnimatePresence>
+        {currentAction ?? 'Working'}
+      </TextShimmer>
+      <span className="tabular-nums">{seconds}s</span>
+      {model && (
+        <>
+          <span aria-hidden className="size-0.5 rounded-full bg-border" />
+          <span>{formatModelName(model)}</span>
+        </>
+      )}
+    </div>
   );
 }
 
