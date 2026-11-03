@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Attma (attma.bio) is a Next.js app where one AI agent on Meta's Muse models turns a researcher's biology question into a reproducible workflow: it plans the work and runs each step with real tools (HPO, Ensembl VEP, UniProt/AlphaFold, PubMed, g:Profiler, STRING, a Python sandbox, AlphaGenome). Then it reports what the data show and cites a source for each claim. All the code lives in `nextjs-frontend/`. The repo root only holds `docker-compose.yml`, a `Makefile` wrapper, `vercel.json` and docs. `PRODUCT.md` sets the product voice and design principles: show the work, no diagnosis or patient-facing language, and a neutral interface where results carry the color.
 
-Production is https://www.attma.bio (Vercel project `attma-chatbot`, team `martin-davila-s-projects`). Read `docs/HANDOFF.md` for the full history: what was built, why each decision was made, the benchmark, and open work. `plan.md` and most of `docs/` (Railway, FastAPI, BioFlow) describe the removed backend and are out of date.
+Production is https://chat.attma.bio (Vercel project `attma-chatbot`, team `martin-davila-s-projects`). `attma.bio` belongs to the main Attma product, a separate repository and Vercel project (`attma`). Read `docs/HANDOFF.md` for the full history: what was built, why each decision was made, the benchmark, and open work. `docs/muse/` holds the briefs Muse Code built the trust gate from.
 
 ## Hackathon context
 
@@ -101,8 +101,7 @@ Drizzle + Postgres (Neon in production). The tables are `User`, `Project`, `Chat
 
 ## Conventions
 
-- Comments explain *why* in full sentences (see the chat route and the agent). Match that style.
+- Comments explain _why_ in full sentences (see the chat route and the agent). Match that style.
 - Commits use conventional types with a scope: `feat(agent): …`, `fix(sandbox): …`, `style(theme): …`. One concern per commit, with a body explaining why. Pushing to `main` deploys production.
-- Verify changes in the running app (Chrome) before calling them done, and re-check www.attma.bio after deploys.
+- Verify changes in the running app (Chrome) before calling them done, and re-check chat.attma.bio after deploys.
 - No em dashes in UI copy.
-- `.cursorrules` is partly out of date: it describes Next 15, React Query and planned compute. Where it disagrees with the code or this file, follow the code.

@@ -4,17 +4,17 @@ Everything decided and built from October 26 to November 2, 2026, so work can co
 
 ## 1. What Attma is now
 
-A conversational bioinformatics workbench at https://www.attma.bio. A researcher types, dictates (25 languages) or attaches data (VCF, counts table, .h5ad, PDF report, up to 500 MB). One agent plans the analysis, runs each step against real databases and a Python sandbox, shows every step with the model or source that ran it, and answers with citations. Chats keep their files and history, so follow-ups build on earlier results.
+A conversational bioinformatics workbench at https://chat.attma.bio. A researcher types, dictates (25 languages) or attaches data (VCF, counts table, .h5ad, PDF report, up to 500 MB). One agent plans the analysis, runs each step against real databases and a Python sandbox, shows every step with the model or source that ran it, and answers with citations. Chats keep their files and history, so follow-ups build on earlier results.
 
 What it can do today, end to end in one conversation:
 
-| Workflow | What runs | Typical time |
-|---|---|---|
-| Single-cell atlas (PBMC 3k or your .h5ad) | Python sandbox (scanpy): QC, Leiden, UMAP, markers, cell types; g:Profiler enrichment | about 2 min |
-| Rare disease case review | HPO ranking of 12,900 diseases, Ensembl VEP (gnomAD, ClinVar, AlphaMissense, CADD), Muse Spark literature grading | about 1 min |
-| Variant to structure | VEP, UniProt domains, AlphaFold confidence (per-residue via the sandbox), PubMed | about 45 s |
-| Gene list enrichment | g:Profiler (GO, Reactome, KEGG, WikiPathways), STRING | seconds |
-| Reading a report or figure | Muse Spark vision sub-agent | seconds |
+| Workflow                                  | What runs                                                                                                         | Typical time |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------ |
+| Single-cell atlas (PBMC 3k or your .h5ad) | Python sandbox (scanpy): QC, Leiden, UMAP, markers, cell types; g:Profiler enrichment                             | about 2 min  |
+| Rare disease case review                  | HPO ranking of 12,900 diseases, Ensembl VEP (gnomAD, ClinVar, AlphaMissense, CADD), Muse Spark literature grading | about 1 min  |
+| Variant to structure                      | VEP, UniProt domains, AlphaFold confidence (per-residue via the sandbox), PubMed                                  | about 45 s   |
+| Gene list enrichment                      | g:Profiler (GO, Reactome, KEGG, WikiPathways), STRING                                                             | seconds      |
+| Reading a report or figure                | Muse Spark vision sub-agent                                                                                       | seconds      |
 
 It is research software: it ranks hypotheses for qualified people and never states a diagnosis.
 
@@ -82,17 +82,17 @@ Check that it works: open http://localhost:3000/chat, sign in, run the "Single-c
 
 Environment variables (names only; values come from `vercel env pull`):
 
-| Variable | Needed for |
-|---|---|
-| `META_MODEL_API_KEY` | All Muse models (chat, sub-agents, image, voice) |
-| `ATTMA_SANDBOX_SNAPSHOT` | Python workspace (`snap_kxdx...`, on Vercel for all environments) |
-| `DATABASE_URL` and `POSTGRES_*` | Neon Postgres (chats, users) |
-| `BLOB_READ_WRITE_TOKEN` | Uploads and published figures |
-| `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Sign-in |
-| `VERCEL_OIDC_TOKEN` | Creating sandboxes locally (pulled automatically, expires after hours; pull again if sandbox calls fail with 401) |
-| `ALPHAGENOME_API_KEY` | Optional: unlocks AlphaGenome (free for non-commercial use from DeepMind) |
-| `PUBMED_API_KEY` | Optional: faster PubMed (10 requests/s instead of 3) |
-| `OPENAI_API_KEY` | Fallback only; the current key is invalid and Muse is used whenever `META_MODEL_API_KEY` is set |
+| Variable                                                  | Needed for                                                                                                        |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `META_MODEL_API_KEY`                                      | All Muse models (chat, sub-agents, image, voice)                                                                  |
+| `ATTMA_SANDBOX_SNAPSHOT`                                  | Python workspace (`snap_kxdx...`, on Vercel for all environments)                                                 |
+| `DATABASE_URL` and `POSTGRES_*`                           | Neon Postgres (chats, users)                                                                                      |
+| `BLOB_READ_WRITE_TOKEN`                                   | Uploads and published figures                                                                                     |
+| `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Sign-in                                                                                                           |
+| `VERCEL_OIDC_TOKEN`                                       | Creating sandboxes locally (pulled automatically, expires after hours; pull again if sandbox calls fail with 401) |
+| `ALPHAGENOME_API_KEY`                                     | Optional: unlocks AlphaGenome (free for non-commercial use from DeepMind)                                         |
+| `PUBMED_API_KEY`                                          | Optional: faster PubMed (10 requests/s instead of 3)                                                              |
+| `OPENAI_API_KEY`                                          | Fallback only; the current key is invalid and Muse is used whenever `META_MODEL_API_KEY` is set                   |
 
 To give Claude Code on the new Mac the same context, open the repo there and start a session: it reads `CLAUDE.md` automatically, and this file covers the rest. Claude's local memory folder on the old Mac (`~/.claude/projects/...`) was empty, so nothing else needs copying.
 
@@ -118,23 +118,26 @@ nextjs-frontend/
   PRODUCT.md                       product brief for design work
 ```
 
-`plan.md` and most of `docs/` (Railway, FastAPI, BioFlow) describe the removed backend and are out of date.
+The docs for the removed FastAPI backend were deleted before the repository was opened.
 
 ## 5. Open work
 
 Hackathon (deadline Nov 4, 2026, 9 PM ET):
+
 - [ ] Record the demo video: single-cell atlas, then a follow-up in the same chat, then the rare disease card, with dictation in Spanish.
 - [ ] Write and submit the project description. Frame it as reproducible research workflows; quote the held-out benchmark.
 - [ ] Optional: get an AlphaGenome key and add `ALPHAGENOME_API_KEY` on Vercel to unlock the non-coding variant workflow.
 
 Product:
-- [ ] Domains: move the chatbot to chat.attma.bio and the main product to attma.bio (needs a CNAME at Namecheap).
+
+- [x] Domains (Nov 3): the chatbot serves chat.attma.bio. attma.bio redirects there until the main Attma product moves to it; app.attma.bio then redirects to attma.bio.
 - [ ] Decide whether step badges should say Attma instead of Muse model names.
 - [ ] Older chats from before Oct 27 show raw tool JSON (old message format); fine to leave or migrate.
 - [ ] Optional: migrate the composer to AI Elements Prompt Input; realtime streaming dictation (needs a WebSocket relay).
 
 Account hygiene (only the owner can do these):
-- [ ] Rotate the Neon database password and the Blob token: they were in `docker-compose.yml` in git history since May 2025 (private repo).
+
+- [x] Rotate the Neon database password and the Blob token (Nov 3). The old values were also removed from git history before the repository was made public.
 - [ ] Replace or remove the invalid `OPENAI_API_KEY`.
 - [ ] Fix GitHub Actions billing (CI does not run) and shut down the old Railway backend.
 - [ ] Remove `export OPENAI_BASE_URL=localhost:20128` from `~/.zshrc` if that local proxy is no longer used.

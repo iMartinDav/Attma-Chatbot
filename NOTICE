@@ -1,0 +1,79 @@
+Attma
+Copyright 2025-2026 Martin Davila
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+It includes software and data from the third parties listed below, each under
+its own license.
+
+------------------------------------------------------------------------------
+Software
+------------------------------------------------------------------------------
+
+Vercel AI Chatbot (github.com/vercel/ai-chatbot)
+  The chat, artifact and persistence layer started from this template.
+  Copyright 2024 Vercel, Inc. Licensed under the Apache License, Version 2.0.
+
+Next.js FastAPI Template (github.com/vintasoftware/nextjs-fastapi-template)
+  The original repository scaffold. Its FastAPI backend has since been removed.
+  License text follows:
+
+  MIT License
+  
+  Copyright (c) 2017 Vinta Serviços e Soluções Tecnológicas Ltda
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+AI Elements (github.com/vercel/ai-elements), Apache License 2.0
+  Reasoning, steps, tool and source components in components/ai-elements.
+
+shadcn/ui (github.com/shadcn-ui/ui), MIT License
+  Primitives in components/ui.
+
+ElevenLabs UI (github.com/elevenlabs/ui), MIT License
+  components/ui/matrix.tsx and components/elevenlabs/live-waveform.tsx are
+  adapted from it.
+
+Third-party npm and Python packages keep their own licenses; see
+nextjs-frontend/package.json, nextjs-frontend/bun.lock and
+nextjs-frontend/scripts/sandbox/build-snapshot.ts.
+
+------------------------------------------------------------------------------
+Data shipped in this repository
+------------------------------------------------------------------------------
+
+Human Phenotype Ontology (hpo.jax.org), release 2026-09-01
+  nextjs-frontend/lib/rare-disease/data/hpo-index.json is compiled from
+  hp.obo, phenotype.hpoa and genes_to_disease.txt. HPO is used under its
+  license (hpo.jax.org/license), which requires attribution and the release
+  version. Please cite: Gargano et al., The Human Phenotype Ontology in 2024,
+  Nucleic Acids Research 52(D1), 2024.
+
+GA4GH phenopacket-store 0.1.27 (github.com/monarch-initiative/phenopacket-store)
+  The benchmark cases in nextjs-frontend/scripts/rare-disease-eval/ are derived
+  from it. BSD 3-Clause License.
+
+Ensembl VEP annotations (ensembl.org)
+  nextjs-frontend/lib/rare-disease/data/vep-snapshot.json caches VEP REST
+  responses for 417 benchmark and demo variants. They include fields from
+  gnomAD, ClinVar, AlphaMissense and CADD. AlphaMissense predictions and CADD
+  scores carry non-commercial terms from their providers: check those terms
+  before any commercial reuse of the snapshot.
+
+Research use only. Nothing in this repository is a medical device or gives
+medical advice.
