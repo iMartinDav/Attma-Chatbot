@@ -7,6 +7,7 @@ jest.mock('@/lib/ai/providers', () => ({
   myProvider: { languageModel: () => 'spark-stub' },
 }));
 
+import { BIOSECURITY_INSTRUCTIONS } from '../policy';
 import { reviewerLabel, screenBiosecurity } from '../screen';
 
 describe('screenBiosecurity', () => {
@@ -21,8 +22,8 @@ describe('screenBiosecurity', () => {
     );
     expect(verdict.decision).toBe('accept');
     expect(verdict.category).toBe('in_scope_research');
-    expect(verdict.model).toBe('Muse Spark');
-    expect(verdict.policyVersion).toBe('biosec-v2');
+    expect(verdict.model).toBe('unknown reviewer');
+    expect(verdict.policyVersion).toBe('biosec-v3');
   });
 
   it('maps refuse and needs_context verdicts', async () => {
@@ -60,6 +61,8 @@ describe('screenBiosecurity', () => {
     expect(verdict.decision).toBe('needs_context');
     expect(verdict.category).toBe('screen_unavailable');
     expect(verdict.rationale).toMatch(/unavailable; try again/);
+    // A check nobody answered must not be credited to Spark.
+    expect(verdict.model).toBe('no reviewer responded');
   });
 
   it('caps the screened text at 20,000 chars', async () => {
@@ -90,6 +93,24 @@ describe('screenBiosecurity', () => {
     );
     expect(verdict.model).toBe('gpt-4o-mini, OpenAI fallback');
     expect(reviewerLabel('muse-spark-1.3')).toBe('Muse Spark');
-    expect(reviewerLabel(undefined)).toBe('Muse Spark');
+    expect(reviewerLabel('muse-something-else')).toBe(
+      'muse-something-else, OpenAI fallback',
+    );
+    expect(reviewerLabel(undefined)).toBe('unknown reviewer');
+    const hostile = reviewerLabel('<b>x</b>'.repeat(20));
+    expect(hostile).not.toMatch(/[<>]/);
+    expect(hostile.length).toBeLessThanOrEqual(40 + ', OpenAI fallback'.length);
+  });
+
+  it('keeps the fail-closed dual-use branch in the policy', () => {
+    // Greetings and questions about Attma are accepted, but unexplained
+    // dual-use work still needs a stated purpose, at every checkpoint.
+    expect(BIOSECURITY_INSTRUCTIONS).toMatch(/choose needs_context/);
+    expect(BIOSECURITY_INSTRUCTIONS).toMatch(/any biological agent or toxin/);
+    expect(BIOSECURITY_INSTRUCTIONS).toMatch(/including code/);
+    expect(BIOSECURITY_INSTRUCTIONS).not.toMatch(/never a reason by itself/);
+    expect(BIOSECURITY_INSTRUCTIONS).not.toMatch(
+      /anything else with no plausible path/,
+    );
   });
 });

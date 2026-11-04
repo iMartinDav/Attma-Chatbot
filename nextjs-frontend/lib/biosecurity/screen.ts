@@ -45,9 +45,19 @@ export type BiosecurityGenerate = (
  * providers.ts retries them on OpenAI. The badge names the model that
  * actually answered, so the trust UI never claims a check Spark did not run.
  */
+const SPARK_MODEL_IDS = new Set(['muse-spark-1.3']);
+const UNKNOWN_REVIEWER = 'unknown reviewer';
+const NO_REVIEWER = 'no reviewer responded';
+
 export function reviewerLabel(modelId: string | undefined): string {
-  if (!modelId || modelId.startsWith('muse-')) return 'Muse Spark';
-  return `${modelId.replace(/-\d{4}-\d{2}-\d{2}$/, '')}, OpenAI fallback`;
+  if (!modelId) return UNKNOWN_REVIEWER;
+  if (SPARK_MODEL_IDS.has(modelId)) return 'Muse Spark';
+  // Only a short, plain id reaches the badge.
+  const id = modelId
+    .replace(/-\d{4}-\d{2}-\d{2}$/, '')
+    .replace(/[^\w.-]/g, '')
+    .slice(0, 40);
+  return id ? `${id}, OpenAI fallback` : UNKNOWN_REVIEWER;
 }
 
 // Spark judges the checkpoint from the policy text alone, so the screen stays independent of the main agent.
@@ -93,7 +103,7 @@ export async function screenBiosecurity(
     decision: 'needs_context',
     category: 'screen_unavailable',
     rationale: 'The biosecurity check is unavailable; try again.',
-    model: 'Muse Spark',
+    model: NO_REVIEWER,
     policyVersion: BIOSECURITY_POLICY_VERSION,
     durationMs: Date.now() - startedAt,
   };
