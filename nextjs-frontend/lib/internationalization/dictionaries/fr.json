@@ -58,6 +58,10 @@
       "ctaExplore": "Découvrir les fonctionnalités",
       "introducing": "Découvrez Attma",
       "promptPlaceholder": "Posez une question à Attma...",
+      "composer": {
+        "attach": "Joindre des données",
+        "send": "Envoyer"
+      },
       "suggestionBubbles": {
         "analyzeRna": "Regrouper des données unicellulaires",
         "explainSingleCell": "Prioriser les variants d'un VCF",

@@ -59,6 +59,10 @@
       "ctaExplore": "Explore Features",
       "introducing": "Introducing Attma",
       "promptPlaceholder": "Ask Attma...",
+      "composer": {
+        "attach": "Attach data",
+        "send": "Send"
+      },
       "suggestionBubbles": {
         "analyzeRna": "Cluster single-cell data",
         "explainSingleCell": "Prioritize variants in a VCF",

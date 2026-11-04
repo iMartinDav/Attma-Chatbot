@@ -1,10 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import {
+  type FormEvent,
+  type KeyboardEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowUp, Dna } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+  ArrowUp,
+  BookOpen,
+  Box,
+  ChartScatter,
+  ClipboardList,
+  CornerDownLeft,
+  Dna,
+  ListOrdered,
+  type LucideIcon,
+  Network,
+  Paperclip,
+} from 'lucide-react';
 import type { Locale } from '@/lib/internationalization/config';
 
 interface HeroProps {
@@ -14,6 +31,10 @@ interface HeroProps {
     introducing?: string;
     ctaExplore?: string;
     promptPlaceholder?: string;
+    composer?: {
+      attach?: string;
+      send?: string;
+    };
     suggestionBubbles?: {
       analyzeRna?: string;
       explainSingleCell?: string;
@@ -28,153 +49,90 @@ interface HeroProps {
 }
 
 const DEFAULT_SAMPLE_PROMPTS = [
-  'Analyze this RNA-seq dataset for differential gene expression...',
-  'What patterns can you identify in this protein sequence alignment?',
-  'Explain the CRISPR-Cas9 mechanism in simple terms',
-  'Help me interpret these single-cell sequencing results',
-  'What can you tell me about these genomic variants?',
+  'Cluster the PBMC 3k dataset and annotate the cell types...',
+  'Run pathway enrichment on these B cell markers...',
 ];
 
-export const Hero = ({ dictionary, locale }: HeroProps) => {
-  const [query, setQuery] = useState('');
-  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
-  const [currentText, setCurrentText] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [viewportWidth, setViewportWidth] = useState(0);
+// One icon per suggestion, keyed like the dictionary entries (the key names
+// are historical; the icon follows what each label now says).
+const SUGGESTION_ICONS: Record<string, LucideIcon> = {
+  analyzeRna: ChartScatter,
+  explainSingleCell: ListOrdered,
+  compareProteins: Box,
+  identifyMarkers: ClipboardList,
+  visualizeGenomic: Network,
+  interpretCrispr: BookOpen,
+};
+
+// The chat reads ?query= and sends it as the first message. Text is cut
+// before encoding so a %XX escape is never split.
+const MAX_QUERY_LENGTH = 2000;
+const PROMPT_ROTATION_MS = 4200;
+const MAX_TEXTAREA_PX = 208;
+const ACCEPTED_FORMATS = 'VCF · h5ad · CSV · PDF';
+
+function chatUrl(text: string) {
+  const trimmed = text.trim().slice(0, MAX_QUERY_LENGTH);
+  return trimmed ? `/chat?query=${encodeURIComponent(trimmed)}` : '/chat';
+}
+
+export const Hero = ({ dictionary }: HeroProps) => {
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [promptIndex, setPromptIndex] = useState(0);
+  // Which control started navigation: 'composer' or a suggestion key.
+  const [pending, setPending] = useState<string | null>(null);
 
   const samplePrompts = dictionary.typingEffectPrompts?.length
     ? dictionary.typingEffectPrompts
     : DEFAULT_SAMPLE_PROMPTS;
+  const hasText = query.trim().length > 0;
+  const placeholder = dictionary.promptPlaceholder || 'Ask Attma...';
 
-  // Track keyboard focus state for enhanced accessibility
-  const [isInputFocused, setIsInputFocused] = useState(false);
-
-  // Handle viewport size on first render and resize
+  // Example prompts rotate while the box is empty and idle. They hold still
+  // once the visitor focuses the box, so the text does not move while they
+  // decide what to type.
   useEffect(() => {
-    const updateViewportWidth = () => {
-      setViewportWidth(window.innerWidth);
-    };
-
-    // Set initial viewport width
-    updateViewportWidth();
-
-    // Add resize listener
-    window.addEventListener('resize', updateViewportWidth);
-
-    return () => window.removeEventListener('resize', updateViewportWidth);
-  }, []);
-
-  // Process prompt for responsive display - simplified approach
-  const processPromptForDisplay = React.useCallback(
-    (prompt: string) => {
-      // Calculate available space based on viewport width
-      let maxLength = 100; // Default large size
-
-      // Adjust for viewport width with more reasonable values
-      if (viewportWidth > 0) {
-        // Mobile sizes with modest truncation
-        if (viewportWidth < 375)
-          maxLength = 35; // Small phones
-        else if (viewportWidth < 480)
-          maxLength = 45; // Medium phones
-        else if (viewportWidth < 640)
-          maxLength = 55; // Large phones
-        // Tablet sizes
-        else if (viewportWidth < 768)
-          maxLength = 70; // Small tablets
-        else if (viewportWidth < 1024) maxLength = 90; // Large tablets
-      }
-
-      // Simple clean truncation without ellipsis for cleaner look
-      if (prompt.length > maxLength) {
-        return prompt.slice(0, maxLength);
-      }
-
-      return prompt;
-    },
-    [viewportWidth],
-  );
-
-  // Track whether we're showing a truncated prompt
-  const [isTruncated, setIsTruncated] = useState(false);
-
-  // Typing effect
-  useEffect(() => {
-    if (!samplePrompts.length) return;
-
-    // Get current prompt
-    const safeIndex = Math.min(
-      currentPlaceholderIndex,
-      samplePrompts.length - 1,
+    if (query || isFocused || samplePrompts.length < 2) return;
+    const id = setInterval(
+      () => setPromptIndex((i) => (i + 1) % samplePrompts.length),
+      PROMPT_ROTATION_MS,
     );
-    const originalPrompt = samplePrompts[safeIndex];
-    const displayPrompt = processPromptForDisplay(originalPrompt);
+    return () => clearInterval(id);
+  }, [query, isFocused, samplePrompts.length]);
 
-    // We're no longer using truncation indicators
-    setIsTruncated(false);
+  // Grow with the text up to a cap, then scroll, like the big chat composers.
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_PX)}px`;
+  }, [query]);
 
-    let typingTimer: NodeJS.Timeout;
-    let pauseTimer: NodeJS.Timeout;
-
-    if (isTyping) {
-      // Typing phase
-      if (currentText.length < displayPrompt.length) {
-        typingTimer = setTimeout(() => {
-          setCurrentText(displayPrompt.substring(0, currentText.length + 1));
-        }, 50);
-      } else {
-        // Complete - pause before erasing
-        pauseTimer = setTimeout(() => {
-          setIsTyping(false);
-        }, 2000);
-      }
-    } else {
-      // Erasing phase
-      if (currentText.length > 0) {
-        typingTimer = setTimeout(() => {
-          setCurrentText(currentText.substring(0, currentText.length - 1));
-        }, 30);
-      } else {
-        // Move to next prompt
-        setIsTyping(true);
-        setCurrentPlaceholderIndex(
-          (currentPlaceholderIndex + 1) % samplePrompts.length,
-        );
-      }
-    }
-
-    return () => {
-      clearTimeout(typingTimer);
-      clearTimeout(pauseTimer);
-    };
-  }, [
-    currentText,
-    currentPlaceholderIndex,
-    isTyping,
-    samplePrompts,
-    processPromptForDisplay,
-  ]);
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Prevent multiple submissions
-    if (isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-
-      // The chat reads ?query= and sends it as the first message. Text is cut
-      // before encoding so a %XX escape is never split.
-      const text = query.trim().slice(0, 2000);
-      router.push(text ? `/chat?query=${encodeURIComponent(text)}` : '/chat');
-    } catch (error) {
-      console.error('Navigation error:', error);
-      router.push('/chat');
-      setIsSubmitting(false);
-    }
+  const go = (text: string, source: string) => {
+    if (pending) return;
+    setPending(source);
+    router.push(chatUrl(text));
   };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (hasText) go(query, 'composer');
+  };
+
+  // Enter sends and Shift+Enter breaks the line. Enter that confirms an IME
+  // candidate (Chinese, Japanese) must not send a half-typed question.
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    if (hasText) go(query, 'composer');
+  };
+
+  const suggestions = Object.entries(dictionary.suggestionBubbles ?? {}).filter(
+    (entry): entry is [string, string] => Boolean(entry[1]),
+  );
 
   return (
     <section className="relative overflow-hidden w-full bg-background py-12 md:py-20 lg:py-32">
@@ -205,97 +163,103 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
             {dictionary.subtitle}
           </p>
 
-          <div className="w-full max-w-3xl mt-5 md:mt-8 px-2 sm:px-0">
-            <form onSubmit={handleSubmit} className="w-full">
-              <div className="relative bg-background/20 backdrop-blur-md rounded-xl overflow-hidden border border-primary/30 shadow-lg">
-                {/* Add container to control placeholder display and text overflow */}
-                <div className="relative w-full">
-                  <Input
-                    type="text"
-                    placeholder={
-                      currentText ||
-                      dictionary.promptPlaceholder ||
-                      'Ask Attma...'
-                    }
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
-                    className="w-full px-4 sm:px-6 py-3 sm:py-4 h-14 sm:h-16 md:h-20 text-base sm:text-lg border-0 bg-transparent focus-visible:ring-0 placeholder:text-muted-foreground/80 placeholder:text-sm sm:placeholder:text-base"
-                    autoComplete="off"
-                    style={{
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                    }}
-                    aria-label={dictionary.promptPlaceholder || 'Ask Attma...'}
-                  />
-                  {/* No visual truncation indicator - clean design */}
-                </div>
-                <div className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2">
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary hover:opacity-90 shadow-md transition-all active:scale-95 disabled:opacity-70"
-                    aria-label="Submit question"
-                    disabled={isSubmitting}
+          <div className="w-full max-w-3xl mt-5 md:mt-8 px-1 sm:px-0">
+            <form
+              onSubmit={handleSubmit}
+              className="relative w-full rounded-[26px] border border-border bg-card text-left shadow-[0_1px_2px_hsl(var(--foreground)/0.04),0_12px_40px_-12px_hsl(var(--foreground)/0.14)] transition-[border-color,box-shadow] duration-200 ease-out focus-within:border-primary/50 focus-within:shadow-[0_0_0_4px_hsl(var(--primary)/0.12),0_12px_40px_-12px_hsl(var(--foreground)/0.14)]"
+            >
+              <div className="relative">
+                <label htmlFor="hero-prompt" className="sr-only">
+                  {placeholder}
+                </label>
+                <textarea
+                  id="hero-prompt"
+                  ref={textareaRef}
+                  rows={1}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  maxLength={MAX_QUERY_LENGTH}
+                  autoComplete="off"
+                  spellCheck
+                  className="block min-h-[3.75rem] w-full resize-none bg-transparent px-5 pb-1 pt-[1.1rem] text-base leading-7 text-foreground outline-none sm:text-[1.0625rem]"
+                />
+                {!query && (
+                  <span
+                    key={promptIndex}
+                    aria-hidden="true"
+                    className="attma-prompt-in pointer-events-none absolute inset-x-5 top-[1.1rem] truncate text-base leading-7 text-muted-foreground sm:text-[1.0625rem]"
                   >
-                    {isSubmitting ? (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    {samplePrompts[promptIndex % samplePrompts.length]}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3 px-3 pb-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => go(query, 'attach')}
+                  className="inline-flex h-9 items-center gap-2 rounded-full border border-border px-3 text-sm font-medium text-muted-foreground transition-[color,background-color,transform] duration-150 ease-out hover:bg-muted hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <Paperclip className="size-4" aria-hidden="true" />
+                  {dictionary.composer?.attach || 'Attach data'}
+                  <span className="hidden font-mono text-xs tracking-tight text-muted-foreground md:inline">
+                    {ACCEPTED_FORMATS}
+                  </span>
+                </button>
+
+                <div className="flex items-center gap-2.5">
+                  <kbd
+                    aria-hidden="true"
+                    className={`hidden h-6 items-center rounded-md border border-border px-1.5 font-sans text-xs text-muted-foreground transition-opacity duration-200 sm:inline-flex ${hasText ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <CornerDownLeft className="size-3" />
+                  </kbd>
+                  <button
+                    type="submit"
+                    disabled={!hasText || pending !== null}
+                    aria-label={dictionary.composer?.send || 'Send'}
+                    className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm transition-[background-color,color,transform,box-shadow] duration-150 ease-out hover:brightness-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
+                  >
+                    {pending === 'composer' ? (
+                      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     ) : (
-                      <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <ArrowUp className="size-[1.125rem]" strokeWidth={2.25} />
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
             </form>
 
-            <div className="mt-6 md:mt-8 flex overflow-x-auto scrollbar-hide pb-1 -mx-2 px-2">
-              <div className="flex gap-2 sm:gap-3 flex-nowrap sm:flex-wrap justify-start sm:justify-center mx-auto max-w-full snap-x snap-mandatory">
-                {dictionary.suggestionBubbles &&
-                  Object.entries(dictionary.suggestionBubbles).map(
-                    ([key, text]) => {
-                      if (!text) return null;
-
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          aria-label={`Suggestion: ${text}`}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full border border-[#343541]/20
-                              bg-background/30 backdrop-blur-xs hover:border-primary/50 transition-all
-                              text-foreground/80 hover:text-foreground hover:bg-background/50 active:scale-95 whitespace-nowrap
-                              touch-manipulation focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:ring-offset-1
-                              snap-start snap-always select-none"
-                          onClick={() => {
-                            if (isSubmitting) return;
-                            setQuery(text);
-                            setIsSubmitting(true);
-
-                            // Add slight delay for mobile feedback
-                            setTimeout(() => {
-                              const form =
-                                document.querySelector<HTMLFormElement>('form');
-                              if (form) {
-                                form.requestSubmit();
-                              } else {
-                                handleSubmit(
-                                  new Event(
-                                    'click',
-                                  ) as unknown as React.FormEvent,
-                                );
-                              }
-                            }, 50);
-                          }}
-                          disabled={isSubmitting}
-                        >
-                          {text}
-                        </button>
-                      );
-                    },
-                  )}
-              </div>
-            </div>
+            {suggestions.length > 0 && (
+              <ul className="-mx-4 mt-5 flex snap-x gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide [mask-image:linear-gradient(to_right,transparent,#000_16px,#000_calc(100%-16px),transparent)] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:[mask-image:none]">
+                {suggestions.map(([key, text]) => {
+                  const Icon = SUGGESTION_ICONS[key] ?? Dna;
+                  return (
+                    <li key={key} className="shrink-0 snap-start">
+                      <button
+                        type="button"
+                        onClick={() => go(text, key)}
+                        disabled={pending !== null}
+                        className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-border/80 bg-background/70 px-3.5 text-sm text-muted-foreground backdrop-blur-sm transition-[color,border-color,background-color,transform] duration-150 ease-out hover:border-foreground/20 hover:bg-card hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-60 touch-manipulation"
+                      >
+                        {pending === key ? (
+                          <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <Icon
+                            className="size-3.5 text-primary-ink"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {text}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
       </div>

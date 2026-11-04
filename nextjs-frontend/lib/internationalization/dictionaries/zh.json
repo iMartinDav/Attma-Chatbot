@@ -56,6 +56,10 @@
       "ctaExplore": "探索功能",
       "introducing": "为您介绍 Attma",
       "promptPlaceholder": "向 Attma 提问...",
+      "composer": {
+        "attach": "附加数据",
+        "send": "发送"
+      },
       "suggestionBubbles": {
         "analyzeRna": "对单细胞数据进行聚类",
         "explainSingleCell": "对 VCF 中的变异进行优先级排序",

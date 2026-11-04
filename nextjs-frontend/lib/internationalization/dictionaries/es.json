@@ -58,6 +58,10 @@
       "ctaExplore": "Explorar funciones",
       "introducing": "Presentamos Attma",
       "promptPlaceholder": "Pregunta a Attma...",
+      "composer": {
+        "attach": "Adjuntar datos",
+        "send": "Enviar"
+      },
       "suggestionBubbles": {
         "analyzeRna": "Clustering de datos de célula única",
         "explainSingleCell": "Priorizar variantes en un VCF",
