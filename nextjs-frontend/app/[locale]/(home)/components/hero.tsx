@@ -16,12 +16,12 @@ import {
   ChartScatter,
   ClipboardList,
   CornerDownLeft,
-  Dna,
   ListOrdered,
   type LucideIcon,
   Network,
   Paperclip,
 } from 'lucide-react';
+import { HelixMark } from '@/components/helix-mark';
 import type { Locale } from '@/lib/internationalization/config';
 
 interface HeroProps {
@@ -148,8 +148,8 @@ export const Hero = ({ dictionary }: HeroProps) => {
 
       <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-8 mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5">
-            <Dna className="size-3.5 text-primary" />
+          <div className="group inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5">
+            <HelixMark className="size-4" />
             <span className="text-xs font-medium text-foreground">
               {dictionary.introducing || 'Introducing Attma'}
             </span>
@@ -236,7 +236,7 @@ export const Hero = ({ dictionary }: HeroProps) => {
             {suggestions.length > 0 && (
               <ul className="-mx-4 mt-5 flex snap-x gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide [mask-image:linear-gradient(to_right,transparent,#000_16px,#000_calc(100%-16px),transparent)] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:[mask-image:none]">
                 {suggestions.map(([key, text]) => {
-                  const Icon = SUGGESTION_ICONS[key] ?? Dna;
+                  const Icon = SUGGESTION_ICONS[key] ?? Network;
                   return (
                     <li key={key} className="shrink-0 snap-start">
                       <button
