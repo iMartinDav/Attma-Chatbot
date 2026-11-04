@@ -45,8 +45,11 @@
     },
     "banner": {
       "label": "New:",
-      "text": "Verified reports: every number checked in code, then approved by a person.",
-      "dismiss": "Dismiss"
+      "text": "Test the new Meta Muse on biology: ask Attma a research question and check every step.",
+      "dismiss": "Dismiss",
+      "more": [
+        "Verified reports: every number checked in code, then approved by a person."
+      ]
     }
   },
   "home": {

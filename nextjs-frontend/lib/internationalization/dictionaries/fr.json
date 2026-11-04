@@ -44,8 +44,11 @@
     },
     "banner": {
       "label": "Nouveau :",
-      "text": "Rapports vérifiés : chaque nombre est contrôlé par le code, puis approuvé par une personne.",
-      "dismiss": "Fermer"
+      "text": "Testez le nouveau Meta Muse en biologie : posez une question de recherche à Attma et vérifiez chaque étape.",
+      "dismiss": "Fermer",
+      "more": [
+        "Rapports vérifiés : chaque nombre est contrôlé par le code, puis approuvé par une personne."
+      ]
     }
   },
   "home": {

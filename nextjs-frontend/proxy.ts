@@ -42,8 +42,18 @@ function getLocaleFromRequest(request: NextRequest): string {
   }
 }
 
+// attma.bio is the main Attma product. Until its domain moves to that Vercel
+// project, requests for it reach this app and are sent to the main landing.
+const MAIN_APP_HOSTS = new Set(['attma.bio', 'www.attma.bio']);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (MAIN_APP_HOSTS.has(request.headers.get('host') ?? '')) {
+    return NextResponse.redirect(
+      new URL(`${pathname}${request.nextUrl.search}`, 'https://app.attma.bio'),
+      307,
+    );
+  }
 
   // First, check if this is a non-localized app route (like /chat, /settings)
   const isNonLocalizedAppRoute = nonLocalizedAppRoutes.some(

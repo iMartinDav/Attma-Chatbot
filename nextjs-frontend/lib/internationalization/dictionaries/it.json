@@ -45,8 +45,11 @@
     },
     "banner": {
       "label": "Novità:",
-      "text": "Report verificati: ogni numero è controllato dal codice e poi approvato da una persona.",
-      "dismiss": "Chiudi"
+      "text": "Prova il nuovo Meta Muse in biologia: fai ad Attma una domanda di ricerca e controlla ogni passaggio.",
+      "dismiss": "Chiudi",
+      "more": [
+        "Report verificati: ogni numero è controllato dal codice e poi approvato da una persona."
+      ]
     }
   },
   "home": {

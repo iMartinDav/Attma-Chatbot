@@ -44,8 +44,11 @@
     },
     "banner": {
       "label": "Neu:",
-      "text": "Geprüfte Berichte: Jede Zahl wird im Code geprüft und dann von einer Person freigegeben.",
-      "dismiss": "Schließen"
+      "text": "Teste das neue Meta Muse in der Biologie: Stelle Attma eine Forschungsfrage und prüfe jeden Schritt.",
+      "dismiss": "Schließen",
+      "more": [
+        "Geprüfte Berichte: Jede Zahl wird im Code geprüft und dann von einer Person freigegeben."
+      ]
     }
   },
   "home": {

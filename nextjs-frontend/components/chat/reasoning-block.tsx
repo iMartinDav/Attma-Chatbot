@@ -6,7 +6,7 @@
 
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Brain, ChevronDown, Sparkles } from 'lucide-react';
+import { Brain, ChevronDown } from 'lucide-react';
 import { memo, useState } from 'react';
 import { Markdown } from './markdown';
 
@@ -72,7 +72,7 @@ function ThinkingIndicator({ isStreaming }: { isStreaming: boolean }) {
         {isStreaming ? 'Thinking...' : 'Reasoning'}
       </span>
       {isStreaming && (
-        <Sparkles className="size-3 text-primary-ink animate-pulse" />
+        <Brain className="size-3 text-primary-ink animate-pulse" />
       )}
     </div>
   );

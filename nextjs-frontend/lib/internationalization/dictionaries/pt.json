@@ -44,8 +44,11 @@
     },
     "banner": {
       "label": "Novo:",
-      "text": "Relatórios verificados: cada número é conferido no código e depois aprovado por uma pessoa.",
-      "dismiss": "Fechar"
+      "text": "Teste o novo Meta Muse em biologia: faça ao Attma uma pergunta de pesquisa e verifique cada etapa.",
+      "dismiss": "Fechar",
+      "more": [
+        "Relatórios verificados: cada número é conferido no código e depois aprovado por uma pessoa."
+      ]
     }
   },
   "home": {

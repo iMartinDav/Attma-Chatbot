@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowUp } from 'lucide-react';
+import { ArrowUp, Dna } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Locale } from '@/lib/internationalization/config';
@@ -191,7 +191,7 @@ export const Hero = ({ dictionary, locale }: HeroProps) => {
       <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-8 mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5">
-            <Sparkles className="size-3.5 text-primary" />
+            <Dna className="size-3.5 text-primary" />
             <span className="text-xs font-medium text-foreground">
               {dictionary.introducing || 'Introducing Attma'}
             </span>

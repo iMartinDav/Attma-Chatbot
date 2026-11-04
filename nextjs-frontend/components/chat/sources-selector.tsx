@@ -28,9 +28,9 @@ import {
   LockIcon,
   NetworkIcon,
   PlugIcon,
-  SparklesIcon,
   StethoscopeIcon,
   TerminalSquareIcon,
+  Dna,
 } from 'lucide-react';
 import useSWR from 'swr';
 import { useLocalStorage } from 'usehooks-ts';
@@ -44,7 +44,7 @@ const ICONS: Record<ConnectorId, typeof DnaIcon> = {
   web: GlobeIcon,
   python: TerminalSquareIcon,
   documents: FileSearchIcon,
-  alphagenome: SparklesIcon,
+  alphagenome: Dna,
 };
 
 const GROUPS: ConnectorGroup[] = ['Knowledge', 'Compute', 'Models'];

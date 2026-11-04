@@ -188,14 +188,49 @@ function muse(
 /**
  * When the Meta API refuses a call (billing, quota or an outage), the same call
  * is retried once on OpenAI, so the biosecurity check and the agent keep working
- * instead of failing every request. Muse settings are dropped for the retry
- * because they only apply to Meta's reasoning models. Aborts are not retried.
+ * instead of failing every request. Only billing, quota and outage errors fall
+ * back; Meta-only reasoning settings are dropped and store: false is kept.
  */
 function withOpenAIFallback(model: LanguageModelV4, fallbackId: string) {
   if (!process.env.OPENAI_API_KEY) return model;
   const fallback = openai.chat(fallbackId);
-  const shouldFallBack = (error: unknown) =>
-    !(error instanceof Error && error.name === 'AbortError');
+  // Billing, auth, quota and outage errors only; a 400/422 (bad input or a
+  // content refusal) is never retried elsewhere.
+  const shouldFallBack = (error: unknown, signal?: AbortSignal) => {
+    if (signal?.aborted) return false;
+    const status = (error as { statusCode?: number } | null)?.statusCode;
+    return (
+      status === 401 ||
+      status === 402 ||
+      status === 429 ||
+      (status !== undefined && status >= 500)
+    );
+  };
+  // Meta-only reasoning settings are dropped; store: false and the rest stay.
+  const retryParams = <P extends { providerOptions?: Record<string, unknown> }>(
+    params: P,
+  ): P => {
+    const {
+      forceReasoning: _f,
+      promptCacheKey: _p,
+      reasoningEffort: _e,
+      reasoningSummary: _s,
+      include: _i,
+      ...rest
+    } = (params.providerOptions?.openai ?? {}) as Record<string, unknown>;
+    return {
+      ...params,
+      providerOptions: {
+        ...params.providerOptions,
+        openai: { ...rest, store: false },
+      },
+    };
+  };
+  const logFallback = (error: unknown) =>
+    console.warn('Muse call failed, retrying on OpenAI', {
+      name: (error as Error | null)?.name,
+      statusCode: (error as { statusCode?: number } | null)?.statusCode,
+    });
   return wrapLanguageModel({
     model,
     middleware: {
@@ -203,18 +238,18 @@ function withOpenAIFallback(model: LanguageModelV4, fallbackId: string) {
         try {
           return await doGenerate();
         } catch (error) {
-          if (!shouldFallBack(error)) throw error;
-          console.warn('Muse call failed, retrying on OpenAI', error);
-          return fallback.doGenerate({ ...params, providerOptions: undefined });
+          if (!shouldFallBack(error, params.abortSignal)) throw error;
+          logFallback(error);
+          return fallback.doGenerate(retryParams(params));
         }
       },
       wrapStream: async ({ doStream, params }) => {
         try {
           return await doStream();
         } catch (error) {
-          if (!shouldFallBack(error)) throw error;
-          console.warn('Muse stream failed, retrying on OpenAI', error);
-          return fallback.doStream({ ...params, providerOptions: undefined });
+          if (!shouldFallBack(error, params.abortSignal)) throw error;
+          logFallback(error);
+          return fallback.doStream(retryParams(params));
         }
       },
     },

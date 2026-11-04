@@ -2,7 +2,7 @@
 
 import { Rocket, X } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   BANNER_DISMISSED_EVENT,
@@ -19,9 +19,20 @@ export function PromoBanner({
   dictionary,
 }: {
   locale: Locale;
-  dictionary: { label: string; text: string; dismiss: string };
+  dictionary: { label: string; text: string; more?: string[]; dismiss: string };
 }) {
   const [isVisible, setIsVisible] = useState(true);
+  // The announcements rotate every 6 s; the first one is the headline.
+  const messages = [dictionary.text, ...(dictionary.more ?? [])];
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (messages.length < 2) return;
+    const id = setInterval(
+      () => setIndex((i) => (i + 1) % messages.length),
+      6000,
+    );
+    return () => clearInterval(id);
+  }, [messages.length]);
   const { bannerHidden } = useScrollState();
 
   if (!isVisible) return null;
@@ -83,7 +94,12 @@ export function PromoBanner({
               <strong className="font-semibold text-white">
                 {dictionary.label}
               </strong>{' '}
-              {dictionary.text}
+              <span
+                key={index}
+                className="motion-safe:animate-in motion-safe:fade-in"
+              >
+                {messages[index]}
+              </span>
             </span>
             <svg
               className="ml-1 sm:ml-2 h-4 w-4 flex-none text-teal-500 dark:text-teal-400 transition-transform duration-300 group-hover:translate-x-1"

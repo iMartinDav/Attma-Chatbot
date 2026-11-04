@@ -14,7 +14,7 @@ import {
   ImageIcon,
   Loader2Icon,
   SearchIcon,
-  SparklesIcon,
+  Dna,
 } from 'lucide-react';
 
 import { TextShimmer } from '../ui/text-shimmer';
@@ -34,7 +34,7 @@ const TOOL_ICONS: Record<
 > = {
   pubmed_search: SearchIcon,
   semantic_scholar: BookOpenIcon,
-  gene_lookup: SparklesIcon,
+  gene_lookup: Dna,
   firecrawl_search: SearchIcon,
   create_code_artifact: CodeIcon,
   image_generation: ImageIcon,

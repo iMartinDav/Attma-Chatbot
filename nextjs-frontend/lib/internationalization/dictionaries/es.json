@@ -44,8 +44,11 @@
     },
     "banner": {
       "label": "Nuevo:",
-      "text": "Informes verificados: cada número se comprueba en código y luego lo aprueba una persona.",
-      "dismiss": "Cerrar"
+      "text": "Prueba el nuevo Meta Muse en biología: haz a Attma una pregunta de investigación y revisa cada paso.",
+      "dismiss": "Cerrar",
+      "more": [
+        "Informes verificados: cada número se comprueba en código y luego lo aprueba una persona."
+      ]
     }
   },
   "home": {
