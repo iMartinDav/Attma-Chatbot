@@ -38,17 +38,27 @@ const verdictSchema = z.object({
 
 export type BiosecurityGenerate = (
   input: BiosecurityInput,
-) => Promise<z.infer<typeof verdictSchema>>;
+) => Promise<z.infer<typeof verdictSchema> & { modelId?: string }>;
+
+/**
+ * The reviewer is Muse Spark, but while the Meta API refuses calls (billing),
+ * providers.ts retries them on OpenAI. The badge names the model that
+ * actually answered, so the trust UI never claims a check Spark did not run.
+ */
+export function reviewerLabel(modelId: string | undefined): string {
+  if (!modelId || modelId.startsWith('muse-')) return 'Muse Spark';
+  return `${modelId.replace(/-\d{4}-\d{2}-\d{2}$/, '')}, OpenAI fallback`;
+}
 
 // Spark judges the checkpoint from the policy text alone, so the screen stays independent of the main agent.
 const defaultGenerate: BiosecurityGenerate = async (input) => {
-  const { output } = await generateText({
+  const { output, response } = await generateText({
     model: myProvider.languageModel('subagent-model'),
     instructions: BIOSECURITY_INSTRUCTIONS,
     prompt: `Checkpoint: ${input.checkpoint}\nContext: ${input.context?.slice(0, 2000) ?? '(none)'}\nText to screen:\n${input.text.slice(0, 20_000)}`,
     output: Output.object({ schema: verdictSchema }),
   });
-  return output;
+  return { ...output, modelId: response.modelId };
 };
 
 // A failed screen fails closed as needs_context, because an unavailable check must never wave a request through or invent a refusal.
@@ -70,7 +80,7 @@ export async function screenBiosecurity(
         decision: verdict.decision,
         category: verdict.category,
         rationale: verdict.rationale.slice(0, 300),
-        model: 'Muse Spark',
+        model: reviewerLabel(verdict.modelId),
         policyVersion: BIOSECURITY_POLICY_VERSION,
         durationMs: Date.now() - startedAt,
       };

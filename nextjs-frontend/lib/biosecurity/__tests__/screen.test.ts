@@ -7,7 +7,7 @@ jest.mock('@/lib/ai/providers', () => ({
   myProvider: { languageModel: () => 'spark-stub' },
 }));
 
-import { screenBiosecurity } from '../screen';
+import { reviewerLabel, screenBiosecurity } from '../screen';
 
 describe('screenBiosecurity', () => {
   it('maps an accept verdict', async () => {
@@ -22,7 +22,7 @@ describe('screenBiosecurity', () => {
     expect(verdict.decision).toBe('accept');
     expect(verdict.category).toBe('in_scope_research');
     expect(verdict.model).toBe('Muse Spark');
-    expect(verdict.policyVersion).toBe('biosec-v1');
+    expect(verdict.policyVersion).toBe('biosec-v2');
   });
 
   it('maps refuse and needs_context verdicts', async () => {
@@ -76,5 +76,20 @@ describe('screenBiosecurity', () => {
       },
     );
     expect(seen).toBe(20_000);
+  });
+
+  it('names the model that actually answered', async () => {
+    const verdict = await screenBiosecurity(
+      { checkpoint: 'intake', text: 'hello' },
+      async () => ({
+        decision: 'accept',
+        category: 'in_scope_research',
+        rationale: 'A greeting.',
+        modelId: 'gpt-4o-mini-2024-07-18',
+      }),
+    );
+    expect(verdict.model).toBe('gpt-4o-mini, OpenAI fallback');
+    expect(reviewerLabel('muse-spark-1.3')).toBe('Muse Spark');
+    expect(reviewerLabel(undefined)).toBe('Muse Spark');
   });
 });
