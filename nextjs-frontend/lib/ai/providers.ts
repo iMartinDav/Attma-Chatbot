@@ -10,6 +10,7 @@ import {
   openai,
   type OpenAIResponsesProviderOptions,
 } from '@ai-sdk/openai';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import {
   customProvider,
   defaultSettingsMiddleware,
@@ -160,7 +161,7 @@ function muse(
   modelId: 'muse-spark-1.3' | 'muse-wonder-1.0',
   effort: MuseEffort,
 ) {
-  return wrapLanguageModel({
+  const tuned = wrapLanguageModel({
     model: meta.responses(modelId),
     middleware: defaultSettingsMiddleware({
       settings: {
@@ -177,6 +178,46 @@ function muse(
         },
       },
     }),
+  });
+  return withOpenAIFallback(
+    tuned,
+    modelId === 'muse-wonder-1.0' ? 'gpt-4o' : 'gpt-4o-mini',
+  );
+}
+
+/**
+ * When the Meta API refuses a call (billing, quota or an outage), the same call
+ * is retried once on OpenAI, so the biosecurity check and the agent keep working
+ * instead of failing every request. Muse settings are dropped for the retry
+ * because they only apply to Meta's reasoning models. Aborts are not retried.
+ */
+function withOpenAIFallback(model: LanguageModelV4, fallbackId: string) {
+  if (!process.env.OPENAI_API_KEY) return model;
+  const fallback = openai.chat(fallbackId);
+  const shouldFallBack = (error: unknown) =>
+    !(error instanceof Error && error.name === 'AbortError');
+  return wrapLanguageModel({
+    model,
+    middleware: {
+      wrapGenerate: async ({ doGenerate, params }) => {
+        try {
+          return await doGenerate();
+        } catch (error) {
+          if (!shouldFallBack(error)) throw error;
+          console.warn('Muse call failed, retrying on OpenAI', error);
+          return fallback.doGenerate({ ...params, providerOptions: undefined });
+        }
+      },
+      wrapStream: async ({ doStream, params }) => {
+        try {
+          return await doStream();
+        } catch (error) {
+          if (!shouldFallBack(error)) throw error;
+          console.warn('Muse stream failed, retrying on OpenAI', error);
+          return fallback.doStream({ ...params, providerOptions: undefined });
+        }
+      },
+    },
   });
 }
 
