@@ -49,10 +49,16 @@ const MAIN_APP_HOSTS = new Set(['attma.bio', 'www.attma.bio']);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (MAIN_APP_HOSTS.has(request.headers.get('host') ?? '')) {
-    return NextResponse.redirect(
-      new URL(`${pathname}${request.nextUrl.search}`, 'https://app.attma.bio'),
-      307,
-    );
+    // The target host is fixed and the path is set on a parsed URL, so a
+    // crafted "//other.site" path can never move the redirect off attma.
+    const target = new URL('https://app.attma.bio');
+    target.pathname = `/${pathname.replace(/^[\\/]+/, '')}`;
+    target.search = request.nextUrl.search;
+    const response = NextResponse.redirect(target, 307);
+    // The answer depends on the Host header: caches must not reuse it for chat.attma.bio.
+    response.headers.set('Vary', 'Host');
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   }
 
   // First, check if this is a non-localized app route (like /chat, /settings)
