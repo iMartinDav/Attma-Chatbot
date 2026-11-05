@@ -2,7 +2,11 @@
 
 **A research agent that turns a biology question into a reproducible, checked workflow.**
 
-Live: **[chat.attma.bio](https://chat.attma.bio)** · Built for the Meta Global AI Developer Hackathon (2026) on Meta's Muse models.
+[![Live](https://img.shields.io/badge/live-chat.attma.bio-14b8a6)](https://chat.attma.bio) [![Demo video](https://img.shields.io/badge/demo-3%20min%20video-red)](https://www.youtube.com/watch?v=-DJSaB0Z2-Q) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) [![Meta Muse](https://img.shields.io/badge/models-Meta%20Muse-0866ff)](#meta-models)
+
+Live: **[chat.attma.bio](https://chat.attma.bio)** · Demo: **[3-minute video](https://www.youtube.com/watch?v=-DJSaB0Z2-Q)** · Built for the Meta Global AI Developer Hackathon (2026) on Meta's Muse models.
+
+**What was built when.** Before the hackathon this repository was a general chat app, started from the Vinta Next.js/FastAPI template (378 commits, September 2024 to January 2026). Everything that makes it a research agent was built in the hackathon window, October 26 to November 4, 2026: the agent and its tools, the rare-disease engine and its benchmark, the trust gate, the biosecurity reviewer, the Python sandbox and dictation. The [privacy guard](nextjs-frontend/lib/privacy/README.md) was added on November 5, after the deadline.
 
 A researcher asks a question in plain language, by text or dictation, optionally with data attached (VCF, counts table, `.h5ad`, PDF). One agent plans the work, runs each step with real tools (Human Phenotype Ontology, Ensembl VEP, UniProt and AlphaFold, PubMed, g:Profiler, STRING, a Python sandbox, AlphaGenome), shows every step and its source, and answers with a citation for each claim. Reports on variants and rare-disease cases go through a **trust gate**: numbers are checked against the tool output they cite, claims are checked by a second model, and a person approves the result.
 
@@ -38,9 +42,22 @@ flowchart LR
 - **One agent, many sources.** `lib/ai/agents/attma-agent.ts` builds an AI SDK `ToolLoopAgent` from the sources a user enables in the Sources menu. Each source adds its tools and a short playbook line to the system prompt.
 - **Muse throughout.** Muse Wonder orchestrates; Muse Spark runs sub-agents (documents, literature, titles, tool-call repair, biosecurity review, claims check); Muse Image draws illustrations; Muse Voice Transcribe handles dictation in 25 languages. Models are reached through aliases in `lib/ai/providers.ts`.
 - **Trust gate** (`lib/analysis/`). The agent declares a checklist, records each fact with a pointer (`ref` plus JSON path) into a captured tool result, and submits a report. The server re-reads every cited number from the captured output, a second model checks the claims, and the report waits for a person. Approval happens without another model call.
+- **Privacy guard** (`lib/privacy/`). Patient identifiers (names, record and sample numbers, dates of birth, national IDs, contact details, VCF sample columns) are replaced with tokens before any model sees them. An outbound check refuses a call if a real value survived, and the researcher's browser shows the real values again. See [lib/privacy/README.md](nextjs-frontend/lib/privacy/README.md).
 - **Biosecurity reviewer** (`lib/biosecurity/`). Screens the request, every Python script before it runs, and the final report. It judges intent by category, not keywords, so ordinary genetics vocabulary does not trigger a refusal.
 - **Sandboxed compute** (`lib/sandbox/`). Python runs in one Vercel Sandbox microVM per chat, started from a snapshot with the scientific stack preinstalled. Outbound network is limited to an allow-list of data APIs and this app's Blob store. Figures and tables written to `outputs/` are published back to the chat.
 - **Persistence.** Every step is saved as a message part, so reloading a chat shows the same workflow.
+
+## Meta models
+
+| Model                 | Role in Attma                                                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Muse Wonder 1.0       | The agent: plans the workflow, chooses tools, writes the report                                                                   |
+| Muse Spark 1.3        | Sub-agents (documents, figures, literature grading), chat titles, tool-call repair, the claims check and the biosecurity reviewer |
+| Muse Voice Transcribe | Dictation in 25 languages                                                                                                         |
+| Muse Image 1.0        | Illustrations                                                                                                                     |
+| Muse search grounding | Cited web search                                                                                                                  |
+
+Model roles live in `nextjs-frontend/lib/ai/providers.ts`. While the Meta Model API refuses calls for a billing reason, each call is retried on OpenAI (`gpt-4o` for Wonder, `gpt-4o-mini` for Spark), and the step badges name the model that actually answered.
 
 ## Benchmark
 
@@ -55,6 +72,14 @@ HPO's own annotations were partly curated from these case reports, so 169 of the
 | Causal gene from phenotypes alone, top-10                          | 38%             |
 
 Method, leakage control, full-release numbers and how to reproduce them: [scripts/rare-disease-eval/README.md](nextjs-frontend/scripts/rare-disease-eval/README.md). These numbers describe ranking quality on published cases, not diagnostic accuracy.
+
+## Limits
+
+- **Research use only.** It ranks hypotheses for qualified people and never diagnoses.
+- **The benchmark measures ranking on published cases**, not accuracy on new patients. Its held-out numbers are the ones to quote.
+- **Privacy guard, first tier:** names written without a cue (`Patient:`, `Mr.`) are not caught yet, and images and PDFs reach a model unscanned. The reply says so; [the guard's README](nextjs-frontend/lib/privacy/README.md) has the measured numbers.
+- **The biosecurity reviewer is a model.** It fails closed when unavailable, and its policy is tested so ordinary research is not blocked, but it is not a guarantee.
+- **API keys in the sandbox** (AlphaGenome) are visible to code running there, until credential injection is available.
 
 ## Run it locally
 
