@@ -109,7 +109,8 @@ nextjs-frontend/
   scripts/rare-disease-eval/   benchmark data, runner and results
   scripts/analysis-eval/       live harness for the trust gate
 docs/
-  HANDOFF.md                   decisions and history
+  HANDOFF.md                   decisions and history (Oct 26 to Nov 2)
+  STATUS-AND-PLAN.md           where things stand, decisions since, and the plan
   muse/                        the briefs Muse Code built the trust gate from, with the review log
 ```
 

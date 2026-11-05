@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Attma (attma.bio) is a Next.js app where one AI agent on Meta's Muse models turns a researcher's biology question into a reproducible workflow: it plans the work and runs each step with real tools (HPO, Ensembl VEP, UniProt/AlphaFold, PubMed, g:Profiler, STRING, a Python sandbox, AlphaGenome). Then it reports what the data show and cites a source for each claim. All the code lives in `nextjs-frontend/`. The repo root only holds `docker-compose.yml`, a `Makefile` wrapper, `vercel.json` and docs. `PRODUCT.md` sets the product voice and design principles: show the work, no diagnosis or patient-facing language, and a neutral interface where results carry the color.
 
-Production is https://chat.attma.bio (Vercel project `attma-chatbot`, team `martin-davila-s-projects`). `attma.bio` belongs to the main Attma product, a separate repository and Vercel project (`attma`). Read `docs/HANDOFF.md` for the full history: what was built, why each decision was made, the benchmark, and open work. `docs/muse/` holds the briefs Muse Code built the trust gate from.
+Production is https://chat.attma.bio (Vercel project `attma-chatbot`, team `martin-davila-s-projects`). `attma.bio` belongs to the main Attma product, a separate repository and Vercel project (`attma`). Read `docs/HANDOFF.md` for the full history: what was built, why each decision was made, and the benchmark. `docs/STATUS-AND-PLAN.md` has the current state, the decisions since November 2, open work and the plan. `docs/muse/` holds the briefs Muse Code built the trust gate from.
 
 ## Hackathon context
 

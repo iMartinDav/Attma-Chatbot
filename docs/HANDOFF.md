@@ -2,6 +2,8 @@
 
 Everything decided and built from October 26 to November 2, 2026, so work can continue on any computer, by a person or by Claude. `CLAUDE.md` at the repo root is the short version that Claude Code loads automatically.
 
+**Newer:** [STATUS-AND-PLAN.md](STATUS-AND-PLAN.md) covers November 2 to 5 (open-sourcing, sign-in moved to the web app, the biosecurity fix, the submission) and replaces the open-work list in section 5.
+
 ## 1. What Attma is now
 
 A conversational bioinformatics workbench at https://chat.attma.bio. A researcher types, dictates (25 languages) or attaches data (VCF, counts table, .h5ad, PDF report, up to 500 MB). One agent plans the analysis, runs each step against real databases and a Python sandbox, shows every step with the model or source that ran it, and answers with citations. Chats keep their files and history, so follow-ups build on earlier results.
