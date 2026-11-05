@@ -7,6 +7,7 @@ import { lastAnalysisMessageId } from './step-labels';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
+import { PrivacyProvider } from './privacy';
 
 interface MessagesProps {
   chatId: string;
@@ -59,43 +60,47 @@ function PureMessages({
         </div>
       )}
 
-      <div className="flex min-w-0 flex-col gap-6 w-full max-w-2xl mx-auto px-4">
-        {messages.map((message, index) => (
-          <PreviewMessage
-            key={message.id}
-            chatId={chatId}
-            message={message as unknown as SearchMessage}
-            isLoading={isLoading && messages.length - 1 === index}
-            vote={
-              votes
-                ? votes.find((vote) => vote.messageId === message.id)
-                : undefined
-            }
-            setMessages={
-              setMessages as unknown as (
-                messages:
-                  | SearchMessage[]
-                  | ((messages: SearchMessage[]) => SearchMessage[]),
-              ) => void
-            }
-            regenerate={reload}
-            isReadonly={isReadonly}
-            onReview={message.id === reviewMessageId ? onReview : undefined}
-            isLatestAnalysis={message.id === reviewMessageId}
+      <PrivacyProvider messages={messages as never}>
+        <div className="flex min-w-0 flex-col gap-6 w-full max-w-2xl mx-auto px-4">
+          {messages.map((message, index) => (
+            <PreviewMessage
+              key={message.id}
+              chatId={chatId}
+              message={message as unknown as SearchMessage}
+              isLoading={isLoading && messages.length - 1 === index}
+              vote={
+                votes
+                  ? votes.find((vote) => vote.messageId === message.id)
+                  : undefined
+              }
+              setMessages={
+                setMessages as unknown as (
+                  messages:
+                    | SearchMessage[]
+                    | ((messages: SearchMessage[]) => SearchMessage[]),
+                ) => void
+              }
+              regenerate={reload}
+              isReadonly={isReadonly}
+              onReview={message.id === reviewMessageId ? onReview : undefined}
+              isLatestAnalysis={message.id === reviewMessageId}
+            />
+          ))}
+
+          {/* One working row for every mode: the turning helix and an elapsed timer, as in Grok. */}
+          {isLoading &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === 'user' && (
+              <ThinkingMessage />
+            )}
+
+          <div
+            ref={messagesEndRef}
+            className="shrink-0 min-w-[24px] min-h-[1px]"
+            style={{ minHeight: '1px' }}
           />
-        ))}
-
-        {/* One working row for every mode: the turning helix and an elapsed timer, as in Grok. */}
-        {isLoading &&
-          messages.length > 0 &&
-          messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
-
-        <div
-          ref={messagesEndRef}
-          className="shrink-0 min-w-[24px] min-h-[1px]"
-          style={{ minHeight: '1px' }}
-        />
-      </div>
+        </div>
+      </PrivacyProvider>
     </div>
   );
 }

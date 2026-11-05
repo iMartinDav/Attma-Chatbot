@@ -18,6 +18,8 @@ import {
   wrapLanguageModel,
 } from 'ai';
 
+import { privacyMiddleware } from '@/lib/privacy/guard';
+
 export interface ModelCapabilities {
   chat: boolean;
   tools: boolean;
@@ -286,8 +288,21 @@ const advanced = () =>
 const reasoning = (openaiModel: string) =>
   USE_META ? muse('muse-wonder-1.0', 'high') : createLanguageModel(openaiModel);
 
+/**
+ * The privacy guard wraps every language model, outermost, so the OpenAI
+ * fallback inside it also receives only masked prompts.
+ */
+function guarded<T extends Record<string, LanguageModelV4>>(models: T): T {
+  return Object.fromEntries(
+    Object.entries(models).map(([id, model]) => [
+      id,
+      wrapLanguageModel({ model, middleware: privacyMiddleware }),
+    ]),
+  ) as T;
+}
+
 export const myProvider = customProvider({
-  languageModels: {
+  languageModels: guarded({
     'chat-model': fast(),
     'chat-model-standard': advanced(),
     'chat-model-advanced': advanced(),
@@ -304,7 +319,7 @@ export const myProvider = customProvider({
     'artifact-model': advanced(),
     'chat-model-small': fast(),
     'chat-model-large': advanced(),
-  },
+  }),
   imageModels: {
     // Muse Image: $0.01 per image, OpenAI Images API compatible.
     'image-model': USE_META

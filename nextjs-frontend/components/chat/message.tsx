@@ -16,6 +16,8 @@ import { DocumentToolCall, DocumentToolResult } from './document';
 import { DocumentPreview } from './document-preview';
 import { AttmaMark, useElapsedSeconds, workingLabel } from './attma-mark';
 import { Markdown } from './markdown';
+import { PrivacyBadge, useRestored } from './privacy';
+import type { PrivacySummary } from '@/lib/privacy/tokens';
 import { biosecurityLabel } from './step-labels';
 import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
@@ -56,6 +58,11 @@ import {
 
 // Extended message type that includes sourceType and custom properties
 type Message = SearchMessage;
+
+/** Markdown with the real values back in place of privacy tokens. */
+function RestoredMarkdown({ text }: { text: string }) {
+  return <Markdown>{useRestored(text)}</Markdown>;
+}
 
 const PurePreviewMessage = ({
   chatId,
@@ -298,6 +305,15 @@ const PurePreviewMessage = ({
                     return null;
                   }
 
+                  if (type === 'data-privacy') {
+                    return (
+                      <PrivacyBadge
+                        key={key}
+                        summary={(part as { data: PrivacySummary }).data}
+                      />
+                    );
+                  }
+
                   if (type === 'data-biosecurity') {
                     const data = (
                       part as unknown as {
@@ -421,12 +437,14 @@ const PurePreviewMessage = ({
                               },
                             )}
                           >
-                            <Markdown>
-                              {message.isTyping &&
-                              message.sourceType === 'web-search'
-                                ? displayedContent
-                                : part.text}
-                            </Markdown>
+                            <RestoredMarkdown
+                              text={
+                                message.isTyping &&
+                                message.sourceType === 'web-search'
+                                  ? displayedContent
+                                  : part.text
+                              }
+                            />
                             {/* A caret on the live text part shows the agent is still writing, without moving layout. */}
                             {message.role === 'assistant' && isLoading && (
                               <span

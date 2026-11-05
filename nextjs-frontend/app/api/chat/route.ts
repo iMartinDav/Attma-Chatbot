@@ -14,6 +14,8 @@ import { buildTrace } from '@/lib/analysis/trace';
 import { ensureAnalysisPart } from './ensure-analysis-part';
 import { BIOSECURITY_CATEGORY_LABELS } from '@/lib/biosecurity/policy';
 import { screenBiosecurity } from '@/lib/biosecurity/screen';
+import { PrivacyLeakError, runWithPrivacy } from '@/lib/privacy/guard';
+import { PrivacyVault } from '@/lib/privacy/vault';
 import { agentPromptHash, createAttmaAgent } from '@/lib/ai/agents/attma-agent';
 import {
   DEFAULT_CONNECTORS,
@@ -129,7 +131,25 @@ function describeMessage(message: PostRequestBody['message']) {
     .join('\n')}`;
 }
 
+/**
+ * One privacy vault per request: every model call in this run (the
+ * biosecurity screen, the title, the agent and its sub-agents) masks patient
+ * identifiers with the same tokens, and the reply carries the tokens so the
+ * researcher's browser can show the real values again.
+ */
 export async function POST(request: Request) {
+  const vault = new PrivacyVault();
+  return runWithPrivacy(vault, () => handleChat(request, vault));
+}
+
+/** What the researcher sees when a model call is stopped or fails. */
+function runErrorMessage(error: unknown): string {
+  console.error('Agent run failed', error);
+  if (error instanceof PrivacyLeakError) return error.message;
+  return 'The agent hit an error. Try again, or rephrase the request.';
+}
+
+async function handleChat(request: Request, vault: PrivacyVault) {
   let body: PostRequestBody;
   try {
     body = postRequestBodySchema.parse(await request.json());
@@ -313,6 +333,9 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
         writer.write({ type: 'data-biosecurity', data: biosecurity });
+        if (vault.size > 0) {
+          writer.write({ type: 'data-privacy', data: vault.summary() });
+        }
         writer.write({ type: 'text-start', id: 'biosecurity' });
         writer.write({
           type: 'text-delta',
@@ -321,10 +344,7 @@ export async function POST(request: Request) {
         });
         writer.write({ type: 'text-end', id: 'biosecurity' });
       },
-      onError: (error) => {
-        console.error('Agent run failed', error);
-        return 'The agent hit an error. Try again, or rephrase the request.';
-      },
+      onError: runErrorMessage,
       onEnd: handleEnd,
     });
     return createUIMessageStreamResponse({ stream });
@@ -342,10 +362,7 @@ export async function POST(request: Request) {
         writer.write({ type: 'text-end', id: 'approved' });
         writer.write({ type: 'data-analysis', data: analysisData() });
       },
-      onError: (error) => {
-        console.error('Agent run failed', error);
-        return 'The agent hit an error. Try again, or rephrase the request.';
-      },
+      onError: runErrorMessage,
       onEnd: handleEnd,
     });
     return createUIMessageStreamResponse({ stream });
@@ -440,11 +457,12 @@ export async function POST(request: Request) {
           costUsd,
         },
       });
+      // Saved with the message, so a reloaded chat still shows the real values.
+      if (vault.size > 0 || vault.unscannedFiles > 0) {
+        writer.write({ type: 'data-privacy', data: vault.summary() });
+      }
     },
-    onError: (error) => {
-      console.error('Agent run failed', error);
-      return 'The agent hit an error. Try again, or rephrase the request.';
-    },
+    onError: runErrorMessage,
     onEnd: handleEnd,
   });
 
